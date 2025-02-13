@@ -17,9 +17,9 @@ namespace finlib {
 
 extern "C" {
 
-uint64_t add(uint64_t left, uint64_t right);
+const double *covariance(const double *arr, size_t len, const double *arr_two, size_t len_two);
 
-float interest_compound(float principal, float rate, float time, float n);
+double interest_compound(double principal, double rate, double time, double n);
 
 }  // extern "C"
 

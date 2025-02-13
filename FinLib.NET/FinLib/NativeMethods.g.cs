@@ -16,11 +16,11 @@ namespace FinLib
 
 
 
-        [DllImport(__DllName, EntryPoint = "add", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern ulong add(ulong left, ulong right);
-
         [DllImport(__DllName, EntryPoint = "interest_compound", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern float interest_compound(float principal, float rate, float time, float n);
+        internal static extern double interest_compound(double principal, double rate, double time, double n);
+
+        [DllImport(__DllName, EntryPoint = "covariance", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double* covariance(double* arr, nuint len, double* arr_two, nuint len_two);
 
 
     }

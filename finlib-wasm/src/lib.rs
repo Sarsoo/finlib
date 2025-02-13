@@ -1,11 +1,11 @@
 use wasm_bindgen::prelude::wasm_bindgen;
 
 #[wasm_bindgen]
-pub fn add(left: u64, right: u64) -> u64 {
-    finlib::add(left, right)
+pub fn compound(principal: f64, rate: f64, time: f64, n: f64) -> f64 {
+    finlib::interest::compound(principal, rate, time, n)
 }
 
 #[wasm_bindgen]
-pub fn compound(principal: f32, rate: f32, time: f32, n: f32) -> f32 {
-    finlib::interest::compound(principal, rate, time, n)
+pub fn covariance(slice: Vec<f64>, slice_two: Vec<f64>) -> Option<f64> {
+    finlib::stats::covariance(&slice, &slice_two)
 }

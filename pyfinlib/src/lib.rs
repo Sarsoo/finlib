@@ -1,18 +1,18 @@
 use pyo3::prelude::*;
 
 #[pyfunction]
-fn add(left: u64, right: u64) -> PyResult<u64> {
-    Ok(finlib::add(left, right))
+pub fn compound(principal: f64, rate: f64, time: f64, n: f64) -> PyResult<f64> {
+    Ok(finlib::interest::compound(principal, rate, time, n))
 }
 
 #[pyfunction]
-pub fn compound(principal: f32, rate: f32, time: f32, n: f32) -> PyResult<f32> {
-    Ok(finlib::interest::compound(principal, rate, time, n))
+pub fn covariance(slice: Vec<f64>, slice_two: Vec<f64>) -> PyResult<Option<f64>> {
+    Ok(finlib::stats::covariance(&slice, &slice_two))
 }
 
 #[pymodule]
 fn pyfinlib(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(add, m)?)?;
     m.add_function(wrap_pyfunction!(compound, m)?)?;
+    m.add_function(wrap_pyfunction!(covariance, m)?)?;
     Ok(())
 }
