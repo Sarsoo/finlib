@@ -1,0 +1,11 @@
+[package]
+name = "finlib"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+pyo3 = { workspace = true, optional = true }
+
+[features]
+py = ["dep:pyo3"]

@@ -1,0 +1,7 @@
+/target
+bin
+obj
+.venv
+.idea
+/finlib-wasm/pkg
+/FinLib.NET/FinLib.sln.DotSettings.user

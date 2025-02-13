@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "finlib",
+    "finlib-ffi",
+    "finlib-wasm",
+    "pyfinlib"
+]
+
+default-members = [
+    "finlib",
+    "finlib-ffi"
+]
+
+[workspace.package]
+version = "0.0.1"
+authors = ["sarsoo <andy@sarsoo.xyz>"]
+edition = "2021"
+
+[workspace.dependencies.pyo3]
+version = "0.23.4"
+# "abi3-py38" tells pyo3 (and maturin) to build using the stable ABI with minimum Python version 3.8
+features = ["extension-module", "abi3-py38"]
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"
+lto = true

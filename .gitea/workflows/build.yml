@@ -1,0 +1,31 @@
+name: Build Binaries
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+
+jobs:
+  # Build job
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          github-server-url: https://gitea.sheep-ghoul.ts.net
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cargo Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+
+      - name: Cargo Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
