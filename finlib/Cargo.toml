@@ -12,7 +12,9 @@ ndarray-stats = { workspace = true }
 nalgebra = { workspace = true }
 statrs = { workspace = true }
 log = { workspace = true }
+getrandom = "*"
 
 [features]
 py = ["dep:pyo3"]
+wasm = ["getrandom/js"]
 parallel = ["dep:rayon"]
