@@ -18,7 +18,8 @@ pub fn covariance(slice: &[f64], slice_two: &[f64]) -> Option<f64>
                 )
                 .map(|(x, y)| (x - mean_1) * (y - mean_2))
                 .sum::<f64>()
-                / ((slice.len() - 1) as f64))
+            / ((slice.len() - 1) as f64)
+            )
         }
         _ => None
     }

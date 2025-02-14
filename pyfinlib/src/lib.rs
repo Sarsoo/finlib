@@ -1,30 +1,63 @@
 use pyo3::prelude::*;
 
-#[pyfunction]
-pub fn compound(principal: f64, rate: f64, time: f64, n: f64) -> PyResult<f64> {
-    Ok(finlib::interest::compound(principal, rate, time, n))
-}
-
-#[pyfunction]
-pub fn covariance(slice: Vec<f64>, slice_two: Vec<f64>) -> PyResult<Option<f64>> {
-    Ok(finlib::stats::covariance(&slice, &slice_two))
-}
-
 #[pymodule]
-fn pyfinlib(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    register_interest_module(m);
-    register_stats_module(m);
-    Ok(())
-}
+mod pyfinlib {
+    use super::*;
 
-fn register_interest_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    let child_module = PyModule::new(parent_module.py(), "interest")?;
-    child_module.add_function(wrap_pyfunction!(compound, &child_module)?)?;
-    parent_module.add_submodule(&child_module)
-}
+    #[pymodule_init]
+    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+        pyo3_log::init();
 
-fn register_stats_module(parent_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    let child_module = PyModule::new(parent_module.py(), "stats")?;
-    child_module.add_function(wrap_pyfunction!(covariance, &child_module)?)?;
-    parent_module.add_submodule(&child_module)
+        Ok(())
+    }
+
+    #[pymodule]
+    mod interest {
+        use super::*;
+
+        #[pyfunction]
+        pub fn compound(principal: f64, rate: f64, time: f64, n: f64) -> PyResult<f64> {
+            Ok(finlib::interest::compound(principal, rate, time, n))
+        }
+    }
+
+    #[pymodule]
+    mod risk {
+        use super::*;
+
+        #[pymodule]
+        mod var {
+            use super::*;
+
+            #[pyfunction]
+            fn historical(values: Vec<f64>, confidence: f64) -> PyResult<f64> {
+                Ok(finlib::risk::var::historical::value_at_risk(&values, confidence))
+            }
+
+            #[pyfunction]
+            fn varcovar(values: Vec<f64>, confidence: f64) -> PyResult<f64> {
+                Ok(finlib::risk::var::varcovar::value_at_risk(&values, confidence))
+            }
+        }
+    }
+
+    #[pymodule]
+    mod stats {
+        use super::*;
+
+        #[pyfunction]
+        pub fn covariance(slice: Vec<f64>, slice_two: Vec<f64>) -> PyResult<Option<f64>> {
+            Ok(finlib::stats::covariance(&slice, &slice_two))
+        }
+    }
+
+    #[pymodule]
+    mod util {
+        use super::*;
+
+        #[pyfunction]
+        pub fn rates_of_change(slice: Vec<f64>) -> PyResult<Vec<f64>> {
+            Ok(finlib::util::roc::rates_of_change(&slice).collect::<Vec<_>>())
+        }
+    }
 }

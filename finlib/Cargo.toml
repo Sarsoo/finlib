@@ -7,7 +7,12 @@ edition.workspace = true
 [dependencies]
 pyo3 = { workspace = true, optional = true }
 rayon = { workspace = true, optional = true }
+ndarray = { workspace = true }
+ndarray-stats = { workspace = true }
+nalgebra = { workspace = true }
+statrs = { workspace = true }
+log = { workspace = true }
 
 [features]
 py = ["dep:pyo3"]
-parallel = ["dep::rayon"]
+parallel = ["dep:rayon"]

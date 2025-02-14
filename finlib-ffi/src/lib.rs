@@ -26,11 +26,21 @@ pub unsafe extern "C" fn covariance(arr: *const f64, len: usize, arr_two: *const
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn value_at_risk(arr: *const f64, len: usize, confidence: f64) -> *const f64 {
+pub unsafe extern "C" fn historical_value_at_risk(arr: *const f64, len: usize, confidence: f64) -> *const f64 {
     let input_array = unsafe {
         assert!(!arr.is_null());
         slice::from_raw_parts(arr, len)
     };
 
     Box::into_raw(Box::new(finlib::risk::var::historical::value_at_risk(input_array, confidence)))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn varcovar_value_at_risk(arr: *const f64, len: usize, confidence: f64) -> *const f64 {
+    let input_array = unsafe {
+        assert!(!arr.is_null());
+        slice::from_raw_parts(arr, len)
+    };
+
+    Box::into_raw(Box::new(finlib::risk::var::varcovar::value_at_risk(input_array, confidence)))
 }

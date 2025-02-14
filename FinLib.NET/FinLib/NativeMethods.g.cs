@@ -22,8 +22,11 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "covariance", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double* covariance(double* arr, nuint len, double* arr_two, nuint len_two);
 
-        [DllImport(__DllName, EntryPoint = "value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern double* value_at_risk(double* arr, nuint len, double confidence);
+        [DllImport(__DllName, EntryPoint = "historical_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double* historical_value_at_risk(double* arr, nuint len, double confidence);
+
+        [DllImport(__DllName, EntryPoint = "varcovar_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double* varcovar_value_at_risk(double* arr, nuint len, double confidence);
 
 
     }

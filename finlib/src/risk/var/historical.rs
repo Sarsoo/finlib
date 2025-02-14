@@ -7,6 +7,7 @@ use rayon::prelude::*;
 
 pub fn value_at_risk(values: &[f64], confidence: f64) -> f64 {
     let mut roc = rates_of_change(values).collect::<Vec<_>>();
+
     // roc.par_sort_by(|x, y| x.partial_cmp(y).unwrap());
     roc.sort_by(|x, y| x.partial_cmp(y).unwrap());
 
