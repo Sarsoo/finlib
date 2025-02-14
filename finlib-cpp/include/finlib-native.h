@@ -21,6 +21,8 @@ const double *covariance(const double *arr, size_t len, const double *arr_two, s
 
 double interest_compound(double principal, double rate, double time, double n);
 
+const double *value_at_risk(const double *arr, size_t len, double confidence);
+
 }  // extern "C"
 
 }  // namespace finlib

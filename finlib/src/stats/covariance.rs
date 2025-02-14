@@ -1,3 +1,4 @@
+#[cfg(feature = "parallel")]
 use rayon::prelude::*;
 use super::mean;
 
@@ -8,7 +9,13 @@ pub fn covariance(slice: &[f64], slice_two: &[f64]) -> Option<f64>
             let mean_1 = mean(slice);
             let mean_2 = mean(slice_two);
 
-            Some(slice.par_iter().zip(slice_two.par_iter())
+            Some(slice
+                // .par_iter()
+                .iter()
+                .zip(slice_two
+                    // .par_iter()
+                    .iter()
+                )
                 .map(|(x, y)| (x - mean_1) * (y - mean_2))
                 .sum::<f64>()
                 / ((slice.len() - 1) as f64))

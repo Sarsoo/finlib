@@ -14,7 +14,7 @@ fn main() {
         .with_config(config)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("../finlib-cpp/finlib-native.h");
+        .write_to_file("../finlib-cpp/include/finlib-native.h");
 
     csbindgen::Builder::default()
         .input_extern_file("src/lib.rs")

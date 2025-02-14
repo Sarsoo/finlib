@@ -11,24 +11,24 @@ public class Tests
     [Test]
     public void TestCompoundInterest()
     {
-        FinLib.CompoundInterest(100, 0.05, 1, 1).Should().Be(105);
+        Interest.Interest.Compound(100, 0.05, 1, 1).Should().Be(105);
     }
 
     [Test]
     public void TestCompoundInterestMonthly()
     {
-        Math.Round(FinLib.CompoundInterest(100, 0.05, 1, 12), 2).Should().Be(105.12);
+        Math.Round(Interest.Interest.Compound(100, 0.05, 1, 12), 2).Should().Be(105.12);
     }
 
     [Test]
     public void Covariance()
     {
-        FinLib.Covariance([1d, 2d, 3d, 4], [1d, 2, 3, 4]).Should().Be(1.6666666666666667);
+        Stats.Stats.Covariance([1d, 2d, 3d, 4], [1d, 2, 3, 4]).Should().Be(1.6666666666666667);
     }
 
     [Test]
     public void CovarianceBreaking()
     {
-        FinLib.Covariance([1d, 2d, 3d, 4], [1d]).Should().BeNull();
+        Stats.Stats.Covariance([1d, 2d, 3d, 4], [1d]).Should().BeNull();
     }
 }

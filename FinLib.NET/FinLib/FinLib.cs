@@ -3,15 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FinLib;
+namespace FinLib.Stats;
 
-public static class FinLib
+public static class Stats
 {
-    public static double CompoundInterest(double principal, double rate, double time, double n)
-    {
-        return NativeMethods.interest_compound(principal, rate, time, n);
-    }
-
     public static double? Covariance(IEnumerable<double> valuesOne, IEnumerable<double> valuesTwo)
     {
         unsafe {
