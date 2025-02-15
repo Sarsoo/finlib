@@ -1,6 +1,5 @@
 [package]
 name = "finlib"
-publish = ["sargit"]
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
