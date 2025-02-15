@@ -259,7 +259,7 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "finlib"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "getrandom 0.2.15",
  "log",
@@ -274,7 +274,7 @@ dependencies = [
 
 [[package]]
 name = "finlib-ffi"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "cbindgen",
  "csbindgen",
@@ -283,7 +283,7 @@ dependencies = [
 
 [[package]]
 name = "finlib-wasm"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "console_error_panic_hook",
  "console_log",
@@ -606,7 +606,7 @@ dependencies = [
 
 [[package]]
 name = "pyfinlib"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "finlib",
  "pyo3",
