@@ -13,7 +13,7 @@ readme.workspace = true
 crate-type = ["cdylib"]
 
 [dependencies]
-finlib = { path = "../finlib" }
+finlib = { path = "../finlib", features = ["ffi"] }
 
 [build-dependencies]
 cbindgen = "0.28.0"

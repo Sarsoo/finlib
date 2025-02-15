@@ -11,6 +11,7 @@ documentation.workspace = true
 readme.workspace = true
 
 [dependencies]
+wasm-bindgen = { workspace = true, optional = true }
 pyo3 = { workspace = true, optional = true }
 rayon = { workspace = true, optional = true }
 ndarray = { workspace = true }
@@ -22,5 +23,6 @@ getrandom = "*"
 
 [features]
 py = ["dep:pyo3"]
-wasm = ["getrandom/js"]
+wasm = ["getrandom/js", "dep:wasm-bindgen"]
 parallel = ["dep:rayon"]
+ffi = []

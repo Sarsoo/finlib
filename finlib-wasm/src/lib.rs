@@ -1,4 +1,13 @@
 use wasm_bindgen::prelude::wasm_bindgen;
+use console_log;
+use log::Level;
+
+#[wasm_bindgen(start)]
+fn start() {
+    if let Err(_) = console_log::init_with_level(Level::Debug) {
+
+    }
+}
 
 #[wasm_bindgen]
 pub struct Interest { }

@@ -4,6 +4,11 @@ use pyo3::prelude::*;
 mod pyfinlib {
     use super::*;
 
+    #[pymodule_export]
+    use finlib::risk::portfolio::Portfolio;
+    #[pymodule_export]
+    use finlib::risk::portfolio::PortfolioAsset;
+
     #[pymodule_init]
     fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
         pyo3_log::init();
