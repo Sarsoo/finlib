@@ -30,47 +30,26 @@ jobs:
         with:
           command: test
 
-  publishRustLib:
+  buildPy:
+    name: Build Python
     runs-on: ubuntu-latest
-    name: Publish Rust Library
     needs: [ build ] # for ignoring bad builds
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4 # get source
         with:
           github-server-url: https://gitea.sheep-ghoul.ts.net
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - name: Install Python 3
+        uses: actions/setup-python@v4
         with:
-          toolchain: stable
+          python-version: ${{ env.python-version }}
 
-      - name: Add SarGit Repo
-        run: |
-          cat <<EOF > ~/.cargo/config.toml
-          [registry]
-          default = "sargit"
-          
-          [registries.sargit]
-          index = "sparse+https://git.sarsoo.xyz/api/packages/${{ secrets.DOCKERHUB_USERNAME }}/cargo/"
-          
-          [net]
-          git-fetch-with-cli = true
-          EOF
+      - name: Install Maturin
+        run: sudo apt update && sudo apt install -y python-maturin
 
-      - name: Add SarGit Credentials
-        run: |
-          cat <<EOF > ~/.cargo/credentials.toml
-          [registries.sargit]
-          token = "Bearer ${{ secrets.DOCKERHUB_TOKEN }}"
-          EOF
-
-      - name: Cargo Publish
-        uses: actions-rs/cargo@v1
-        with:
-          command: publish
-          args: --package finlib
+      - name: Build Python
+        working-directory: ./pyfinlib
+        run: maturin develop
 
   buildWASM:
     name: Build WASM
@@ -93,27 +72,6 @@ jobs:
       - name: Build Rust for WASM
         working-directory: ./finlib-wasm
         run: wasm-pack build
-
-  buildPy:
-    name: Build Python
-    runs-on: ubuntu-latest
-    needs: [ build ] # for ignoring bad builds
-    steps:
-      - uses: actions/checkout@v4 # get source
-        with:
-          github-server-url: https://gitea.sheep-ghoul.ts.net
-
-      - name: Install Python 3
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.python-version }}
-
-      - name: Install Maturin
-        run: pip3 install maturin
-
-      - name: Build Python
-        working-directory: ./pyfinlib
-        run: maturin develop
 
   publishNPM:
     name: Publish NPM
@@ -153,3 +111,45 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publishRustLib:
+    runs-on: ubuntu-latest
+    name: Publish Rust Library
+    needs: [ build ] # for ignoring bad builds
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          github-server-url: https://gitea.sheep-ghoul.ts.net
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Add SarGit Repo
+        run: |
+          cat <<EOF > ~/.cargo/config.toml
+          [registry]
+          default = "sargit"
+
+          [registries.sargit]
+          index = "sparse+https://git.sarsoo.xyz/api/packages/${{ secrets.DOCKERHUB_USERNAME }}/cargo/"
+
+          [net]
+          git-fetch-with-cli = true
+          EOF
+
+      - name: Add SarGit Credentials
+        run: |
+          cat <<EOF > ~/.cargo/credentials.toml
+          [registries.sargit]
+          token = "Bearer ${{ secrets.DOCKERHUB_TOKEN }}"
+          EOF
+
+      - name: Cargo Publish
+        uses: actions-rs/cargo@v1
+        with:
+          command: publish
+          args: --package finlib
