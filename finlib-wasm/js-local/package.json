@@ -1,0 +1,23 @@
+{
+  "name": "finlib-test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.prod.js --env production",
+    "devbuild": "webpack --config webpack.dev.js",
+    "start": "webpack serve --config webpack.dev.js --progress"
+  },
+  "dependencies": {
+    "finlib": "file:../pkg"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "copy-webpack-plugin": "^11.0.0",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1",
+    "webpack-merge": "^5.9.0"
+  }
+}
