@@ -45,7 +45,7 @@ jobs:
           python-version: ${{ env.python-version }}
 
       - name: Install Maturin
-        run: sudo apt update && sudo apt install -y python-maturin
+        run: sudo apt update && sudo apt install -y python3-maturin
 
       - name: Build Python
         working-directory: ./pyfinlib
