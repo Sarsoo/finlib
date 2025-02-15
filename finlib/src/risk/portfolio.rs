@@ -4,7 +4,7 @@ use ndarray_stats::CorrelationExt;
 use wasm_bindgen::prelude::*;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
-use crate::risk::var::varcovar::portfolio_value_at_risk;
+use crate::risk::var::varcovar::{portfolio_value_at_risk, portfolio_value_at_risk_percent};
 use crate::stats;
 use crate::util::roc::rates_of_change;
 
@@ -170,8 +170,12 @@ impl Portfolio {
         Some((porfolio_mean_return, portfolio_stddev))
     }
 
-    pub fn value_at_risk(&mut self, confidence: f64) -> Option<f64> {
-        portfolio_value_at_risk(self, confidence)
+    pub fn value_at_risk(&mut self, confidence: f64, initial_investment: f64) -> Option<f64> {
+        portfolio_value_at_risk(self, confidence, initial_investment)
+    }
+
+    pub fn value_at_risk_percent(&mut self, confidence: f64) -> Option<f64> {
+        portfolio_value_at_risk_percent(self, confidence)
     }
 }
 

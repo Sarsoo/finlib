@@ -42,5 +42,5 @@ pub unsafe extern "C" fn varcovar_value_at_risk(arr: *const f64, len: usize, con
         slice::from_raw_parts(arr, len)
     };
 
-    Box::into_raw(Box::new(finlib::risk::var::varcovar::value_at_risk(input_array, confidence)))
+    Box::into_raw(Box::new(finlib::risk::var::varcovar::value_at_risk_percent(input_array, confidence)))
 }

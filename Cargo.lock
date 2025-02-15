@@ -609,6 +609,7 @@ name = "pyfinlib"
 version = "0.0.2"
 dependencies = [
  "finlib",
+ "log",
  "pyo3",
  "pyo3-log",
 ]

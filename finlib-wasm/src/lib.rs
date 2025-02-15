@@ -29,7 +29,7 @@ impl ValueAtRisk {
     }
 
     pub fn varcovar(values: Vec<f64>, confidence: f64) -> f64 {
-        finlib::risk::var::varcovar::value_at_risk(&values, confidence)
+        finlib::risk::var::varcovar::value_at_risk_percent(&values, confidence)
     }
 }
 

@@ -14,9 +14,14 @@ impl Portfolio {
         self.is_valid()
     }
 
+    #[wasm_bindgen(js_name = "valueAtRiskPercent")]
+    pub fn value_at_risk_pct_wasm(&mut self, confidence: f64) -> Option<f64> {
+        self.value_at_risk_percent(confidence)
+    }
+
     #[wasm_bindgen(js_name = "valueAtRisk")]
-    pub fn value_at_risk_wasm(&mut self, confidence: f64) -> Option<f64> {
-        self.value_at_risk(confidence)
+    pub fn value_at_risk_wasm(&mut self, confidence: f64, initial_investment: f64) -> Option<f64> {
+        self.value_at_risk(confidence, initial_investment)
     }
 }
 

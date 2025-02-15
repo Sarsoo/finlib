@@ -15,8 +15,13 @@ impl Portfolio {
     }
 
     #[pyo3(name = "value_at_risk")]
-    pub fn value_at_risk_py(&mut self, confidence: f64) -> PyResult<Option<f64>> {
-        Ok(self.value_at_risk(confidence))
+    pub fn value_at_risk_py(&mut self, confidence: f64, initial_investment: f64) -> PyResult<Option<f64>> {
+        Ok(self.value_at_risk(confidence, initial_investment))
+    }
+
+    #[pyo3(name = "value_at_risk_percent")]
+    pub fn value_at_risk_pct_py(&mut self, confidence: f64) -> PyResult<Option<f64>> {
+        Ok(self.value_at_risk_percent(confidence))
     }
 }
 

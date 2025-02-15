@@ -12,7 +12,6 @@ mod pyfinlib {
     #[pymodule_init]
     fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
         pyo3_log::init();
-
         Ok(())
     }
 
@@ -41,7 +40,7 @@ mod pyfinlib {
 
             #[pyfunction]
             fn varcovar(values: Vec<f64>, confidence: f64) -> PyResult<f64> {
-                Ok(finlib::risk::var::varcovar::value_at_risk(&values, confidence))
+                Ok(finlib::risk::var::varcovar::value_at_risk_percent(&values, confidence))
             }
         }
     }

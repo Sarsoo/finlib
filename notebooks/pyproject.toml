@@ -11,7 +11,8 @@ dependencies = [
     "yfinance (>=0.2.52,<0.3.0)",
     "pandas (>=2.2.3,<3.0.0)",
     "numpy (>=2.2.3,<3.0.0)",
-    "maturin (>=1.8.2,<2.0.0)"
+    "maturin (>=1.8.2,<2.0.0)",
+    "scipy (>=1.15.1,<2.0.0)"
 ]
 
 [tool.poetry]
