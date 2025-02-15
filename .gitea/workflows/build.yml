@@ -39,6 +39,11 @@ jobs:
         with:
           github-server-url: https://gitea.sheep-ghoul.ts.net
 
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
       - name: Install Python 3
         uses: actions/setup-python@v4
         with:

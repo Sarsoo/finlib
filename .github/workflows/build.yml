@@ -40,13 +40,57 @@ jobs:
         with:
           command: test
 
+  buildPy:
+    name: Build Python
+    runs-on: ubuntu-latest
+    needs: [ build ] # for ignoring bad builds
+    steps:
+      - uses: actions/checkout@v4 # get source
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+
+      - name: Install Maturin
+        run: sudo apt update && sudo apt install -y python3-maturin
+
+      - name: Build Python
+        working-directory: ./pyfinlib
+        run: maturin develop
+
+  buildWASM:
+    name: Build WASM
+    runs-on: ubuntu-latest
+    needs: [ build ] # for ignoring bad builds
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build Rust for WASM
+        working-directory: ./finlib-wasm
+        run: wasm-pack build
+
   doc:
     name: Build Documentation
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: [ build ] # for ignoring bad builds
+    needs: [ build, buildPy, buildWASM ] # for ignoring bad builds
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout
