@@ -54,7 +54,7 @@ jobs:
 
       - name: Build Python
         working-directory: ./pyfinlib
-        run: maturin develop
+        run: maturin build
 
   buildWASM:
     name: Build WASM
