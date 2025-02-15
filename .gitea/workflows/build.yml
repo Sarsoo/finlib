@@ -30,6 +30,48 @@ jobs:
         with:
           command: test
 
+  publishRustLib:
+    runs-on: ubuntu-latest
+    name: Publish Rust Library
+    needs: [ build ] # for ignoring bad builds
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          github-server-url: https://gitea.sheep-ghoul.ts.net
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Add SarGit Repo
+        run: |
+          cat <<EOF > ~/.cargo/config.toml
+          [registry]
+          default = "sargit"
+          
+          [registries.sargit]
+          index = "sparse+https://git.sarsoo.xyz/api/packages/${{ secrets.DOCKERHUB_USERNAME }}/cargo/"
+          
+          [net]
+          git-fetch-with-cli = true
+          EOF
+
+      - name: Add SarGit Credentials
+        run: |
+          cat <<EOF > ~/.cargo/credentials.toml
+          [registries.sargit]
+          token = "Bearer ${{ secrets.DOCKERHUB_TOKEN }}"
+          EOF
+
+      - name: Cargo Publish
+        uses: actions-rs/cargo@v1
+        with:
+          command: publish
+          args: --package finlib
+
   publishNPM:
     name: Publish NPM
     runs-on: ubuntu-latest

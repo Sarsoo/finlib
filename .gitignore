@@ -5,3 +5,4 @@ obj
 .idea
 /finlib-wasm/pkg
 /FinLib.NET/FinLib.sln.DotSettings.user
+node_modules

@@ -33,3 +33,13 @@ impl Stats {
         finlib::stats::covariance(&slice, &slice_two)
     }
 }
+
+#[wasm_bindgen]
+pub struct Util { }
+
+#[wasm_bindgen]
+impl Util {
+    pub fn rates_of_change(slice: Vec<f64>) -> Vec<f64> {
+        finlib::util::roc::rates_of_change(&slice).collect::<Vec<_>>()
+    }
+}

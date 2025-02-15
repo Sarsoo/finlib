@@ -16,7 +16,12 @@ default-members = [
 [workspace.package]
 version = "0.0.1"
 authors = ["sarsoo <andy@sarsoo.xyz>"]
+description = "Quant finance functions implemented in Rust"
 edition = "2021"
+homepage = "https://git.sarsoo.xyz/sarsoo/finlib"
+repository = "https://git.sarsoo.xyz/sarsoo/finlib"
+documentation = "https://sarsoo.github.io/finlib"
+readme = "README.md"
 
 [workspace.dependencies]
 rayon = "1.10.0"

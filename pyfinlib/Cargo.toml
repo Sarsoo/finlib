@@ -3,6 +3,11 @@ name = "pyfinlib"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+documentation.workspace = true
+readme.workspace = true
 
 [lib]
 # The name of the native library. This is the name which will be used in Python to import the
