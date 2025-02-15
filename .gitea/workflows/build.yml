@@ -53,6 +53,10 @@ jobs:
         working-directory: ./finlib-wasm
         run: wasm-pack build --release
 
+      - name: Change Package Name
+        working-directory: ./finlib-wasm
+        run: ./rename-pkg.sh
+
       - name: Install Node
         uses: actions/setup-node@v2
         with:

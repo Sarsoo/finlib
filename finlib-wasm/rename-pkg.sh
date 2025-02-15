@@ -1,0 +1,1 @@
+sed -i -e 's/"name": "finlib-wasm"/"name": "finlib"/g' pkg/package.json
