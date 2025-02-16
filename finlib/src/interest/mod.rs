@@ -1,3 +1,4 @@
+//! Compound interest etc
 
 pub fn compound_32(principal: f32, rate: f32, time: f32, n: f32) -> f32 {
     principal * f32::powf( 1f32 + (rate / n), time * n)

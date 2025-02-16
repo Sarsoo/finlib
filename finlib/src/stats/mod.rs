@@ -1,13 +1,9 @@
 mod covariance;
 pub use covariance::*;
 
-#[cfg(feature = "parallel")]
-use rayon::prelude::*;
-
 pub fn mean(slice: &[f64]) -> f64
 {
     slice
-        // .par_iter()
         .iter()
         .sum::<f64>() / slice.len() as f64
 }
@@ -16,7 +12,6 @@ pub fn population_variance(slice: &[f64]) -> f64
 {
     let mean = mean(slice);
     slice
-        // .par_iter()
         .iter()
         .map(|x| f64::powi(x - mean, 2))
         .sum::<f64>()
@@ -27,7 +22,6 @@ pub fn sample_variance(slice: &[f64]) -> f64
 {
     let mean = mean(slice);
     slice
-        // .par_iter()
         .iter()
         .map(|x| f64::powi(x - mean, 2))
         .sum::<f64>()

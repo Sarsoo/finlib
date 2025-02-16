@@ -5,12 +5,15 @@ use ndarray_stats::CorrelationExt;
 use wasm_bindgen::prelude::*;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
+#[cfg(feature = "parallel")]
+use rayon::prelude::*;
 use statrs::distribution::{ContinuousCDF, Normal};
 use crate::risk::forecast::{mean_investment, std_dev_investment};
 use crate::risk::var::varcovar::{investment_value_at_risk};
-use crate::stats;
+use crate::{stats};
 use crate::util::roc::rates_of_change;
 
+/// Describes a Portfolio as a collection of [`PortfolioAsset`]s
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass)]
 #[cfg_attr(feature = "ffi", repr(C))]
@@ -28,6 +31,7 @@ pub enum ValueType {
     RateOfChange
 }
 
+/// Describes a single instrument as a list of previous values with an associated portfolio proportion
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass)]
 #[cfg_attr(feature = "ffi", repr(C))]
@@ -46,6 +50,7 @@ impl PortfolioAsset {
         }
     }
 
+    /// If the asset's values have been given as absolute values, convert those to a percentage change between each
     pub fn apply_rates_of_change(&mut self) {
         match self.value_type {
             ValueType::Absolute => {
@@ -56,6 +61,9 @@ impl PortfolioAsset {
         }
     }
 
+    /// Get the mean and standard deviation of the rates of change of an asset
+    ///
+    /// returns (mean, std_dev)
     pub fn get_mean_and_std(&self) -> Option<(f64, f64)> {
         match self.value_type {
             ValueType::Absolute => {
@@ -77,18 +85,32 @@ impl Portfolio {
         }
     }
 
+    /// Return the proportions of a portfolio's assets
+    ///
+    /// In a properly formed Portfolio these will add up to 1.0
     pub fn get_asset_weight(&self) -> impl Iterator<Item=f64> + use<'_> {
         self.assets
             .iter()
             .map(|x| x.portfolio_weight)
     }
 
+    /// Convert a portfolio of assets with absolute values to the percentage change in values
     pub fn apply_rates_of_change(&mut self) {
-        for asset in self.assets.iter_mut() {
-            asset.apply_rates_of_change();
+        #[cfg(feature = "parallel")]
+        {
+            self.assets.par_iter_mut().for_each(|asset| {
+                asset.apply_rates_of_change();
+            });
+        }
+        #[cfg(not(feature = "parallel"))]
+        {
+            self.assets.iter_mut().for_each(|asset| {
+                asset.apply_rates_of_change();
+            });
         }
     }
 
+    /// Do all the assets in the portfolio have the same number of values (required to perform matrix operations)
     pub fn valid_sizes(&self) -> bool {
         let mut last_value_length: Option<usize> = None;
 
@@ -109,6 +131,7 @@ impl Portfolio {
         true
     }
 
+    /// Do the proportions of the assets in the portfolio add up to 100%?
     pub fn valid_weights(&self) -> bool {
         let mut weight = 1f64;
 
@@ -123,6 +146,7 @@ impl Portfolio {
         self.valid_sizes() && self.valid_weights()
     }
 
+    /// Format the asset values in the portfolio as a matrix such that statistical operations can be applied to it
     pub fn get_matrix(&self) -> Option<Array2<f64>> {
         if self.assets.is_empty() || !self.valid_sizes() {
             return None;
@@ -131,17 +155,34 @@ impl Portfolio {
         let column_count = self.assets.len();
         let row_count = self.assets[0].values.len();
 
-        let matrix = Array2::from_shape_vec((column_count, row_count),
-            self.assets
-                .iter()
-                .map(|a| a.values.clone())
-                .flatten()
-                .collect::<Vec<f64>>()
-        ).unwrap();
+        #[cfg(feature = "parallel")]
+        {
+            let matrix = Array2::from_shape_vec((column_count, row_count),
+                                                self.assets
+                                                    .par_iter()
+                                                    .map(|a| a.values.clone())
+                                                    .flatten()
+                                                    .collect::<Vec<f64>>()
+            ).unwrap();
+            Some(matrix.into_owned())
+        }
+        #[cfg(not(feature = "parallel"))]
+        {
+            let matrix = Array2::from_shape_vec((column_count, row_count),
+                                                self.assets
+                                                    .iter()
+                                                    .map(|a| a.values.clone())
+                                                    .flatten()
+                                                    .collect::<Vec<f64>>()
+            ).unwrap();
+            Some(matrix.into_owned())
+        }
 
-        Some(matrix.into_owned())
     }
 
+    /// Calculate the mean and the standard deviation of a portfolio, taking into account the relative weights and covariance of the portfolio's assets
+    ///
+    /// returns (mean, std_dev)
     pub fn get_mean_and_std(&mut self) -> Option<(f64, f64)> {
         if !self.valid_sizes() {
             error!("Can't get portfolio mean and std dev because asset value counts arent't the same");
@@ -178,8 +219,9 @@ impl Portfolio {
         Some((porfolio_mean_return, portfolio_stddev))
     }
 
-    // https://www.interviewqs.com/blog/value-at-risk
-
+    /// For a given confidence rate (0.01, 0.05, 0.10) and initial investment value, calculate the parametric value at risk
+    ///
+    /// https://www.interviewqs.com/blog/value-at-risk
     pub fn value_at_risk(&mut self, confidence: f64, initial_investment: f64) -> Option<f64> {
         match self.get_mean_and_std() {
             None => None,
@@ -198,8 +240,9 @@ impl Portfolio {
         }
     }
 
-    // https://www.interviewqs.com/blog/value-at-risk
-
+    /// For a given confidence rate (0.01, 0.05, 0.10) calculate the percentage change in an investment
+    ///
+    /// https://www.interviewqs.com/blog/value-at-risk
     pub fn value_at_risk_percent(&mut self, confidence: f64) -> Option<f64> {
         match self.get_mean_and_std() {
             None => None,
