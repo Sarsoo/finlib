@@ -1,0 +1,245 @@
+use statrs::distribution::{ContinuousCDF, Normal};
+
+#[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
+pub struct OptionVariables {
+    underlying_price: f64,
+    strike_price: f64,
+    volatility: f64,
+    risk_free_interest_rate: f64,
+    dividend: f64,
+    time_to_expiration: f64
+}
+
+impl OptionVariables {
+
+    pub fn from(underlying_price: f64,
+                strike_price: f64,
+                volatility: f64,
+                risk_free_interest_rate: f64,
+                dividend: f64,
+                time_to_expiration: f64) -> Self {
+        Self {
+            underlying_price,
+            strike_price,
+            volatility,
+            risk_free_interest_rate,
+            dividend,
+            time_to_expiration,
+        }
+    }
+
+    pub fn call(self) -> CallOption {
+        let n = Normal::new(0., 1.0).unwrap();
+        let (d1, d2) = self.d1_d2();
+
+        let first = self.underlying_price * (-self.dividend * self.time_to_expiration).exp() * n.cdf(d1);
+
+        let second = self.strike_price * (-self.risk_free_interest_rate * self.time_to_expiration).exp() * n.cdf(d2);
+
+        CallOption::from(first - second, self)
+    }
+
+
+    pub fn put(self) -> PutOption {
+        let n = Normal::new(0., 1.0).unwrap();
+        let (d1, d2) = self.d1_d2();
+
+        let first = self.strike_price * (-self.risk_free_interest_rate * self.time_to_expiration).exp() * n.cdf(-d2);
+
+        let second = self.underlying_price * (-self.dividend * self.time_to_expiration).exp() * n.cdf(-d1);
+
+        PutOption::from(first - second, self)
+    }
+
+    pub fn d1_d2(&self) -> (f64, f64) {
+        let d1 = self.d1();
+
+        (d1, self.d2(d1))
+    }
+
+    pub fn d1(&self) -> f64 {
+
+        let first = (self.underlying_price / self.strike_price).log(std::f64::consts::E);
+
+        let second = self.time_to_expiration * (self.risk_free_interest_rate - self.dividend + (f64::powi(self.volatility, 2) / 2.));
+
+        let denominator = self.volatility * f64::sqrt(self.time_to_expiration);
+
+        (first + second) / denominator
+    }
+
+    pub fn d2(&self, d1: f64, ) -> f64 {
+        d1 - (self.volatility * f64::sqrt(self.time_to_expiration))
+    }
+}
+
+pub trait Option {
+    fn delta(&self) -> f64;
+    fn gamma(&self) -> f64;
+    fn vega(&self) -> f64;
+    fn theta(&self) -> f64;
+    fn rho(&self) -> f64;
+}
+
+#[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
+pub struct CallOption {
+    pub price: f64,
+    pub variables: OptionVariables
+}
+
+impl CallOption {
+    pub fn from(price: f64, variables: OptionVariables) -> Self {
+        Self { price, variables }
+    }
+}
+
+impl Option for CallOption {
+    fn delta(&self) -> f64 {
+        let n = Normal::new(0., 1.0).unwrap();
+
+        (-self.variables.dividend * self.variables.time_to_expiration).exp() * n.cdf(self.variables.d1())
+    }
+
+    fn gamma(&self) -> f64 {
+        gamma(&self.variables)
+    }
+
+    fn vega(&self) -> f64 {
+        vega(&self.variables)
+    }
+
+    fn theta(&self) -> f64 {
+        todo!()
+    }
+
+    fn rho(&self) -> f64 {
+        todo!()
+    }
+}
+
+#[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
+pub struct PutOption {
+    pub price: f64,
+    pub variables: OptionVariables
+}
+
+impl PutOption {
+    pub fn from(price: f64, variables: OptionVariables) -> Self {
+        Self { price, variables }
+    }
+}
+
+impl Option for PutOption {
+    fn delta(&self) -> f64 {
+        let n = Normal::new(0., 1.0).unwrap();
+
+        (-self.variables.dividend * self.variables.time_to_expiration).exp() * (n.cdf(self.variables.d1()) - 1.)
+    }
+
+    fn gamma(&self) -> f64 {
+        gamma(&self.variables)
+    }
+
+    fn vega(&self) -> f64 {
+        vega(&self.variables)
+    }
+
+    fn theta(&self) -> f64 {
+        todo!()
+    }
+
+    fn rho(&self) -> f64 {
+        todo!()
+    }
+}
+
+pub fn gamma(v: &OptionVariables) -> f64 {
+    let n = Normal::new(0., 1.0).unwrap();
+
+    let numerator = (-v.dividend * v.time_to_expiration).exp();
+    let denominator = v.underlying_price * v.volatility * f64::sqrt(v.time_to_expiration);
+
+    (numerator / denominator) * n.cdf(v.d1())
+}
+
+pub fn vega(v: &OptionVariables) -> f64 {
+    let n = Normal::new(0., 1.0).unwrap();
+
+    let numerator = (-v.dividend * v.time_to_expiration).exp();
+
+    v.underlying_price * numerator * f64::sqrt(v.time_to_expiration) * n.cdf(v.d1()) / 100.
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn call_test() {
+        let v = OptionVariables::from(100., 100., 0.25, 0.05, 0.01, 30./365.25);
+
+        let diff = (v.call().price - 3.019).abs();
+
+        assert!(diff < 0.01);
+    }
+
+    #[test]
+    fn put_test() {
+        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+
+        let diff = (v.put().price - 2.691).abs();
+        assert!(diff < 0.01);
+    }
+
+    #[test]
+    fn call_delta_test() {
+        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+
+        let diff = (v.call().delta() - 0.532).abs();
+        assert!(diff < 0.01);
+    }
+
+    #[test]
+    fn put_delta_test() {
+        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+
+        let delta = v.put().delta();
+        let diff = (delta - -0.467).abs();
+        assert!(diff < 0.01);
+    }
+
+    #[test]
+    fn gamma_test() {
+        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+
+        let gamma = v.put().gamma();
+        let diff = (gamma - 0.055).abs();
+        assert!(diff < 0.01);
+    }
+
+    #[test]
+    fn vega_test() {
+        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+
+        let vega = v.put().vega();
+        let diff = (vega - 11.390).abs();
+        assert!(diff < 0.01);
+    }
+
+    #[test]
+    fn call_rho_test() {
+        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+
+        let diff = (v.call().rho() - 4.126).abs();
+        assert!(diff < 0.01);
+    }
+
+    #[test]
+    fn put_rho_test() {
+        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+
+        let rho = v.put().rho();
+        let diff = (rho - -4.060).abs();
+        assert!(diff < 0.01);
+    }
+}
