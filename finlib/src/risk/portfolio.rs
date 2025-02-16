@@ -1,17 +1,20 @@
+use log::{debug, error, info};
 use ndarray::prelude::*;
 use ndarray_stats::CorrelationExt;
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
-use crate::risk::var::varcovar::{portfolio_value_at_risk, portfolio_value_at_risk_percent};
+use statrs::distribution::{ContinuousCDF, Normal};
+use crate::risk::forecast::{mean_investment, std_dev_investment};
+use crate::risk::var::varcovar::{investment_value_at_risk};
 use crate::stats;
 use crate::util::roc::rates_of_change;
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass)]
 #[cfg_attr(feature = "ffi", repr(C))]
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Portfolio {
     assets: Vec<PortfolioAsset>
 }
@@ -28,7 +31,7 @@ pub enum ValueType {
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass)]
 #[cfg_attr(feature = "ffi", repr(C))]
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct PortfolioAsset {
     portfolio_weight: f64,
     name: String,
@@ -56,6 +59,7 @@ impl PortfolioAsset {
     pub fn get_mean_and_std(&self) -> Option<(f64, f64)> {
         match self.value_type {
             ValueType::Absolute => {
+                info!("[{}] Asset's values are currently absolute, calculating rates of change first", self.name);
                 let roc = rates_of_change(&self.values).collect::<Vec<f64>>();
                 Some((stats::mean(&roc), stats::sample_std_dev(&roc)))
             }
@@ -106,7 +110,7 @@ impl Portfolio {
     }
 
     pub fn valid_weights(&self) -> bool {
-        let mut weight = 1 as f64;
+        let mut weight = 1f64;
 
         for asset in &self.assets {
             weight -= asset.portfolio_weight;
@@ -140,23 +144,27 @@ impl Portfolio {
 
     pub fn get_mean_and_std(&mut self) -> Option<(f64, f64)> {
         if !self.valid_sizes() {
+            error!("Can't get portfolio mean and std dev because asset value counts arent't the same");
             return None;
         }
 
         self.apply_rates_of_change();
         let m = self.get_matrix();
         if m.is_none() {
+            error!("Couldn't format portfolio as matrix");
             return None;
         }
         let m = m.unwrap();
 
         let cov = m.cov(1.);
         if cov.is_err() {
+            error!("Failed to calculate portfolio covariance");
             return None;
         }
         let cov = cov.unwrap();
         let mean_return = m.mean_axis(Axis(1));
         if mean_return.is_none() {
+            error!("Failed to calculate portfolio mean");
             return None;
         }
         let mean_return = mean_return.unwrap();
@@ -170,12 +178,36 @@ impl Portfolio {
         Some((porfolio_mean_return, portfolio_stddev))
     }
 
+    // https://www.interviewqs.com/blog/value-at-risk
+
     pub fn value_at_risk(&mut self, confidence: f64, initial_investment: f64) -> Option<f64> {
-        portfolio_value_at_risk(self, confidence, initial_investment)
+        match self.get_mean_and_std() {
+            None => None,
+            Some((mean, std_dev)) => {
+                debug!("Portfolio percent movement mean[{}], std dev[{}]", mean, std_dev);
+                let investment_mean = mean_investment(mean, initial_investment);
+                let investment_std_dev = std_dev_investment(std_dev, initial_investment);
+                debug!("Investment[{}] mean[{}], std dev[{}]", initial_investment, mean, std_dev);
+
+                let investment_var = investment_value_at_risk(confidence, investment_mean, investment_std_dev);
+
+                debug!("Investment[{}] value at risk [{}]", initial_investment, investment_var);
+
+                Some(initial_investment - investment_var)
+            }
+        }
     }
 
+    // https://www.interviewqs.com/blog/value-at-risk
+
     pub fn value_at_risk_percent(&mut self, confidence: f64) -> Option<f64> {
-        portfolio_value_at_risk_percent(self, confidence)
+        match self.get_mean_and_std() {
+            None => None,
+            Some((mean, std_dev)) => {
+                let n = Normal::new(mean, std_dev).unwrap();
+                Some(n.inverse_cdf(confidence))
+            }
+        }
     }
 }
 

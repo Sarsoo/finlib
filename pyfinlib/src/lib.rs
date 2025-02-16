@@ -10,7 +10,7 @@ mod pyfinlib {
     use finlib::risk::portfolio::PortfolioAsset;
 
     #[pymodule_init]
-    fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    fn init(_m: &Bound<'_, PyModule>) -> PyResult<()> {
         pyo3_log::init();
         Ok(())
     }
@@ -30,7 +30,7 @@ mod pyfinlib {
         use super::*;
 
         #[pymodule]
-        mod var {
+        mod value_at_risk {
             use super::*;
 
             #[pyfunction]
@@ -41,6 +41,11 @@ mod pyfinlib {
             #[pyfunction]
             fn varcovar(values: Vec<f64>, confidence: f64) -> PyResult<f64> {
                 Ok(finlib::risk::var::varcovar::value_at_risk_percent(&values, confidence))
+            }
+
+            #[pyfunction]
+            fn scale_value_at_risk(initial_value: f64, time_cycles: isize) -> PyResult<f64> {
+                Ok(finlib::risk::var::varcovar::scale_value_at_risk(initial_value, time_cycles))
             }
         }
     }

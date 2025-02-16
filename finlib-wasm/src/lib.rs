@@ -2,8 +2,13 @@ use wasm_bindgen::prelude::wasm_bindgen;
 use console_log;
 use log::Level;
 
-#[wasm_bindgen(start)]
-fn start() {
+// #[wasm_bindgen(start)]
+// fn start() {
+//
+// }
+
+#[wasm_bindgen]
+pub fn init_logging() {
     if let Err(_) = console_log::init_with_level(Level::Debug) {
 
     }

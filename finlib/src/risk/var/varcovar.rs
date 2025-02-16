@@ -1,12 +1,9 @@
-use log::info;
 use crate::stats;
 use crate::util::roc::rates_of_change;
 
-use crate::risk::portfolio::Portfolio;
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 use statrs::distribution::{ContinuousCDF, Normal};
-use crate::risk::forecast::{mean_investment, std_dev_investment};
 // https://medium.com/@serdarilarslan/value-at-risk-var-and-its-implementation-in-python-5c9150f73b0e
 
 pub fn value_at_risk_percent(values: &[f64], confidence: f64) -> f64 {
@@ -18,34 +15,6 @@ pub fn value_at_risk_percent(values: &[f64], confidence: f64) -> f64 {
     let n = Normal::new(mean, std_dev).unwrap();
 
     n.inverse_cdf(confidence)
-}
-
-pub fn portfolio_value_at_risk_percent(portfolio: &mut Portfolio, confidence: f64) -> Option<f64> {
-    match portfolio.get_mean_and_std() {
-        None => None,
-        Some((mean, std_dev)) => {
-            let n = Normal::new(mean, std_dev).unwrap();
-            Some(n.inverse_cdf(confidence))
-        }
-    }
-}
-
-pub fn portfolio_value_at_risk(portfolio: &mut Portfolio, confidence: f64, initial_investment: f64) -> Option<f64> {
-    match portfolio.get_mean_and_std() {
-        None => None,
-        Some((mean, std_dev)) => {
-            let investment_mean = mean_investment(mean, initial_investment);
-            let investment_std_dev = std_dev_investment(std_dev, std_dev);
-
-            info!("{:?}, {:?}", investment_mean, investment_std_dev);
-
-            let investment_var = investment_value_at_risk(confidence, investment_mean, investment_std_dev);
-
-            println!("{:?}", investment_var);
-
-            Some(initial_investment - investment_var)
-        }
-    }
 }
 
 pub fn investment_value_at_risk(confidence: f64, investment_mean: f64, investment_std_dev: f64) -> f64 {
@@ -61,6 +30,7 @@ pub fn scale_value_at_risk(initial_value: f64, time_cycles: isize) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::risk::portfolio::Portfolio;
     use crate::risk::portfolio::PortfolioAsset;
 
     #[test]
@@ -72,7 +42,7 @@ mod tests {
 
         let mut portfolio = Portfolio::from(assets);
 
-        portfolio_value_at_risk_percent(&mut portfolio, 0.1);
+        portfolio.value_at_risk_percent(0.1);
 
     }
 
@@ -84,7 +54,7 @@ mod tests {
 
         let mut portfolio = Portfolio::from(assets);
 
-        portfolio_value_at_risk_percent(&mut portfolio, 0.1);
+        portfolio.value_at_risk_percent(0.1);
     }
 
     #[test]
@@ -96,8 +66,8 @@ mod tests {
 
         let mut portfolio = Portfolio::from(assets);
 
-        println!("{:?}", portfolio_value_at_risk(&mut portfolio, 0.01, 1_000_000.));
-        println!("{:?}", portfolio_value_at_risk(&mut portfolio, 0.1, 1_000_000.));
-        println!("{:?}", portfolio_value_at_risk(&mut portfolio, 0.5, 1_000_000.));
+        println!("{:?}", portfolio.value_at_risk(0.01, 1_000_000.));
+        println!("{:?}", portfolio.value_at_risk(0.1, 1_000_000.));
+        println!("{:?}", portfolio.value_at_risk(0.5, 1_000_000.));
     }
 }
