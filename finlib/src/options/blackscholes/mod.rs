@@ -1,5 +1,14 @@
-use statrs::distribution::{ContinuousCDF, Normal};
+mod OptionSurface;
 
+use statrs::distribution::{Continuous, ContinuousCDF, Normal};
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
+#[cfg(feature = "py")]
+use pyo3::prelude::*;
+
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+#[cfg_attr(feature = "py", pyclass)]
+#[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
 pub struct OptionVariables {
     underlying_price: f64,
@@ -8,7 +17,8 @@ pub struct OptionVariables {
     risk_free_interest_rate: f64,
     dividend: f64,
     time_to_expiration: f64,
-    d1: std::option::Option<f64>
+    d1: std::option::Option<f64>,
+    d2: std::option::Option<f64>
 }
 
 impl OptionVariables {
@@ -26,7 +36,8 @@ impl OptionVariables {
             risk_free_interest_rate,
             dividend,
             time_to_expiration,
-            d1: None
+            d1: None,
+            d2: None
         }
     }
 
@@ -34,6 +45,7 @@ impl OptionVariables {
         let n = Normal::new(0., 1.0).unwrap();
         let (d1, d2) = self.d1_d2();
         self.d1 = Some(d1);
+        self.d2 = Some(d2);
 
         let first = self.underlying_price * (-self.dividend * self.time_to_expiration).exp() * n.cdf(d1);
 
@@ -47,6 +59,7 @@ impl OptionVariables {
         let n = Normal::new(0., 1.0).unwrap();
         let (d1, d2) = self.d1_d2();
         self.d1 = Some(d1);
+        self.d2 = Some(d2);
 
         let first = self.strike_price * (-self.risk_free_interest_rate * self.time_to_expiration).exp() * n.cdf(-d2);
 
@@ -72,7 +85,7 @@ impl OptionVariables {
         (first + second) / denominator
     }
 
-    pub fn d2(&self, d1: f64, ) -> f64 {
+    pub fn d2(&self, d1: f64) -> f64 {
         d1 - (self.volatility * f64::sqrt(self.time_to_expiration))
     }
 }
@@ -83,17 +96,23 @@ pub trait Option {
     fn vega(&self) -> f64;
     fn theta(&self) -> f64;
     fn rho(&self) -> f64;
+    fn calc_greeks(&mut self);
+    fn has_greeks(&self) -> bool;
 }
 
+// #[cfg_attr(feature = "wasm", wasm_bindgen)]
+#[cfg_attr(feature = "py", pyclass)]
+#[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
 pub struct CallOption {
     pub price: f64,
-    pub variables: OptionVariables
+    pub variables: OptionVariables,
+    pub greeks: std::option::Option<OptionGreeks>
 }
 
 impl CallOption {
     pub fn from(price: f64, variables: OptionVariables) -> Self {
-        Self { price, variables }
+        Self { price, variables, greeks: None }
     }
 }
 
@@ -113,23 +132,50 @@ impl Option for CallOption {
     }
 
     fn theta(&self) -> f64 {
-        todo!()
+        let n = Normal::new(0., 1.0).unwrap();
+        let first = theta_first(&self.variables, &n);
+
+        let second = self.variables.risk_free_interest_rate
+            * self.variables.strike_price
+            * (-self.variables.risk_free_interest_rate * self.variables.time_to_expiration).exp()
+            * n.cdf(self.variables.d2.unwrap());
+
+        let third = self.variables.dividend
+            * self.variables.underlying_price
+            * (-self.variables.dividend * self.variables.time_to_expiration).exp()
+            * n.cdf(self.variables.d1.unwrap());
+
+        first - second + third
     }
 
     fn rho(&self) -> f64 {
-        todo!()
+        let n = Normal::new(0., 1.0).unwrap();
+
+        self.variables.strike_price * self.variables.time_to_expiration * (-self.variables.risk_free_interest_rate * self.variables.time_to_expiration).exp() * n.cdf(self.variables.d2.unwrap())
+    }
+
+    fn calc_greeks(&mut self) {
+        self.greeks = Some(OptionGreeks::from(self));
+    }
+
+    fn has_greeks(&self) -> bool {
+        self.greeks.is_some()
     }
 }
 
+// #[cfg_attr(feature = "wasm", wasm_bindgen)]
+#[cfg_attr(feature = "py", pyclass)]
+#[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
 pub struct PutOption {
     pub price: f64,
-    pub variables: OptionVariables
+    pub variables: OptionVariables,
+    pub greeks: std::option::Option<OptionGreeks>
 }
 
 impl PutOption {
     pub fn from(price: f64, variables: OptionVariables) -> Self {
-        Self { price, variables }
+        Self { price, variables, greeks: None }
     }
 }
 
@@ -149,12 +195,42 @@ impl Option for PutOption {
     }
 
     fn theta(&self) -> f64 {
-        todo!()
+        let n = Normal::new(0., 1.0).unwrap();
+        let first = theta_first(&self.variables, &n);
+
+        let second = self.variables.risk_free_interest_rate
+            * self.variables.strike_price
+            * (-self.variables.risk_free_interest_rate * self.variables.time_to_expiration).exp()
+            * n.cdf(-self.variables.d2.unwrap());
+
+        let third = self.variables.dividend
+            * self.variables.underlying_price
+            * (-self.variables.dividend * self.variables.time_to_expiration).exp()
+            * n.cdf(-self.variables.d1.unwrap());
+
+        first + second - third
     }
 
     fn rho(&self) -> f64 {
-        todo!()
+        let n = Normal::new(0., 1.0).unwrap();
+
+        - self.variables.strike_price * self.variables.time_to_expiration * (-self.variables.risk_free_interest_rate * self.variables.time_to_expiration).exp() * n.cdf(-self.variables.d2.unwrap())
     }
+
+    fn calc_greeks(&mut self) {
+        self.greeks = Some(OptionGreeks::from(self));
+    }
+
+    fn has_greeks(&self) -> bool {
+        self.greeks.is_some()
+    }
+}
+
+fn theta_first(v: &OptionVariables, n: &Normal) -> f64 {
+    let numerator = v.underlying_price * v.volatility * (-v.dividend * v.time_to_expiration).exp();
+    let denominator = 2. * f64::sqrt(v.time_to_expiration);
+
+    -(numerator / denominator) * n.pdf(v.d1.unwrap())
 }
 
 pub fn gamma(v: &OptionVariables) -> f64 {
@@ -163,7 +239,7 @@ pub fn gamma(v: &OptionVariables) -> f64 {
     let numerator = (-v.dividend * v.time_to_expiration).exp();
     let denominator = v.underlying_price * v.volatility * f64::sqrt(v.time_to_expiration);
 
-    (numerator / denominator) * n.cdf(v.d1.unwrap())
+    (numerator / denominator) * n.pdf(v.d1.unwrap())
 }
 
 pub fn vega(v: &OptionVariables) -> f64 {
@@ -171,12 +247,38 @@ pub fn vega(v: &OptionVariables) -> f64 {
 
     let numerator = (-v.dividend * v.time_to_expiration).exp();
 
-    v.underlying_price * numerator * f64::sqrt(v.time_to_expiration) * n.cdf(v.d1.unwrap()) / 100.
+    v.underlying_price * numerator * f64::sqrt(v.time_to_expiration) * n.pdf(v.d1.unwrap())
+}
+
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+#[cfg_attr(feature = "py", pyclass)]
+#[cfg_attr(feature = "ffi", repr(C))]
+#[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
+pub struct OptionGreeks {
+    delta: f64,
+    gamma: f64,
+    vega: f64,
+    theta: f64,
+    rho: f64
+}
+
+impl OptionGreeks {
+    pub fn from(option: &impl Option) -> Self {
+        Self {
+            delta: option.delta(),
+            gamma: option.gamma(),
+            vega: option.vega(),
+            theta: option.theta(),
+            rho: option.rho()
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // https://goodcalculators.com/black-scholes-calculator/
 
     fn get_example_option() -> OptionVariables {
         OptionVariables::from(100., 100., 0.25, 0.05, 0.01, 30./365.25)
@@ -248,6 +350,23 @@ mod tests {
 
         let rho = v.put().rho();
         let diff = (rho - -4.060).abs();
+        assert!(diff < 0.01);
+    }
+
+    #[test]
+    fn call_theta_test() {
+        let v = get_example_option();
+
+        let diff = (v.call().theta() - -19.300).abs();
+        assert!(diff < 0.01);
+    }
+
+    #[test]
+    fn put_theta_test() {
+        let v = get_example_option();
+
+        let theta = v.put().theta();
+        let diff = (theta - -15.319).abs();
         assert!(diff < 0.01);
     }
 }
