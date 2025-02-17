@@ -94,7 +94,7 @@ jobs:
         run: dotnet test --no-restore
 
   publishNET:
-    name: Build .NET
+    name: Publish .NET
     runs-on: ubuntu-latest
     needs: [ buildNET ] # for ignoring bad builds
     steps:
@@ -118,9 +118,6 @@ jobs:
         with:
           dotnet-version: 9.0.x
 
-      - name: Add Gitea Repo
-        run: dotnet nuget add source --name gitea --api-key ${{ secrets.DOCKERHUB_TOKEN }} https://gitea.sheep-ghoul.ts.net/api/packages/sarsoo/nuget/index.json
-
       - name: Install Dependencies
         working-directory: ./FinLib.NET
         run: dotnet restore
@@ -131,7 +128,7 @@ jobs:
 
       - name: Push
         working-directory: ./FinLib.NET/FinLib
-        run: dotnet nuget push --source gitea ./bin/Release/FinLib.NET.0.0.4.nupkg
+        run: dotnet nuget push ./bin/Release/FinLib.NET.0.0.5.nupkg --api-key ${{ secrets.DOCKERHUB_TOKEN }} --source https://gitea.sheep-ghoul.ts.net/api/packages/sarsoo/nuget/index.json
 
   buildWASM:
     name: Build WASM
@@ -247,13 +244,21 @@ jobs:
         with:
           github-server-url: https://gitea.sheep-ghoul.ts.net
 
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
       - name: Install Python 3
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.python-version }}
 
-      - uses: PyO3/maturin-action@v1
-        with:
-          command: publish
-          args: --repository-url https://gitea.sheep-ghoul.ts.net/api/packages/sarsoo/pypi/simple -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          working-directory: ./pyfinlib
+      - name: Install Maturin
+        run: sudo apt update && sudo apt install -y python3-maturin
+
+      - name: Publish
+        working-directory: ./pyfinlib
+        run: maturin publish --repository-url https://gitea.sheep-ghoul.ts.net/api/packages/sarsoo/pypi/simple
+        env:
+          MATURIN_PYPI_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

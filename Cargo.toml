@@ -14,7 +14,7 @@ default-members = [
 ]
 
 [workspace.package]
-version = "0.0.4"
+version = "0.0.5"
 authors = ["sarsoo <andy@sarsoo.xyz>"]
 description = "Quant finance functions implemented in Rust"
 edition = "2021"
