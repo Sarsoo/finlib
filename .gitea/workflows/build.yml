@@ -162,7 +162,7 @@ jobs:
   publishPy:
     runs-on: ubuntu-latest
     name: Publish Python Library
-    needs: [ build ] # for ignoring bad builds
+    needs: [ buildPy ] # for ignoring bad builds
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout
@@ -178,5 +178,5 @@ jobs:
       - uses: PyO3/maturin-action@v1
         with:
           command: publish
-          args: -r https://gitea.sheep-ghoul.ts.net/api/packages/sarsoo/pypi/simple -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          args: --repository-url https://gitea.sheep-ghoul.ts.net/api/packages/sarsoo/pypi/simple -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           working-directory: ./pyfinlib
