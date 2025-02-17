@@ -157,7 +157,7 @@ mod tests {
         let a = w.walk();
 
         let options = a
-            .par_iter()
+            .iter()
             .map(|v| {
                 let mut call = v.call();
                 let mut put = v.put();
