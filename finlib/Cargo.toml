@@ -19,7 +19,7 @@ ndarray-stats = { workspace = true }
 nalgebra = { workspace = true }
 statrs = { workspace = true }
 log = { workspace = true }
-getrandom = "*"
+getrandom = "~0"
 
 [features]
 py = ["dep:pyo3"]
