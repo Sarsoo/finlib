@@ -93,6 +93,46 @@ jobs:
         working-directory: ./FinLib.NET
         run: dotnet test --no-restore
 
+  publishNET:
+    name: Build .NET
+    runs-on: ubuntu-latest
+    needs: [ buildNET ] # for ignoring bad builds
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          github-server-url: https://gitea.sheep-ghoul.ts.net
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cargo Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+
+      - name: Setup .NET Core SDK 9.0.x
+        uses: actions/setup-dotnet@v3.0.3
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Add Gitea Repo
+        run: dotnet nuget add source --name gitea --api-key ${{ secrets.DOCKERHUB_TOKEN }} https://gitea.sheep-ghoul.ts.net/api/packages/sarsoo/nuget/index.json
+
+      - name: Install Dependencies
+        working-directory: ./FinLib.NET
+        run: dotnet restore
+
+      - name: Pack
+        working-directory: ./FinLib.NET/FinLib
+        run: dotnet pack
+
+      - name: Push
+        working-directory: ./FinLib.NET/FinLib
+        run: dotnet nuget push --source gitea ./bin/Release/FinLib.NET.0.0.3.nupkg
+
   buildWASM:
     name: Build WASM
     runs-on: ubuntu-latest
