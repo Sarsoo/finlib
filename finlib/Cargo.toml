@@ -8,6 +8,7 @@ homepage.workspace = true
 repository.workspace = true
 documentation.workspace = true
 readme.workspace = true
+license.workspace = true
 
 [dependencies]
 wasm-bindgen = { workspace = true, optional = true }
