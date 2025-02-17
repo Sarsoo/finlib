@@ -164,7 +164,7 @@ jobs:
 
       - name: Publish
         working-directory: ./finlib-wasm/pkg
-        run: npm publish
+        run: npm publish --access=public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -186,7 +186,7 @@ jobs:
         run: |
           cat <<EOF > ~/.cargo/credentials.toml
           [registry]
-          token = "Bearer ${{ secrets.CRATES_TOKEN }}"
+          token = "${{ secrets.CRATES_TOKEN }}"
           EOF
 
       - name: Cargo Publish
