@@ -158,3 +158,25 @@ jobs:
         with:
           command: publish
           args: --package finlib --registry sargit
+
+  publishPy:
+    runs-on: ubuntu-latest
+    name: Publish Python Library
+    needs: [ build ] # for ignoring bad builds
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          github-server-url: https://gitea.sheep-ghoul.ts.net
+
+      - name: Install Python 3
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+
+      - uses: PyO3/maturin-action@v1
+        with:
+          command: publish
+          args: -r https://gitea.sheep-ghoul.ts.net/api/packages/sarsoo/pypi/simple -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          working-directory: ./pyfinlib
