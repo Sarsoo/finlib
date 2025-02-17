@@ -5,6 +5,7 @@ pub mod stats;
 pub mod util;
 pub mod risk;
 pub mod ffi;
+pub mod options;
 
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;

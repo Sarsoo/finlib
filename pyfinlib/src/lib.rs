@@ -26,6 +26,20 @@ mod pyfinlib {
     }
 
     #[pymodule]
+    mod options {
+        use super::*;
+
+        #[pymodule_export]
+        use finlib::options::blackscholes::OptionVariables;
+        #[pymodule_export]
+        use finlib::options::blackscholes::CallOption;
+        #[pymodule_export]
+        use finlib::options::blackscholes::PutOption;
+        #[pymodule_export]
+        use finlib::options::blackscholes::OptionGreeks;
+    }
+
+    #[pymodule]
     mod risk {
         use super::*;
 
