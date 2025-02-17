@@ -255,11 +255,11 @@ pub fn vega(v: &OptionVariables) -> f64 {
 #[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
 pub struct OptionGreeks {
-    delta: f64,
-    gamma: f64,
-    vega: f64,
-    theta: f64,
-    rho: f64
+    pub delta: f64,
+    pub gamma: f64,
+    pub vega: f64,
+    pub theta: f64,
+    pub rho: f64
 }
 
 impl OptionGreeks {

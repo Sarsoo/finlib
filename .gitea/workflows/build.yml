@@ -131,7 +131,7 @@ jobs:
 
       - name: Push
         working-directory: ./FinLib.NET/FinLib
-        run: dotnet nuget push --source gitea ./bin/Release/FinLib.NET.0.0.3.nupkg
+        run: dotnet nuget push --source gitea ./bin/Release/FinLib.NET.0.0.4.nupkg
 
   buildWASM:
     name: Build WASM

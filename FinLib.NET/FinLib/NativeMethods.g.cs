@@ -28,9 +28,48 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "varcovar_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double* varcovar_value_at_risk(double* arr, nuint len, double confidence);
 
+        [DllImport(__DllName, EntryPoint = "scale_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double scale_value_at_risk(double initial_value, nint time_cycles);
+
 
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct Portfolio
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct PortfolioAsset
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct OptionVariables
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct CallOption
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct PutOption
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct OptionGreeks
+    {
+    }
+
+
+    internal enum ValueType : byte
+    {
+        Absolute,
+        RateOfChange,
+    }
 
 
 }

@@ -23,6 +23,8 @@ const double *historical_value_at_risk(const double *arr, size_t len, double con
 
 double interest_compound(double principal, double rate, double time, double n);
 
+double scale_value_at_risk(double initial_value, ptrdiff_t time_cycles);
+
 const double *varcovar_value_at_risk(const double *arr, size_t len, double confidence);
 
 }  // extern "C"

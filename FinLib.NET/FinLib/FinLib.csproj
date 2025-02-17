@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageId>FinLib.NET</PackageId>
+    <Version>0.0.4</Version>
+    <Authors>sarsoo</Authors>
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>FinLib.NET</PackageId>
-    <Version>0.0.1</Version>
-    <Authors>sarsoo</Authors>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">

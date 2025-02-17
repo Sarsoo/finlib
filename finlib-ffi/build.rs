@@ -19,7 +19,18 @@ fn main() {
     csbindgen::Builder::default()
         .input_extern_file("src/lib.rs")
         .input_extern_file("../finlib/src/lib.rs")
+        .input_extern_file("../finlib/src/risk/portfolio.rs")
+        .input_extern_file("../finlib/src/options/blackscholes/mod.rs")
         .csharp_dll_name("libfinlib_ffi")
+        .always_included_types([
+            "Portfolio",
+            "ValueType",
+            "PortfolioAsset",
+            "OptionVariables",
+            "CallOption",
+            "PutOption",
+            "OptionGreeks",
+        ])
         .csharp_namespace("FinLib")
         .generate_csharp_file("../FinLib.NET/FinLib/NativeMethods.g.cs")
         .unwrap();
