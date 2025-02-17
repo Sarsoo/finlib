@@ -44,3 +44,9 @@ pub unsafe extern "C" fn varcovar_value_at_risk(arr: *const f64, len: usize, con
 
     Box::into_raw(Box::new(finlib::risk::var::varcovar::value_at_risk_percent(input_array, confidence)))
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn scale_value_at_risk(initial_value: f64, time_cycles: isize) -> f64 {
+
+    finlib::risk::var::varcovar::scale_value_at_risk(initial_value, time_cycles)
+}

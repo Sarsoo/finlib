@@ -7,8 +7,5 @@ namespace FinLib.Interest;
 
 public static class Interest
 {
-    public static double Compound(double principal, double rate, double time, double n)
-    {
-        return NativeMethods.interest_compound(principal, rate, time, n);
-    }
+    public static double Compound(double principal, double rate, double time, double n) => NativeMethods.interest_compound(principal, rate, time, n);
 }

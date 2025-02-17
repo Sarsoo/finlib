@@ -30,4 +30,6 @@ public static class ValueAtRisk
             }
         }
     }
+
+    public static double ScaleValueAtRisk(double initialValue, nint timeCycles) => NativeMethods.scale_value_at_risk(initialValue, timeCycles);
 }

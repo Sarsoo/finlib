@@ -1,25 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <PackageId>FinLib.NET</PackageId>
+    <Version>0.0.4</Version>
+    <Authors>sarsoo</Authors>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <PackageId>FinLib.NET</PackageId>
-    <Version>0.0.1</Version>
-    <Authors>sarsoo</Authors>
-  </PropertyGroup>
-
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <Content Include="..\..\target\debug\libfinlib_ffi.dylib">
+    <Content Include="..\..\target\debug\libfinlib_ffi.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <Content Include="..\..\target\release\libfinlib_ffi.dylib">
+    <Content Include="..\..\target\release\libfinlib_ffi.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
