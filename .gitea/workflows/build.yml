@@ -56,6 +56,43 @@ jobs:
         working-directory: ./pyfinlib
         run: maturin build
 
+  buildNET:
+    name: Build .NET
+    runs-on: ubuntu-latest
+    needs: [ build ] # for ignoring bad builds
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          github-server-url: https://gitea.sheep-ghoul.ts.net
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cargo Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+
+      - name: Setup .NET Core SDK 9.0.x
+        uses: actions/setup-dotnet@v3.0.3
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Install Dependencies
+        working-directory: ./FinLib.NET
+        run: dotnet restore
+
+      - name: Build
+        working-directory: ./FinLib.NET
+        run: dotnet build --configuration Debug --no-restore
+
+      - name: Test
+        working-directory: ./FinLib.NET
+        run: dotnet test --no-restore
+
   buildWASM:
     name: Build WASM
     runs-on: ubuntu-latest

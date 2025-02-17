@@ -13,13 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <Content Include="..\..\target\debug\libfinlib_ffi.dylib">
+    <Content Include="..\..\target\debug\libfinlib_ffi.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <Content Include="..\..\target\release\libfinlib_ffi.dylib">
+    <Content Include="..\..\target\release\libfinlib_ffi.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
