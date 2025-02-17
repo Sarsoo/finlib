@@ -7,7 +7,8 @@ pub struct OptionVariables {
     volatility: f64,
     risk_free_interest_rate: f64,
     dividend: f64,
-    time_to_expiration: f64
+    time_to_expiration: f64,
+    d1: std::option::Option<f64>
 }
 
 impl OptionVariables {
@@ -25,12 +26,14 @@ impl OptionVariables {
             risk_free_interest_rate,
             dividend,
             time_to_expiration,
+            d1: None
         }
     }
 
-    pub fn call(self) -> CallOption {
+    pub fn call(mut self) -> CallOption {
         let n = Normal::new(0., 1.0).unwrap();
         let (d1, d2) = self.d1_d2();
+        self.d1 = Some(d1);
 
         let first = self.underlying_price * (-self.dividend * self.time_to_expiration).exp() * n.cdf(d1);
 
@@ -40,9 +43,10 @@ impl OptionVariables {
     }
 
 
-    pub fn put(self) -> PutOption {
+    pub fn put(mut self) -> PutOption {
         let n = Normal::new(0., 1.0).unwrap();
         let (d1, d2) = self.d1_d2();
+        self.d1 = Some(d1);
 
         let first = self.strike_price * (-self.risk_free_interest_rate * self.time_to_expiration).exp() * n.cdf(-d2);
 
@@ -97,7 +101,7 @@ impl Option for CallOption {
     fn delta(&self) -> f64 {
         let n = Normal::new(0., 1.0).unwrap();
 
-        (-self.variables.dividend * self.variables.time_to_expiration).exp() * n.cdf(self.variables.d1())
+        (-self.variables.dividend * self.variables.time_to_expiration).exp() * n.cdf(self.variables.d1.unwrap())
     }
 
     fn gamma(&self) -> f64 {
@@ -133,7 +137,7 @@ impl Option for PutOption {
     fn delta(&self) -> f64 {
         let n = Normal::new(0., 1.0).unwrap();
 
-        (-self.variables.dividend * self.variables.time_to_expiration).exp() * (n.cdf(self.variables.d1()) - 1.)
+        (-self.variables.dividend * self.variables.time_to_expiration).exp() * (n.cdf(self.variables.d1.unwrap()) - 1.)
     }
 
     fn gamma(&self) -> f64 {
@@ -159,7 +163,7 @@ pub fn gamma(v: &OptionVariables) -> f64 {
     let numerator = (-v.dividend * v.time_to_expiration).exp();
     let denominator = v.underlying_price * v.volatility * f64::sqrt(v.time_to_expiration);
 
-    (numerator / denominator) * n.cdf(v.d1())
+    (numerator / denominator) * n.cdf(v.d1.unwrap())
 }
 
 pub fn vega(v: &OptionVariables) -> f64 {
@@ -167,16 +171,20 @@ pub fn vega(v: &OptionVariables) -> f64 {
 
     let numerator = (-v.dividend * v.time_to_expiration).exp();
 
-    v.underlying_price * numerator * f64::sqrt(v.time_to_expiration) * n.cdf(v.d1()) / 100.
+    v.underlying_price * numerator * f64::sqrt(v.time_to_expiration) * n.cdf(v.d1.unwrap()) / 100.
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    fn get_example_option() -> OptionVariables {
+        OptionVariables::from(100., 100., 0.25, 0.05, 0.01, 30./365.25)
+    }
+
     #[test]
     fn call_test() {
-        let v = OptionVariables::from(100., 100., 0.25, 0.05, 0.01, 30./365.25);
+        let v = get_example_option();
 
         let diff = (v.call().price - 3.019).abs();
 
@@ -185,7 +193,7 @@ mod tests {
 
     #[test]
     fn put_test() {
-        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+        let v = get_example_option();
 
         let diff = (v.put().price - 2.691).abs();
         assert!(diff < 0.01);
@@ -193,7 +201,7 @@ mod tests {
 
     #[test]
     fn call_delta_test() {
-        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+        let v = get_example_option();
 
         let diff = (v.call().delta() - 0.532).abs();
         assert!(diff < 0.01);
@@ -201,7 +209,7 @@ mod tests {
 
     #[test]
     fn put_delta_test() {
-        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+        let v = get_example_option();
 
         let delta = v.put().delta();
         let diff = (delta - -0.467).abs();
@@ -210,7 +218,7 @@ mod tests {
 
     #[test]
     fn gamma_test() {
-        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+        let v = get_example_option();
 
         let gamma = v.put().gamma();
         let diff = (gamma - 0.055).abs();
@@ -219,7 +227,7 @@ mod tests {
 
     #[test]
     fn vega_test() {
-        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+        let v = get_example_option();
 
         let vega = v.put().vega();
         let diff = (vega - 11.390).abs();
@@ -228,7 +236,7 @@ mod tests {
 
     #[test]
     fn call_rho_test() {
-        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+        let v = get_example_option();
 
         let diff = (v.call().rho() - 4.126).abs();
         assert!(diff < 0.01);
@@ -236,7 +244,7 @@ mod tests {
 
     #[test]
     fn put_rho_test() {
-        let v = OptionVariables::from(100., 100.,0.25, 0.05, 0.01, 30./365.25);
+        let v = get_example_option();
 
         let rho = v.put().rho();
         let diff = (rho - -4.060).abs();
