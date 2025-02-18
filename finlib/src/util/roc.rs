@@ -1,17 +1,13 @@
-#[cfg(feature = "parallel")]
-use rayon::prelude::*;
 
 pub fn changes(values: &[f64]) -> impl Iterator<Item = f64> + use<'_> {
     values
         .windows(2)
-        // .par_windows(2)
         .map(|x| x[1] - x[0])
 }
 
 pub fn rates_of_change(values: &[f64]) -> impl Iterator<Item = f64> + use<'_> {
     values
         .windows(2)
-        // .par_windows(2)
         .map(|x| (x[1] - x[0])/x[0])
 }
 

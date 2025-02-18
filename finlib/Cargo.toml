@@ -13,16 +13,27 @@ license.workspace = true
 [dependencies]
 wasm-bindgen = { workspace = true, optional = true }
 pyo3 = { workspace = true, optional = true }
-rayon = { workspace = true, optional = true }
+rayon = { workspace = true }
 ndarray = { workspace = true }
 ndarray-stats = { workspace = true }
 nalgebra = { workspace = true }
 statrs = { workspace = true }
 log = { workspace = true }
 getrandom = "~0"
+rand = "0.8.5"
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "rayon_roc"
+harness = false
+
+[[bench]]
+name = "rayon_options"
+harness = false
 
 [features]
 py = ["dep:pyo3"]
 wasm = ["getrandom/js", "dep:wasm-bindgen"]
-parallel = ["dep:rayon"]
 ffi = []

@@ -5,7 +5,6 @@ use ndarray_stats::CorrelationExt;
 use wasm_bindgen::prelude::*;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
-#[cfg(feature = "parallel")]
 use rayon::prelude::*;
 use statrs::distribution::{ContinuousCDF, Normal};
 use crate::risk::forecast::{mean_investment, std_dev_investment};
@@ -96,18 +95,16 @@ impl Portfolio {
 
     /// Convert a portfolio of assets with absolute values to the percentage change in values
     pub fn apply_rates_of_change(&mut self) {
-        #[cfg(feature = "parallel")]
-        {
-            self.assets.par_iter_mut().for_each(|asset| {
-                asset.apply_rates_of_change();
-            });
-        }
-        #[cfg(not(feature = "parallel"))]
-        {
-            self.assets.iter_mut().for_each(|asset| {
-                asset.apply_rates_of_change();
-            });
-        }
+        self.assets.iter_mut().for_each(|asset| {
+            asset.apply_rates_of_change();
+        });
+    }
+
+    #[deprecated(note = "a lot slower than the sequential method, sans par prefix")]
+    pub fn par_apply_rates_of_change(&mut self) {
+        self.assets.par_iter_mut().for_each(|asset| {
+            asset.apply_rates_of_change();
+        });
     }
 
     /// Do all the assets in the portfolio have the same number of values (required to perform matrix operations)
@@ -155,29 +152,33 @@ impl Portfolio {
         let column_count = self.assets.len();
         let row_count = self.assets[0].values.len();
 
-        #[cfg(feature = "parallel")]
-        {
-            let matrix = Array2::from_shape_vec((column_count, row_count),
-                                                self.assets
-                                                    .par_iter()
-                                                    .map(|a| a.values.clone())
-                                                    .flatten()
-                                                    .collect::<Vec<f64>>()
-            ).unwrap();
-            Some(matrix.into_owned())
-        }
-        #[cfg(not(feature = "parallel"))]
-        {
-            let matrix = Array2::from_shape_vec((column_count, row_count),
-                                                self.assets
-                                                    .iter()
-                                                    .map(|a| a.values.clone())
-                                                    .flatten()
-                                                    .collect::<Vec<f64>>()
-            ).unwrap();
-            Some(matrix.into_owned())
+        let matrix = Array2::from_shape_vec((column_count, row_count),
+            self.assets
+                .iter()
+                .map(|a| a.values.clone())
+                .flatten()
+                .collect::<Vec<f64>>()
+        ).unwrap();
+        Some(matrix.into_owned())
+    }
+
+    /// Format the asset values in the portfolio as a matrix such that statistical operations can be applied to it
+    pub fn par_get_matrix(&self) -> Option<Array2<f64>> {
+        if self.assets.is_empty() || !self.valid_sizes() {
+            return None;
         }
 
+        let column_count = self.assets.len();
+        let row_count = self.assets[0].values.len();
+
+        let matrix = Array2::from_shape_vec((column_count, row_count),
+            self.assets
+                .par_iter()
+                .map(|a| a.values.clone())
+                .flatten()
+                .collect::<Vec<f64>>()
+        ).unwrap();
+        Some(matrix.into_owned())
     }
 
     /// Calculate the mean and the standard deviation of a portfolio, taking into account the relative weights and covariance of the portfolio's assets

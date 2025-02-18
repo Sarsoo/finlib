@@ -1,6 +1,4 @@
 use crate::util::roc::rates_of_change;
-
-#[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
 // https://www.simtrade.fr/blog_simtrade/historical-method-var-calculation/
@@ -8,8 +6,17 @@ use rayon::prelude::*;
 pub fn value_at_risk(values: &[f64], confidence: f64) -> f64 {
     let mut roc = rates_of_change(values).collect::<Vec<_>>();
 
-    // roc.par_sort_by(|x, y| x.partial_cmp(y).unwrap());
     roc.sort_by(|x, y| x.partial_cmp(y).unwrap());
+
+    let threshold = (confidence * roc.len() as f64).floor() as usize;
+
+    roc[threshold]
+}
+
+pub fn par_value_at_risk(values: &[f64], confidence: f64) -> f64 {
+    let mut roc = rates_of_change(values).collect::<Vec<_>>();
+
+    roc.par_sort_by(|x, y| x.partial_cmp(y).unwrap());
 
     let threshold = (confidence * roc.len() as f64).floor() as usize;
 

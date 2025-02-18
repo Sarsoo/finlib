@@ -1,4 +1,6 @@
-mod OptionSurface;
+pub mod option_surface;
+pub mod generate;
+pub use generate::*;
 
 use statrs::distribution::{Continuous, ContinuousCDF, Normal};
 #[cfg(feature = "wasm")]
