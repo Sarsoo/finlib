@@ -1,6 +1,7 @@
 /target
 bin
 obj
+cmake-build-debug
 .venv
 .idea
 /finlib-wasm/pkg

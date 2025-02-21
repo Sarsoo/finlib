@@ -30,5 +30,5 @@ public class HistoricalVar
     public double FinLibDotnet() => HistoricalVARDotnet.ValueAtRisk(data.ToList(), confidence);
 
     [Benchmark]
-    public double FinLibRust() => FinLib.Risk.ValueAtRisk.Historical(data, confidence);
+    public double FinLibRust() => FinLib.Risk.ValueAtRisk.Historical(data, confidence)!.Value;
 }

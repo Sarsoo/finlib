@@ -20,56 +20,90 @@ namespace FinLib
         internal static extern double interest_compound(double principal, double rate, double time, double n);
 
         [DllImport(__DllName, EntryPoint = "covariance", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern double* covariance(double* arr, nuint len, double* arr_two, nuint len_two);
+        internal static extern NullableFloat covariance(double* arr, nuint len, double* arr_two, nuint len_two);
 
         [DllImport(__DllName, EntryPoint = "historical_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern double* historical_value_at_risk(double* arr, nuint len, double confidence);
+        internal static extern NullableFloat historical_value_at_risk(double* arr, nuint len, double confidence);
 
         [DllImport(__DllName, EntryPoint = "varcovar_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern double* varcovar_value_at_risk(double* arr, nuint len, double confidence);
+        internal static extern NullableFloat varcovar_value_at_risk(double* arr, nuint len, double confidence);
 
         [DllImport(__DllName, EntryPoint = "scale_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double scale_value_at_risk(double initial_value, nint time_cycles);
 
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern PortfolioAsset_native* portfolio_asset_new(double portfolio_weight, byte* name, int name_len, double* values, nuint len);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_asset_destroy(PortfolioAsset_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_apply_rates_of_change", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_asset_apply_rates_of_change(PortfolioAsset_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_get_mean_and_std", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Tuple portfolio_asset_get_mean_and_std(PortfolioAsset_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Portfolio_native* portfolio_new();
+
+        [DllImport(__DllName, EntryPoint = "portfolio_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_destroy(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_add_asset", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_add_asset(Portfolio_native* portfolio, PortfolioAsset_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_apply_rates_of_change", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_apply_rates_of_change(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_valid_sizes", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static extern bool portfolio_valid_sizes(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_valid_weights", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static extern bool portfolio_valid_weights(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_is_valid", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static extern bool portfolio_is_valid(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_get_mean_and_std", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Tuple portfolio_get_mean_and_std(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_value_at_risk(Portfolio_native* portfolio, double confidence, double initial_investment);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk_percent", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_value_at_risk_percent(Portfolio_native* portfolio, double confidence);
+
 
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct Portfolio
+    internal unsafe partial struct Tuple
+    {
+        public double one;
+        public double two;
+        [MarshalAs(UnmanagedType.U1)] public bool is_valid;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct NullableFloat
+    {
+        public double val;
+        [MarshalAs(UnmanagedType.U1)] public bool is_valid;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct Portfolio_native
     {
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct PortfolioAsset
+    internal unsafe partial struct PortfolioAsset_native
     {
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct OptionVariables
-    {
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct CallOption
-    {
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct PutOption
-    {
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct OptionGreeks
-    {
-    }
-
-
-    internal enum ValueType : byte
-    {
-        Absolute,
-        RateOfChange,
-    }
 
 
 }

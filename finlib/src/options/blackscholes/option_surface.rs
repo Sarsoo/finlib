@@ -1,6 +1,5 @@
+use crate::options::blackscholes::{OptionVariables};
 use core::ops::Range;
-use std::sync::{Arc, Mutex};
-use crate::options::blackscholes::{CallOption, Option, OptionVariables, PutOption};
 
 pub struct OptionSurface {
     underlying_price: Range<isize>,
@@ -84,30 +83,30 @@ impl OptionSurface {
 
 #[cfg(test)]
 mod tests {
-    use crate::options::blackscholes::{generate_options, CallOption, Option, PutOption};
     use super::*;
+    use crate::options::blackscholes::generate_options;
 
     #[test]
     fn walk_test() {
         let w = OptionSurface::from(
-            (0 .. 50),
+            0 .. 50,
             (100., 200.),
-            (0 .. 50),
+            0 .. 50,
             (100., 200.),
-            (0 .. 5),
+            0 .. 5,
             (0.25, 0.50),
-            (0 .. 10),
+            0 .. 10,
             (0.05, 0.08),
-            (0 .. 1),
+            0 .. 1,
             (0.01, 0.02),
-            (0 .. 10),
+            0 .. 10,
             (30./365.25, 30./365.25),
         );
 
         let a = w.walk();
 
-        let options = generate_options(&a);
+        let _ = generate_options(&a);
 
-        let a1 = a.first();
+        let _ = a.first();
     }
 }

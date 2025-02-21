@@ -16,14 +16,12 @@ public static class Stats
             fixed (double* ptrTwo = valuesTwoArr) {
                 var ret = NativeMethods.covariance(ptrOne, (UIntPtr)valuesOneArr.Length, ptrTwo, (UIntPtr) valuesTwoArr.Length);
 
-                if (ret == null)
+                if (ret.is_valid)
                 {
-                    return null;
+                    return ret.val;
                 }
-                else
-                {
-                    return *ret;
-                }
+
+                return null;
             }
         }
     }

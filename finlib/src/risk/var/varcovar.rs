@@ -1,7 +1,6 @@
 use crate::stats;
 use crate::util::roc::rates_of_change;
 
-use rayon::prelude::*;
 use statrs::distribution::{ContinuousCDF, Normal};
 // https://medium.com/@serdarilarslan/value-at-risk-var-and-its-implementation-in-python-5c9150f73b0e
 

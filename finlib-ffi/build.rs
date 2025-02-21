@@ -14,24 +14,19 @@ fn main() {
         .with_config(config)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("../finlib-cpp/include/finlib-native.h");
+        .write_to_file("../finlib-cpp/include/finlib/finlib-native.h");
 
     csbindgen::Builder::default()
         .input_extern_file("src/lib.rs")
-        .input_extern_file("../finlib/src/lib.rs")
+        .input_extern_file("src/portfolio.rs")
         .input_extern_file("../finlib/src/risk/portfolio.rs")
-        .input_extern_file("../finlib/src/options/blackscholes/mod.rs")
         .csharp_dll_name("libfinlib_ffi")
-        .always_included_types([
-            "Portfolio",
-            "ValueType",
-            "PortfolioAsset",
-            "OptionVariables",
-            "CallOption",
-            "PutOption",
-            "OptionGreeks",
-        ])
         .csharp_namespace("FinLib")
+        .csharp_type_rename(|rust_type_name| match rust_type_name.as_str() {    // optional, default: `|x| x`
+            "Portfolio" => "Portfolio_native".into(),
+            "PortfolioAsset" => "PortfolioAsset_native".into(),
+            _ => rust_type_name,
+        })
         .generate_csharp_file("../FinLib.NET/FinLib/NativeMethods.g.cs")
         .unwrap();
 }

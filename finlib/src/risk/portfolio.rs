@@ -36,10 +36,10 @@ pub enum ValueType {
 #[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct PortfolioAsset {
-    portfolio_weight: f64,
+    pub portfolio_weight: f64,
     name: String,
     values: Vec<f64>,
-    value_type: ValueType
+    pub value_type: ValueType
 }
 
 impl PortfolioAsset {
@@ -82,6 +82,10 @@ impl Portfolio {
         Portfolio {
             assets
         }
+    }
+
+    pub fn add_asset(&mut self, asset: PortfolioAsset) {
+        self.assets.push(asset);
     }
 
     /// Return the proportions of a portfolio's assets
