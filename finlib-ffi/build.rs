@@ -19,6 +19,7 @@ fn main() {
     csbindgen::Builder::default()
         .input_extern_file("src/lib.rs")
         .input_extern_file("src/portfolio.rs")
+        .input_extern_file("src/indicators.rs")
         .input_extern_file("../finlib/src/risk/portfolio.rs")
         .csharp_dll_name("libfinlib_ffi")
         .csharp_namespace("FinLib")

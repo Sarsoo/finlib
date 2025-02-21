@@ -76,6 +76,12 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk_percent", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern NullableFloat portfolio_value_at_risk_percent(Portfolio_native* portfolio, double confidence);
 
+        [DllImport(__DllName, EntryPoint = "relative_strength_indicator", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double relative_strength_indicator(double time_period, double average_gain, double average_loss);
+
+        [DllImport(__DllName, EntryPoint = "relative_strength_indicator_smoothed", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double relative_strength_indicator_smoothed(double time_period, double previous_average_gain, double current_gain, double previous_average_loss, double current_loss);
+
 
     }
 

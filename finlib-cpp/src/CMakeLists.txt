@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.19)
 project(finexe)
 
 add_subdirectory(finlib)
-set(SOURCE_FILES main.cpp
+set(SOURCE_FILES
+        main.cpp
 )
 
 add_executable(finexe ${SOURCE_FILES})

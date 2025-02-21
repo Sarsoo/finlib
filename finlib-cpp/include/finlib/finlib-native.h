@@ -76,6 +76,14 @@ NullableFloat portfolio_value_at_risk(Portfolio *portfolio,
 
 NullableFloat portfolio_value_at_risk_percent(Portfolio *portfolio, double confidence);
 
+double relative_strength_indicator(double time_period, double average_gain, double average_loss);
+
+double relative_strength_indicator_smoothed(double time_period,
+                                            double previous_average_gain,
+                                            double current_gain,
+                                            double previous_average_loss,
+                                            double current_loss);
+
 double scale_value_at_risk(double initial_value, ptrdiff_t time_cycles);
 
 NullableFloat varcovar_value_at_risk(const double *arr, size_t len, double confidence);

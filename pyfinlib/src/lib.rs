@@ -16,6 +16,26 @@ mod pyfinlib {
     }
 
     #[pymodule]
+    mod indicators {
+        use super::*;
+
+        #[pymodule]
+        mod rsi {
+            use super::*;
+
+            #[pyfunction]
+            pub fn relative_strength_indicator(time_period: f64, average_gain: f64, average_loss: f64)  -> PyResult<f64> {
+                Ok(finlib::indicators::rsi::relative_strength_indicator(time_period, average_gain, average_loss))
+            }
+
+            #[pyfunction]
+            pub fn relative_strength_indicator_smoothed(time_period: f64, previous_average_gain: f64, current_gain: f64, previous_average_loss: f64, current_loss: f64)  -> PyResult<f64> {
+                Ok(finlib::indicators::rsi::relative_strength_indicator_smoothed(time_period, previous_average_gain, current_gain, previous_average_loss, current_loss))
+            }
+        }
+    }
+
+    #[pymodule]
     mod interest {
         use super::*;
 

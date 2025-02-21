@@ -1,4 +1,5 @@
-mod portfolio;
+pub mod portfolio;
+pub mod indicators;
 
 use std::slice;
 

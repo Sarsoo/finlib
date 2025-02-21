@@ -7,6 +7,7 @@ set(SOURCE_FILES
 )
 
 add_library(finlib SHARED STATIC ${SOURCE_FILES})
+add_library(finlib::finlib ALIAS finlib)
 
 ExternalProject_Add(
         finlibrs
@@ -25,4 +26,4 @@ target_link_libraries(finlib
 )
 
 install(TARGETS finlib DESTINATION ${FINLIB_INSTALL_LIB_DIR})
-install(FILES finlib.h DESTINATION ${FINLIB_INSTALL_INCLUDE_DIR})
+install(FILES finlib.hpp DESTINATION ${FINLIB_INSTALL_INCLUDE_DIR})
