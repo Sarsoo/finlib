@@ -7,3 +7,6 @@ pub mod risk;
 pub mod ffi;
 pub mod options;
 pub mod indicators;
+pub mod price;
+pub mod swaps;
+pub mod curve;

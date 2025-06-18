@@ -82,6 +82,63 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "relative_strength_indicator_smoothed", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double relative_strength_indicator_smoothed(double time_period, double previous_average_gain, double current_gain, double previous_average_loss, double current_loss);
 
+        [DllImport(__DllName, EntryPoint = "price_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Price_native* price_new(double price, Side_native side);
+
+        [DllImport(__DllName, EntryPoint = "price_set_val", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_set_val(Price_native* price, double new_price);
+
+        [DllImport(__DllName, EntryPoint = "price_set_side", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_set_side(Price_native* price, Side_native new_side);
+
+        [DllImport(__DllName, EntryPoint = "price_get_val", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double price_get_val(Price_native* price);
+
+        [DllImport(__DllName, EntryPoint = "price_get_side", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Side_native price_get_side(Price_native* price);
+
+        [DllImport(__DllName, EntryPoint = "price_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_destroy(Price_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "price_pair_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern PricePair_native* price_pair_new(double bid, double offer);
+
+        [DllImport(__DllName, EntryPoint = "price_pair_set_bid", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_pair_set_bid(PricePair_native* price, double new_price);
+
+        [DllImport(__DllName, EntryPoint = "price_pair_set_offer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_pair_set_offer(PricePair_native* price, double new_price);
+
+        [DllImport(__DllName, EntryPoint = "price_pair_get_bid", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double price_pair_get_bid(PricePair_native* price);
+
+        [DllImport(__DllName, EntryPoint = "price_pair_get_offer", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double price_pair_get_offer(PricePair_native* price);
+
+        [DllImport(__DllName, EntryPoint = "price_pair_spread", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double price_pair_spread(PricePair_native* price);
+
+        [DllImport(__DllName, EntryPoint = "price_pair_midpoint", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double price_pair_midpoint(PricePair_native* price);
+
+        [DllImport(__DllName, EntryPoint = "price_pair_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_pair_destroy(PricePair_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "curve_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Curve_native* curve_new();
+
+        [DllImport(__DllName, EntryPoint = "curve_size", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern nuint curve_size(Curve_native* curve);
+
+        [DllImport(__DllName, EntryPoint = "curve_add_rate_from", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void curve_add_rate_from(Curve_native* curve, double bid, double offer, int year, uint month, uint day);
+
+        [DllImport(__DllName, EntryPoint = "curve_get_cumulative_rate", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern PricePair_native* curve_get_cumulative_rate(Curve_native* curve, int year, uint month, uint day);
+
+        [DllImport(__DllName, EntryPoint = "curve_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void curve_destroy(Curve_native* curve);
+
 
     }
 
@@ -110,6 +167,27 @@ namespace FinLib
     {
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct Price_native
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct PricePair_native
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct Curve_native
+    {
+    }
+
+
+    internal enum Side_native : byte
+    {
+        Buy,
+        Sell,
+    }
 
 
 }

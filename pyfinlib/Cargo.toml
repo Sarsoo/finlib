@@ -26,4 +26,4 @@ crate-type = ["cdylib"]
 finlib = { path = "../finlib", features = ["py"] }
 pyo3 = { workspace = true }
 pyo3-log = { workspace = true }
-log = "0.4.25"
+log = { workspace = true }

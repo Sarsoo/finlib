@@ -1,5 +1,7 @@
 pub mod portfolio;
 pub mod indicators;
+pub mod price;
+pub mod curve;
 
 use std::slice;
 

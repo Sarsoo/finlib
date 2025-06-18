@@ -9,6 +9,14 @@ mod pyfinlib {
     #[pymodule_export]
     use finlib::risk::portfolio::PortfolioAsset;
 
+    #[pymodule_export]
+    use finlib::price::price::Price;
+    #[pymodule_export]
+    use finlib::price::price::PricePair;
+
+    #[pymodule_export]
+    use finlib::price::enums::Side;
+
     #[pymodule_init]
     fn init(_m: &Bound<'_, PyModule>) -> PyResult<()> {
         pyo3_log::init();
