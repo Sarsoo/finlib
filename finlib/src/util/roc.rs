@@ -1,11 +1,12 @@
+use num::{Float};
 
-pub fn changes(values: &[f64]) -> impl Iterator<Item = f64> + use<'_> {
+pub fn changes<T: Float>(values: &[T]) -> impl Iterator<Item = T> + use<'_, T> {
     values
         .windows(2)
         .map(|x| x[1] - x[0])
 }
 
-pub fn rates_of_change(values: &[f64]) -> impl Iterator<Item = f64> + use<'_> {
+pub fn rates_of_change<T: Float>(values: &[T]) -> impl Iterator<Item = T> + use<'_, T> {
     values
         .windows(2)
         .map(|x| (x[1] - x[0])/x[0])

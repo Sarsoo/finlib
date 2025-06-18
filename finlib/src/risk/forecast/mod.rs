@@ -1,7 +1,10 @@
-pub fn mean_investment(portfolio_mean_change: f64, initial_investment: f64) -> f64 {
-    (1. + portfolio_mean_change) * initial_investment
+use num::{Float, NumCast};
+
+pub fn mean_investment<T: Float>(portfolio_mean_change: T, initial_investment: T) -> T {
+    let one: T = NumCast::from(1).unwrap();
+    (one + portfolio_mean_change) * initial_investment
 }
 
-pub fn std_dev_investment(portfolio_change_stddev: f64, initial_investment: f64) -> f64 {
+pub fn std_dev_investment<T: Float>(portfolio_change_stddev: T, initial_investment: T) -> T {
     portfolio_change_stddev * initial_investment
 }

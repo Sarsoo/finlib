@@ -18,12 +18,14 @@ ndarray = { workspace = true }
 ndarray-stats = { workspace = true }
 nalgebra = { workspace = true }
 statrs = { workspace = true }
+chrono = { workspace = true, default-features = false }
 log = { workspace = true }
-getrandom = "~0"
-rand = "0.8.5"
+getrandom = { workspace = true }
+rand = { workspace = true }
+num = "0.4.3"
 
 [dev-dependencies]
-criterion = "0.5.1"
+criterion = "0.6.0"
 
 [[bench]]
 name = "rayon_roc"
@@ -35,5 +37,5 @@ harness = false
 
 [features]
 py = ["dep:pyo3"]
-wasm = ["getrandom/js", "dep:wasm-bindgen"]
+wasm = ["getrandom/js", "dep:wasm-bindgen", "chrono/wasmbind"]
 ffi = []
