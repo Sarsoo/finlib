@@ -125,7 +125,7 @@ namespace FinLib
         internal static extern void price_pair_destroy(PricePair_native* asset);
 
         [DllImport(__DllName, EntryPoint = "curve_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern Curve_native* curve_new();
+        internal static extern Curve_native* curve_new(CurveType_native curve_type);
 
         [DllImport(__DllName, EntryPoint = "curve_size", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern nuint curve_size(Curve_native* curve);
@@ -133,11 +133,38 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "curve_add_rate_from", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void curve_add_rate_from(Curve_native* curve, double bid, double offer, int year, uint month, uint day);
 
+        [DllImport(__DllName, EntryPoint = "curve_get_rate", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern PricePair_native* curve_get_rate(Curve_native* curve, int year, uint month, uint day);
+
+        [DllImport(__DllName, EntryPoint = "curve_get_absolute_rate", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern PricePair_native* curve_get_absolute_rate(Curve_native* curve, int year, uint month, uint day);
+
         [DllImport(__DllName, EntryPoint = "curve_get_cumulative_rate", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern PricePair_native* curve_get_cumulative_rate(Curve_native* curve, int year, uint month, uint day);
 
+        [DllImport(__DllName, EntryPoint = "curve_get_carry_rate", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern PricePair_native* curve_get_carry_rate(Curve_native* curve, int from_year, uint from_month, uint from_day, int to_year, uint to_month, uint to_day);
+
         [DllImport(__DllName, EntryPoint = "curve_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void curve_destroy(Curve_native* curve);
+
+        [DllImport(__DllName, EntryPoint = "swap_from", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Swap_native* swap_from(double fixed_rate, Side_native fixed_side, double premium);
+
+        [DllImport(__DllName, EntryPoint = "swap_net_return", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double swap_net_return(Swap_native* swap, double floating_rate);
+
+        [DllImport(__DllName, EntryPoint = "swap_net_return_from_multiple", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double swap_net_return_from_multiple(Swap_native* swap, double* values, nuint len);
+
+        [DllImport(__DllName, EntryPoint = "swap_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void swap_destroy(Swap_native* swap);
+
+        [DllImport(__DllName, EntryPoint = "option_vars_from", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern OptionVariables_native* option_vars_from(double underlying_price, double strike_price, double volatility, double risk_free_interest_rate, double dividend, double time_to_expiration);
+
+        [DllImport(__DllName, EntryPoint = "option_vars_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void option_vars_destroy(OptionVariables_native* option);
 
 
     }
@@ -182,11 +209,27 @@ namespace FinLib
     {
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct Swap_native
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct OptionVariables_native
+    {
+    }
+
 
     internal enum Side_native : byte
     {
         Buy,
         Sell,
+    }
+
+    internal enum CurveType_native : byte
+    {
+        Absolute,
+        Differential,
     }
 
 

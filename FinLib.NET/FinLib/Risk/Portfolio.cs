@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace FinLib;
+namespace FinLib.Risk;
 
 public class Portfolio: IDisposable
 {

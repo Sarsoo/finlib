@@ -14,6 +14,12 @@
 
 namespace finlib {
 
+enum class CurveType : uint8_t
+{
+  Absolute,
+  Differential,
+};
+
 enum class Side : uint8_t
 {
   Buy,
@@ -21,6 +27,8 @@ enum class Side : uint8_t
 };
 
 struct Curve;
+
+struct OptionVariables;
 
 /// Describes a Portfolio as a collection of [`PortfolioAsset`]s
 struct Portfolio;
@@ -31,6 +39,8 @@ struct PortfolioAsset;
 struct Price;
 
 struct PricePair;
+
+struct Swap;
 
 struct NullableFloat
 {
@@ -59,15 +69,36 @@ void curve_add_rate_from(Curve *curve,
 
 void curve_destroy(Curve *curve);
 
+PricePair *curve_get_absolute_rate(Curve *curve, int32_t year, uint32_t month, uint32_t day);
+
+PricePair *curve_get_carry_rate(Curve *curve,
+                                int32_t from_year,
+                                uint32_t from_month,
+                                uint32_t from_day,
+                                int32_t to_year,
+                                uint32_t to_month,
+                                uint32_t to_day);
+
 PricePair *curve_get_cumulative_rate(Curve *curve, int32_t year, uint32_t month, uint32_t day);
 
-Curve *curve_new();
+PricePair *curve_get_rate(Curve *curve, int32_t year, uint32_t month, uint32_t day);
+
+Curve *curve_new(CurveType curve_type);
 
 size_t curve_size(Curve *curve);
 
 NullableFloat historical_value_at_risk(const double *arr, size_t len, double confidence);
 
 double interest_compound(double principal, double rate, double time, double n);
+
+void option_vars_destroy(OptionVariables *option);
+
+OptionVariables *option_vars_from(double underlying_price,
+                                  double strike_price,
+                                  double volatility,
+                                  double risk_free_interest_rate,
+                                  double dividend,
+                                  double time_to_expiration);
 
 void portfolio_add_asset(Portfolio *portfolio, PortfolioAsset *asset);
 
@@ -140,6 +171,14 @@ double relative_strength_indicator_smoothed(double time_period,
                                             double current_loss);
 
 double scale_value_at_risk(double initial_value, ptrdiff_t time_cycles);
+
+void swap_destroy(Swap *swap);
+
+Swap *swap_from(double fixed_rate, Side fixed_side, double premium);
+
+double swap_net_return(Swap *swap, double floating_rate);
+
+double swap_net_return_from_multiple(Swap *swap, const double *values, size_t len);
 
 NullableFloat varcovar_value_at_risk(const double *arr, size_t len, double confidence);
 

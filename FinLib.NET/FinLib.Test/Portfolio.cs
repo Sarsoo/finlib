@@ -1,3 +1,4 @@
+using FinLib.Risk;
 using FluentAssertions;
 
 namespace FinLib.Test;

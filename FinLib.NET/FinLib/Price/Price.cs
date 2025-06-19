@@ -12,8 +12,8 @@ public class Price: IDisposable
     private readonly unsafe Price_native* _price;
     internal unsafe Price_native* GetPtr() => _price;
 
-    private Side_native MapSide(Side side) => side == Side.Buy ? Side_native.Buy : Side_native.Sell;
-    private Side MapSide(Side_native side) => side == Side_native.Buy ? Side.Buy : Side.Sell;
+    internal static Side_native MapSide(Side side) => side == Side.Buy ? Side_native.Buy : Side_native.Sell;
+    internal static Side MapSide(Side_native side) => side == Side_native.Buy ? Side.Buy : Side.Sell;
 
     internal unsafe Price(Price_native* price)
     {
