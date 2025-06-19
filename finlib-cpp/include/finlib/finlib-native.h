@@ -12,7 +12,7 @@
 #include <new>
 
 
-namespace finlib {
+namespace finlibrs {
 
 enum class CurveType : uint8_t
 {
@@ -184,4 +184,4 @@ NullableFloat varcovar_value_at_risk(const double *arr, size_t len, double confi
 
 }  // extern "C"
 
-}  // namespace finlib
+}  // namespace finlibrs

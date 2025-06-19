@@ -7,7 +7,8 @@ project(finlib_tests)
 include_directories(${FINLIB_HEADERS_DIR})
 
 set(SOURCE_FILES
-    src/basic_test.cpp
+        src/basic_test.cpp
+        src/curve_test.cpp
 )
 
 include(FetchContent)

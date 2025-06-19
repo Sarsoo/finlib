@@ -4,6 +4,12 @@ project(finlib C CXX)
 
 set(SOURCE_FILES
         finlib.cpp
+        curve/curve.cpp
+        portfolio/portfolio.cpp
+        portfolio/portfolio_asset.cpp
+        price/price.cpp
+        price/price_pair.cpp
+        swap/swap.cpp
 )
 
 add_library(finlib SHARED STATIC ${SOURCE_FILES})

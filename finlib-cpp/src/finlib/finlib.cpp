@@ -10,7 +10,7 @@ namespace finlib {
     void init() {
         std::cout << "Initializing..." << std::endl;
 
-        auto ret = interest_compound(100, .05, 1, 1.0);
+        auto ret = finlibrs::interest_compound(100, .05, 1, 1.0);
 
         std::cout << "Answer: " << ret << std::endl;
     }
