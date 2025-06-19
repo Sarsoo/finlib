@@ -5,6 +5,13 @@ mod pyfinlib {
     use super::*;
 
     #[pymodule_export]
+    use finlib::curve::curve::Curve;
+    #[pymodule_export]
+    use finlib::curve::curve::CurveType;
+    #[pymodule_export]
+    use finlib::curve::point::CurvePoint;
+
+    #[pymodule_export]
     use finlib::risk::portfolio::Portfolio;
     #[pymodule_export]
     use finlib::risk::portfolio::PortfolioAsset;
@@ -16,6 +23,9 @@ mod pyfinlib {
 
     #[pymodule_export]
     use finlib::price::enums::Side;
+
+    #[pymodule_export]
+    use finlib::swaps::Swap;
 
     #[pymodule_init]
     fn init(_m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -32,13 +42,35 @@ mod pyfinlib {
             use super::*;
 
             #[pyfunction]
-            pub fn relative_strength_indicator(time_period: f64, average_gain: f64, average_loss: f64)  -> PyResult<f64> {
-                Ok(finlib::indicators::rsi::relative_strength_indicator(time_period, average_gain, average_loss))
+            pub fn relative_strength_indicator(
+                time_period: f64,
+                average_gain: f64,
+                average_loss: f64,
+            ) -> PyResult<f64> {
+                Ok(finlib::indicators::rsi::relative_strength_indicator(
+                    time_period,
+                    average_gain,
+                    average_loss,
+                ))
             }
 
             #[pyfunction]
-            pub fn relative_strength_indicator_smoothed(time_period: f64, previous_average_gain: f64, current_gain: f64, previous_average_loss: f64, current_loss: f64)  -> PyResult<f64> {
-                Ok(finlib::indicators::rsi::relative_strength_indicator_smoothed(time_period, previous_average_gain, current_gain, previous_average_loss, current_loss))
+            pub fn relative_strength_indicator_smoothed(
+                time_period: f64,
+                previous_average_gain: f64,
+                current_gain: f64,
+                previous_average_loss: f64,
+                current_loss: f64,
+            ) -> PyResult<f64> {
+                Ok(
+                    finlib::indicators::rsi::relative_strength_indicator_smoothed(
+                        time_period,
+                        previous_average_gain,
+                        current_gain,
+                        previous_average_loss,
+                        current_loss,
+                    ),
+                )
             }
         }
     }
@@ -58,13 +90,42 @@ mod pyfinlib {
         use super::*;
 
         #[pymodule_export]
-        use finlib::options::blackscholes::OptionVariables;
-        #[pymodule_export]
         use finlib::options::blackscholes::CallOption;
         #[pymodule_export]
-        use finlib::options::blackscholes::PutOption;
-        #[pymodule_export]
         use finlib::options::blackscholes::OptionGreeks;
+        #[pymodule_export]
+        use finlib::options::blackscholes::OptionVariables;
+        #[pymodule_export]
+        use finlib::options::blackscholes::PutOption;
+
+        #[pyfunction]
+        pub fn generate_options(
+            vals: Vec<OptionVariables>,
+        ) -> PyResult<Vec<(CallOption, PutOption)>> {
+            Ok(finlib::options::blackscholes::generate_options(&vals))
+        }
+
+        #[pyfunction]
+        pub fn par_generate_options(
+            vals: Vec<OptionVariables>,
+        ) -> PyResult<Vec<(CallOption, PutOption)>> {
+            Ok(finlib::options::blackscholes::par_generate_options(&vals))
+        }
+    }
+
+    #[pymodule]
+    mod price {
+        use super::*;
+
+        #[pyfunction]
+        pub fn calculate_bbo(vals: Vec<Price>) -> PyResult<PricePair> {
+            Ok(finlib::price::bbo::calculate_bbo(vals))
+        }
+
+        #[pyfunction]
+        pub fn calculate_pair_bbo(vals: Vec<PricePair>) -> PyResult<PricePair> {
+            Ok(finlib::price::bbo::calculate_pair_bbo(vals))
+        }
     }
 
     #[pymodule]
@@ -77,17 +138,24 @@ mod pyfinlib {
 
             #[pyfunction]
             fn historical(values: Vec<f64>, confidence: f64) -> PyResult<f64> {
-                Ok(finlib::risk::var::historical::value_at_risk(&values, confidence))
+                Ok(finlib::risk::var::historical::value_at_risk(
+                    &values, confidence,
+                ))
             }
 
             #[pyfunction]
             fn varcovar(values: Vec<f64>, confidence: f64) -> PyResult<f64> {
-                Ok(finlib::risk::var::varcovar::value_at_risk_percent(&values, confidence))
+                Ok(finlib::risk::var::varcovar::value_at_risk_percent(
+                    &values, confidence,
+                ))
             }
 
             #[pyfunction]
             fn scale_value_at_risk(initial_value: f64, time_cycles: isize) -> PyResult<f64> {
-                Ok(finlib::risk::var::varcovar::scale_value_at_risk(initial_value, time_cycles))
+                Ok(finlib::risk::var::varcovar::scale_value_at_risk(
+                    initial_value,
+                    time_cycles,
+                ))
             }
         }
     }
@@ -107,8 +175,23 @@ mod pyfinlib {
         use super::*;
 
         #[pyfunction]
+        pub fn changes(slice: Vec<f64>) -> PyResult<Vec<f64>> {
+            Ok(finlib::util::roc::changes(&slice).collect::<Vec<_>>())
+        }
+
+        #[pyfunction]
         pub fn rates_of_change(slice: Vec<f64>) -> PyResult<Vec<f64>> {
             Ok(finlib::util::roc::rates_of_change(&slice).collect::<Vec<_>>())
+        }
+
+        #[pyfunction]
+        pub fn dot_product(a: Vec<f64>, b: Vec<f64>) -> PyResult<f64> {
+            Ok(finlib::util::vector::dot_product(&a, &b))
+        }
+
+        #[pyfunction]
+        pub fn mag(a: Vec<f64>) -> PyResult<f64> {
+            Ok(finlib::util::vector::mag(&a))
         }
     }
 }

@@ -1,37 +1,44 @@
-#[cfg(feature = "wasm")]
-use wasm_bindgen::prelude::*;
+use crate::price::enums::Side;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
-use crate::price::enums::Side;
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-#[cfg_attr(feature = "py", pyclass)]
+#[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Swap {
     pub fixed_rate: f64,
     pub fixed_side: Side,
-    pub premium: f64
+    pub premium: f64,
 }
 
 impl Swap {
     pub fn from(fixed_rate: f64, fixed_side: Side, premium: f64) -> Self {
-        Self{fixed_rate, fixed_side, premium}
+        Self {
+            fixed_rate,
+            fixed_side,
+            premium,
+        }
     }
 
     pub fn from_pure(fixed_rate: f64, fixed_side: Side) -> Self {
-        Self{fixed_rate, fixed_side, premium: 0.0}
+        Self {
+            fixed_rate,
+            fixed_side,
+            premium: 0.0,
+        }
     }
 
     pub fn net_return(&self, floating_rate: f64) -> f64 {
         match self.fixed_side {
             Side::Buy => floating_rate - self.fixed_rate - self.premium,
-            Side::Sell => self.fixed_rate - floating_rate + self.premium
+            Side::Sell => self.fixed_rate - floating_rate + self.premium,
         }
     }
 
     pub fn net_return_from_multiple(&self, floating_rate: impl IntoIterator<Item = f64>) -> f64 {
-
         let mut count = 0;
         let mut rate_sum = 0.;
         for i in floating_rate {
@@ -43,15 +50,15 @@ impl Swap {
 
         match self.fixed_side {
             Side::Buy => average_rate - self.fixed_rate - self.premium,
-            Side::Sell => self.fixed_rate - average_rate + self.premium
+            Side::Sell => self.fixed_rate - average_rate + self.premium,
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::price::enums::Side::{Buy, Sell};
     use super::*;
+    use crate::price::enums::Side::{Buy, Sell};
 
     #[test]
     fn buy() {

@@ -1,51 +1,54 @@
+use crate::risk::forecast::{mean_investment, std_dev_investment};
+use crate::risk::var::varcovar::investment_value_at_risk;
+use crate::stats;
+use crate::util::roc::rates_of_change;
 use log::{debug, error, info};
 use ndarray::prelude::*;
 use ndarray_stats::CorrelationExt;
-#[cfg(feature = "wasm")]
-use wasm_bindgen::prelude::*;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use statrs::distribution::{ContinuousCDF, Normal};
-use crate::risk::forecast::{mean_investment, std_dev_investment};
-use crate::risk::var::varcovar::{investment_value_at_risk};
-use crate::{stats};
-use crate::util::roc::rates_of_change;
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
 
 /// Describes a Portfolio as a collection of [`PortfolioAsset`]s
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-#[cfg_attr(feature = "py", pyclass)]
+#[cfg_attr(feature = "py", pyclass(eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Portfolio {
-    assets: Vec<PortfolioAsset>
+    assets: Vec<PortfolioAsset>,
 }
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-#[cfg_attr(feature = "py", pyclass)]
+#[cfg_attr(feature = "py", pyclass(eq, ord))]
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum ValueType {
     Absolute,
-    RateOfChange
+    RateOfChange,
 }
 
 /// Describes a single instrument as a list of previous values with an associated portfolio proportion
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-#[cfg_attr(feature = "py", pyclass)]
+#[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct PortfolioAsset {
     pub portfolio_weight: f64,
     name: String,
     values: Vec<f64>,
-    pub value_type: ValueType
+    pub value_type: ValueType,
 }
 
 impl PortfolioAsset {
     pub fn new(portfolio_weight: f64, name: String, values: Vec<f64>) -> PortfolioAsset {
         PortfolioAsset {
-            portfolio_weight, name, values, value_type: ValueType::Absolute
+            portfolio_weight,
+            name,
+            values,
+            value_type: ValueType::Absolute,
         }
     }
 
@@ -66,35 +69,39 @@ impl PortfolioAsset {
     pub fn get_mean_and_std(&self) -> Option<(f64, f64)> {
         match self.value_type {
             ValueType::Absolute => {
-                info!("[{}] Asset's values are currently absolute, calculating rates of change first", self.name);
+                info!(
+                    "[{}] Asset's values are currently absolute, calculating rates of change first",
+                    self.name
+                );
                 let roc = rates_of_change(&self.values).collect::<Vec<f64>>();
                 Some((stats::mean(&roc), stats::sample_std_dev(&roc)))
             }
-            ValueType::RateOfChange => {
-                Some((stats::mean(&self.values), stats::sample_std_dev(&self.values)))
-            }
+            ValueType::RateOfChange => Some((
+                stats::mean(&self.values),
+                stats::sample_std_dev(&self.values),
+            )),
         }
     }
 }
 
 impl Portfolio {
     pub fn from(assets: Vec<PortfolioAsset>) -> Portfolio {
-        Portfolio {
-            assets
-        }
+        Portfolio { assets }
     }
 
     pub fn add_asset(&mut self, asset: PortfolioAsset) {
         self.assets.push(asset);
     }
 
+    pub fn size(&self) -> usize {
+        self.assets.len()
+    }
+
     /// Return the proportions of a portfolio's assets
     ///
     /// In a properly formed Portfolio these will add up to 1.0
-    pub fn get_asset_weight(&self) -> impl Iterator<Item=f64> + use<'_> {
-        self.assets
-            .iter()
-            .map(|x| x.portfolio_weight)
+    pub fn get_asset_weight(&self) -> impl Iterator<Item = f64> + use<'_> {
+        self.assets.iter().map(|x| x.portfolio_weight)
     }
 
     /// Convert a portfolio of assets with absolute values to the percentage change in values
@@ -156,13 +163,15 @@ impl Portfolio {
         let column_count = self.assets.len();
         let row_count = self.assets[0].values.len();
 
-        let matrix = Array2::from_shape_vec((column_count, row_count),
+        let matrix = Array2::from_shape_vec(
+            (column_count, row_count),
             self.assets
                 .iter()
                 .map(|a| a.values.clone())
                 .flatten()
-                .collect::<Vec<f64>>()
-        ).unwrap();
+                .collect::<Vec<f64>>(),
+        )
+        .unwrap();
         Some(matrix.into_owned())
     }
 
@@ -175,13 +184,15 @@ impl Portfolio {
         let column_count = self.assets.len();
         let row_count = self.assets[0].values.len();
 
-        let matrix = Array2::from_shape_vec((column_count, row_count),
+        let matrix = Array2::from_shape_vec(
+            (column_count, row_count),
             self.assets
                 .par_iter()
                 .map(|a| a.values.clone())
                 .flatten()
-                .collect::<Vec<f64>>()
-        ).unwrap();
+                .collect::<Vec<f64>>(),
+        )
+        .unwrap();
         Some(matrix.into_owned())
     }
 
@@ -190,7 +201,9 @@ impl Portfolio {
     /// returns (mean, std_dev)
     pub fn get_mean_and_std(&mut self) -> Option<(f64, f64)> {
         if !self.valid_sizes() {
-            error!("Can't get portfolio mean and std dev because asset value counts arent't the same");
+            error!(
+                "Can't get portfolio mean and std dev because asset value counts arent't the same"
+            );
             return None;
         }
 
@@ -214,9 +227,8 @@ impl Portfolio {
             return None;
         }
         let mean_return = mean_return.unwrap();
-        let asset_weights = Array::from_vec(
-            self.get_asset_weight().collect::<Vec<f64>>()
-        ).to_owned();
+        let asset_weights =
+            Array::from_vec(self.get_asset_weight().collect::<Vec<f64>>()).to_owned();
 
         let porfolio_mean_return = mean_return.dot(&asset_weights);
         let portfolio_stddev = f64::sqrt(asset_weights.t().dot(&cov).dot(&asset_weights));
@@ -231,14 +243,24 @@ impl Portfolio {
         match self.get_mean_and_std() {
             None => None,
             Some((mean, std_dev)) => {
-                debug!("Portfolio percent movement mean[{}], std dev[{}]", mean, std_dev);
+                debug!(
+                    "Portfolio percent movement mean[{}], std dev[{}]",
+                    mean, std_dev
+                );
                 let investment_mean = mean_investment(mean, initial_investment);
                 let investment_std_dev = std_dev_investment(std_dev, initial_investment);
-                debug!("Investment[{}] mean[{}], std dev[{}]", initial_investment, mean, std_dev);
+                debug!(
+                    "Investment[{}] mean[{}], std dev[{}]",
+                    initial_investment, mean, std_dev
+                );
 
-                let investment_var = investment_value_at_risk(confidence, investment_mean, investment_std_dev);
+                let investment_var =
+                    investment_value_at_risk(confidence, investment_mean, investment_std_dev);
 
-                debug!("Investment[{}] value at risk [{}]", initial_investment, investment_var);
+                debug!(
+                    "Investment[{}] value at risk [{}]",
+                    initial_investment, investment_var
+                );
 
                 Some(initial_investment - investment_var)
             }
@@ -278,7 +300,6 @@ mod tests {
         let cov = m.cov(1.);
 
         println!("cov 0; {:?}", cov);
-
 
         col.len();
     }

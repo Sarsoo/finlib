@@ -18,10 +18,12 @@ ndarray = { workspace = true }
 ndarray-stats = { workspace = true }
 nalgebra = { workspace = true }
 statrs = { workspace = true }
-chrono = { workspace = true, default-features = false }
+chrono = { workspace = true, default-features = false, features = ["serde"] }
 log = { workspace = true }
 getrandom = { workspace = true }
 rand = { workspace = true }
+serde = { workspace = true }
+serde-wasm-bindgen = { workspace = true, optional = true }
 num = "0.4.3"
 
 [dev-dependencies]
@@ -36,6 +38,8 @@ name = "rayon_options"
 harness = false
 
 [features]
+default = []
+btree_cursors = []
 py = ["dep:pyo3"]
-wasm = ["getrandom/js", "dep:wasm-bindgen", "chrono/wasmbind"]
+wasm = ["getrandom/js", "dep:wasm-bindgen", "dep:serde-wasm-bindgen", "chrono/wasmbind"]
 ffi = []
