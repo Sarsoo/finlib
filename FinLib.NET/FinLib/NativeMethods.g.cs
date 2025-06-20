@@ -32,7 +32,7 @@ namespace FinLib
         internal static extern double scale_value_at_risk(double initial_value, nint time_cycles);
 
         [DllImport(__DllName, EntryPoint = "portfolio_asset_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern PortfolioAsset_native* portfolio_asset_new(double portfolio_weight, byte* name, int name_len, double* values, nuint len);
+        internal static extern PortfolioAsset_native* portfolio_asset_new(byte* name, int name_len, double quantity, double* values, nuint len);
 
         [DllImport(__DllName, EntryPoint = "portfolio_asset_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void portfolio_asset_destroy(PortfolioAsset_native* asset);
@@ -42,6 +42,15 @@ namespace FinLib
 
         [DllImport(__DllName, EntryPoint = "portfolio_asset_get_mean_and_std", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern Tuple portfolio_asset_get_mean_and_std(PortfolioAsset_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_current_value", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double portfolio_asset_current_value(PortfolioAsset_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_current_total_value", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double portfolio_asset_current_total_value(PortfolioAsset_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_profit_loss", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_asset_profit_loss(PortfolioAsset_native* asset);
 
         [DllImport(__DllName, EntryPoint = "portfolio_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern Portfolio_native* portfolio_new();
@@ -59,9 +68,11 @@ namespace FinLib
         [return: MarshalAs(UnmanagedType.U1)]
         internal static extern bool portfolio_valid_sizes(Portfolio_native* portfolio);
 
-        [DllImport(__DllName, EntryPoint = "portfolio_valid_weights", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.U1)]
-        internal static extern bool portfolio_valid_weights(Portfolio_native* portfolio);
+        [DllImport(__DllName, EntryPoint = "portfolio_size", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern nuint portfolio_size(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_profit_loss", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_profit_loss(Portfolio_native* asset);
 
         [DllImport(__DllName, EntryPoint = "portfolio_is_valid", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.U1)]
@@ -166,6 +177,24 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "option_vars_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void option_vars_destroy(OptionVariables_native* option);
 
+        [DllImport(__DllName, EntryPoint = "option_surface_parameters_from", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern OptionSurfaceParameters_native* option_surface_parameters_from(nint underlying_price_range_min, nint underlying_price_range_max, double underlying_price_min, double underlying_price_max, nint strike_price_range_min, nint strike_price_range_max, double strike_price_min, double strike_price_max, nint volatility_range_min, nint volatility_range_max, double volatility_min, double volatility_max, nint risk_free_interest_rate_range_min, nint risk_free_interest_rate_range_max, double risk_free_interest_rate_min, double risk_free_interest_rate_max, nint dividend_range_min, nint dividend_range_max, double dividend_min, double dividend_max, nint time_to_expiration_range_min, nint time_to_expiration_range_max, double time_to_expiration_min, double time_to_expiration_max);
+
+        [DllImport(__DllName, EntryPoint = "option_surface_parameters_walk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern OptionsSurface_native* option_surface_parameters_walk(OptionSurfaceParameters_native* option);
+
+        [DllImport(__DllName, EntryPoint = "option_surface_parameters_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void option_surface_parameters_destroy(OptionSurfaceParameters_native* option);
+
+        [DllImport(__DllName, EntryPoint = "option_surface_generate", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void option_surface_generate(OptionsSurface_native* option);
+
+        [DllImport(__DllName, EntryPoint = "option_surface_par_generate", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void option_surface_par_generate(OptionsSurface_native* option);
+
+        [DllImport(__DllName, EntryPoint = "option_surface_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void option_surface_destroy(OptionsSurface_native* option);
+
 
     }
 
@@ -216,6 +245,16 @@ namespace FinLib
 
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct OptionVariables_native
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct OptionSurfaceParameters_native
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct OptionsSurface_native
     {
     }
 

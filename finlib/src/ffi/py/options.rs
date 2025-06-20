@@ -1,5 +1,7 @@
+use crate::options::blackscholes::option_surface::{OptionSurfaceParameters, OptionsSurface};
 use crate::options::blackscholes::OptionVariables;
 use pyo3::prelude::*;
+use std::ops::Range;
 
 #[pymethods]
 impl OptionVariables {
@@ -20,5 +22,95 @@ impl OptionVariables {
             dividend,
             time_to_expiration,
         )
+    }
+}
+
+#[pymethods]
+impl OptionSurfaceParameters {
+    #[new]
+    pub fn init(
+        underlying_price: (isize, isize),
+        underlying_price_bounds: (f64, f64),
+        strike_price: (isize, isize),
+        strike_price_bounds: (f64, f64),
+        volatility: (isize, isize),
+        volatility_bounds: (f64, f64),
+        risk_free_interest_rate: (isize, isize),
+        risk_free_interest_rate_bounds: (f64, f64),
+        dividend: (isize, isize),
+        dividend_bounds: (f64, f64),
+        time_to_expiration: (isize, isize),
+        time_to_expiration_bounds: (f64, f64),
+    ) -> Self {
+        OptionSurfaceParameters::from(
+            Range {
+                start: underlying_price.0,
+                end: underlying_price.1,
+            },
+            underlying_price_bounds,
+            Range {
+                start: strike_price.0,
+                end: strike_price.1,
+            },
+            strike_price_bounds,
+            Range {
+                start: volatility.0,
+                end: volatility.1,
+            },
+            volatility_bounds,
+            Range {
+                start: risk_free_interest_rate.0,
+                end: risk_free_interest_rate.1,
+            },
+            risk_free_interest_rate_bounds,
+            Range {
+                start: dividend.0,
+                end: dividend.1,
+            },
+            dividend_bounds,
+            Range {
+                start: time_to_expiration.0,
+                end: time_to_expiration.1,
+            },
+            time_to_expiration_bounds,
+        )
+    }
+
+    #[pyo3(name = "walk")]
+    pub fn walk_py(&self) -> PyResult<OptionsSurface> {
+        let c = self.clone();
+        match c.walk() {
+            Ok(s) => Ok(s),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to construct matrix",
+            )),
+        }
+    }
+}
+
+#[pymethods]
+impl OptionsSurface {
+    pub fn __len__(&self) -> usize {
+        self.len()
+    }
+
+    #[pyo3(name = "generate")]
+    pub fn generate_py(&mut self) -> PyResult<()> {
+        match self.generate() {
+            Ok(_) => Ok(()),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to construct matrix",
+            )),
+        }
+    }
+
+    #[pyo3(name = "par_generate")]
+    pub fn par_generate_py(&mut self) -> PyResult<()> {
+        match self.par_generate() {
+            Ok(_) => Ok(()),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to construct matrix",
+            )),
+        }
     }
 }

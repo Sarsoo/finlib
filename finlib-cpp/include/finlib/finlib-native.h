@@ -28,7 +28,11 @@ enum class Side : uint8_t
 
 struct Curve;
 
+struct OptionSurfaceParameters;
+
 struct OptionVariables;
+
+struct OptionsSurface;
 
 /// Describes a Portfolio as a collection of [`PortfolioAsset`]s
 struct Portfolio;
@@ -91,6 +95,41 @@ NullableFloat historical_value_at_risk(const double *arr, size_t len, double con
 
 double interest_compound(double principal, double rate, double time, double n);
 
+void option_surface_destroy(OptionsSurface *option);
+
+void option_surface_generate(OptionsSurface *option);
+
+void option_surface_par_generate(OptionsSurface *option);
+
+void option_surface_parameters_destroy(OptionSurfaceParameters *option);
+
+OptionSurfaceParameters *option_surface_parameters_from(ptrdiff_t underlying_price_range_min,
+                                                        ptrdiff_t underlying_price_range_max,
+                                                        double underlying_price_min,
+                                                        double underlying_price_max,
+                                                        ptrdiff_t strike_price_range_min,
+                                                        ptrdiff_t strike_price_range_max,
+                                                        double strike_price_min,
+                                                        double strike_price_max,
+                                                        ptrdiff_t volatility_range_min,
+                                                        ptrdiff_t volatility_range_max,
+                                                        double volatility_min,
+                                                        double volatility_max,
+                                                        ptrdiff_t risk_free_interest_rate_range_min,
+                                                        ptrdiff_t risk_free_interest_rate_range_max,
+                                                        double risk_free_interest_rate_min,
+                                                        double risk_free_interest_rate_max,
+                                                        ptrdiff_t dividend_range_min,
+                                                        ptrdiff_t dividend_range_max,
+                                                        double dividend_min,
+                                                        double dividend_max,
+                                                        ptrdiff_t time_to_expiration_range_min,
+                                                        ptrdiff_t time_to_expiration_range_max,
+                                                        double time_to_expiration_min,
+                                                        double time_to_expiration_max);
+
+OptionsSurface *option_surface_parameters_walk(OptionSurfaceParameters *option);
+
 void option_vars_destroy(OptionVariables *option);
 
 OptionVariables *option_vars_from(double underlying_price,
@@ -106,15 +145,21 @@ void portfolio_apply_rates_of_change(Portfolio *portfolio);
 
 void portfolio_asset_apply_rates_of_change(PortfolioAsset *asset);
 
+double portfolio_asset_current_total_value(PortfolioAsset *asset);
+
+double portfolio_asset_current_value(PortfolioAsset *asset);
+
 void portfolio_asset_destroy(PortfolioAsset *asset);
 
 Tuple portfolio_asset_get_mean_and_std(PortfolioAsset *asset);
 
-PortfolioAsset *portfolio_asset_new(double portfolio_weight,
-                                    const uint8_t *name,
+PortfolioAsset *portfolio_asset_new(const uint8_t *name,
                                     int32_t name_len,
+                                    double quantity,
                                     const double *values,
                                     size_t len);
+
+NullableFloat portfolio_asset_profit_loss(PortfolioAsset *asset);
 
 void portfolio_destroy(Portfolio *portfolio);
 
@@ -124,9 +169,11 @@ bool portfolio_is_valid(Portfolio *portfolio);
 
 Portfolio *portfolio_new();
 
-bool portfolio_valid_sizes(Portfolio *portfolio);
+NullableFloat portfolio_profit_loss(Portfolio *asset);
 
-bool portfolio_valid_weights(Portfolio *portfolio);
+size_t portfolio_size(Portfolio *portfolio);
+
+bool portfolio_valid_sizes(Portfolio *portfolio);
 
 NullableFloat portfolio_value_at_risk(Portfolio *portfolio,
                                       double confidence,

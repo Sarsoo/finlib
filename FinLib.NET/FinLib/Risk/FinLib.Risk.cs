@@ -12,14 +12,7 @@ public static class ValueAtRisk
         unsafe {
             var valueArr = values.ToArray();
             fixed (double* ptrOne = valueArr) {
-                var ret = NativeMethods.historical_value_at_risk(ptrOne, (UIntPtr)valueArr.Length, confidence);
-
-                if (ret.is_valid)
-                {
-                    return ret.val;
-                }
-
-                return null;
+                return NativeMethods.historical_value_at_risk(ptrOne, (UIntPtr)valueArr.Length, confidence);
             }
         }
     }
@@ -29,14 +22,7 @@ public static class ValueAtRisk
         unsafe {
             var valueArr = values.ToArray();
             fixed (double* ptrOne = valueArr) {
-                var ret = NativeMethods.varcovar_value_at_risk(ptrOne, (UIntPtr)valueArr.Length, confidence);
-
-                if (ret.is_valid)
-                {
-                    return ret.val;
-                }
-
-                return null;
+                return NativeMethods.varcovar_value_at_risk(ptrOne, (UIntPtr)valueArr.Length, confidence);
             }
         }
     }

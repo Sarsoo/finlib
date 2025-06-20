@@ -27,7 +27,7 @@ license = "MIT"
 
 [workspace.dependencies]
 rayon = "1.10.0"
-ndarray = "0.16.1"
+ndarray = { version = "0.16.1", features = ["serde", "rayon"] }
 ndarray-stats = "0.6.0"
 nalgebra = "0.33.2"
 statrs = "0.18.0"

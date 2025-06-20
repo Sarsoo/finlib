@@ -15,11 +15,43 @@ pub struct Tuple {
     is_valid: bool,
 }
 
+impl Tuple {
+    pub fn from(val: Option<(f64, f64)>) -> Self {
+        match val {
+            None => Tuple {
+                one: 0.0,
+                two: 0.0,
+                is_valid: false,
+            },
+            Some((one, two)) => Tuple {
+                one,
+                two,
+                is_valid: true,
+            },
+        }
+    }
+}
+
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct NullableFloat {
     val: f64,
     is_valid: bool,
+}
+
+impl NullableFloat {
+    pub fn from(val: Option<f64>) -> Self {
+        match val {
+            None => NullableFloat {
+                val: 0.0,
+                is_valid: false,
+            },
+            Some(v) => NullableFloat {
+                val: v,
+                is_valid: true,
+            },
+        }
+    }
 }
 
 #[no_mangle]
@@ -44,16 +76,7 @@ pub unsafe extern "C" fn covariance(
         slice::from_raw_parts(arr_two, len_two)
     };
 
-    match finlib::stats::covariance(input_array, input_array_two) {
-        None => NullableFloat {
-            val: 0.0,
-            is_valid: false,
-        },
-        Some(v) => NullableFloat {
-            val: v,
-            is_valid: true,
-        },
-    }
+    NullableFloat::from(finlib::stats::covariance(input_array, input_array_two))
 }
 
 #[no_mangle]

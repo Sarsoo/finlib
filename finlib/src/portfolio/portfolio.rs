@@ -1,8 +1,7 @@
+use crate::portfolio::PortfolioAsset;
 use crate::risk::forecast::{mean_investment, std_dev_investment};
 use crate::risk::var::varcovar::investment_value_at_risk;
-use crate::stats;
-use crate::util::roc::rates_of_change;
-use log::{debug, error, info};
+use log::{debug, error};
 use ndarray::prelude::*;
 use ndarray_stats::CorrelationExt;
 #[cfg(feature = "py")]
@@ -21,69 +20,6 @@ pub struct Portfolio {
     assets: Vec<PortfolioAsset>,
 }
 
-#[cfg_attr(feature = "wasm", wasm_bindgen)]
-#[cfg_attr(feature = "py", pyclass(eq, ord))]
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
-pub enum ValueType {
-    Absolute,
-    RateOfChange,
-}
-
-/// Describes a single instrument as a list of previous values with an associated portfolio proportion
-#[cfg_attr(feature = "wasm", wasm_bindgen)]
-#[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
-#[cfg_attr(feature = "ffi", repr(C))]
-#[derive(Clone, Debug, PartialEq, PartialOrd)]
-pub struct PortfolioAsset {
-    pub portfolio_weight: f64,
-    name: String,
-    values: Vec<f64>,
-    pub value_type: ValueType,
-}
-
-impl PortfolioAsset {
-    pub fn new(portfolio_weight: f64, name: String, values: Vec<f64>) -> PortfolioAsset {
-        PortfolioAsset {
-            portfolio_weight,
-            name,
-            values,
-            value_type: ValueType::Absolute,
-        }
-    }
-
-    /// If the asset's values have been given as absolute values, convert those to a percentage change between each
-    pub fn apply_rates_of_change(&mut self) {
-        match self.value_type {
-            ValueType::Absolute => {
-                self.values = rates_of_change(&self.values).collect();
-                self.value_type = ValueType::RateOfChange;
-            }
-            _ => {}
-        }
-    }
-
-    /// Get the mean and standard deviation of the rates of change of an asset
-    ///
-    /// returns (mean, std_dev)
-    pub fn get_mean_and_std(&self) -> Option<(f64, f64)> {
-        match self.value_type {
-            ValueType::Absolute => {
-                info!(
-                    "[{}] Asset's values are currently absolute, calculating rates of change first",
-                    self.name
-                );
-                let roc = rates_of_change(&self.values).collect::<Vec<f64>>();
-                Some((stats::mean(&roc), stats::sample_std_dev(&roc)))
-            }
-            ValueType::RateOfChange => Some((
-                stats::mean(&self.values),
-                stats::sample_std_dev(&self.values),
-            )),
-        }
-    }
-}
-
 impl Portfolio {
     pub fn from(assets: Vec<PortfolioAsset>) -> Portfolio {
         Portfolio { assets }
@@ -97,11 +33,24 @@ impl Portfolio {
         self.assets.len()
     }
 
+    pub fn profit_loss(&self) -> Option<f64> {
+        let asset_pl: Vec<Option<f64>> = self.assets.iter().map(|x| x.profit_loss()).collect();
+
+        if asset_pl.iter().any(|x| x.is_none()) {
+            None
+        } else {
+            Some(asset_pl.iter().map(|x| x.unwrap()).sum())
+        }
+    }
+
     /// Return the proportions of a portfolio's assets
     ///
     /// In a properly formed Portfolio these will add up to 1.0
     pub fn get_asset_weight(&self) -> impl Iterator<Item = f64> + use<'_> {
-        self.assets.iter().map(|x| x.portfolio_weight)
+        let total_weight: f64 = self.assets.iter().map(|x| x.quantity).sum();
+
+        // self.assets.iter().map(|x| x.portfolio_weight)
+        self.assets.iter().map(move |x| x.quantity / total_weight)
     }
 
     /// Convert a portfolio of assets with absolute values to the percentage change in values
@@ -125,13 +74,13 @@ impl Portfolio {
         for asset in &self.assets {
             match last_value_length {
                 None => {
-                    last_value_length = Some(asset.values.len());
+                    last_value_length = Some(asset.market_values.len());
                 }
                 Some(l) => {
-                    if l != asset.values.len() {
+                    if l != asset.market_values.len() {
                         return false;
                     }
-                    last_value_length = Some(asset.values.len());
+                    last_value_length = Some(asset.market_values.len());
                 }
             }
         }
@@ -140,18 +89,19 @@ impl Portfolio {
     }
 
     /// Do the proportions of the assets in the portfolio add up to 100%?
-    pub fn valid_weights(&self) -> bool {
-        let mut weight = 1f64;
-
-        for asset in &self.assets {
-            weight -= asset.portfolio_weight;
-        }
-
-        f64::abs(weight) < 0.01
-    }
+    // pub fn valid_weights(&self) -> bool {
+    //     let mut weight = 1f64;
+    //
+    //     for asset in &self.assets {
+    //         weight -= asset.portfolio_weight;
+    //     }
+    //
+    //     f64::abs(weight) < 0.01
+    // }
 
     pub fn is_valid(&self) -> bool {
-        self.valid_sizes() && self.valid_weights()
+        self.valid_sizes()
+        // && self.valid_weights()
     }
 
     /// Format the asset values in the portfolio as a matrix such that statistical operations can be applied to it
@@ -161,13 +111,13 @@ impl Portfolio {
         }
 
         let column_count = self.assets.len();
-        let row_count = self.assets[0].values.len();
+        let row_count = self.assets[0].market_values.len();
 
         let matrix = Array2::from_shape_vec(
             (column_count, row_count),
             self.assets
                 .iter()
-                .map(|a| a.values.clone())
+                .map(|a| a.market_values.clone())
                 .flatten()
                 .collect::<Vec<f64>>(),
         )
@@ -182,13 +132,13 @@ impl Portfolio {
         }
 
         let column_count = self.assets.len();
-        let row_count = self.assets[0].values.len();
+        let row_count = self.assets[0].market_values.len();
 
         let matrix = Array2::from_shape_vec(
             (column_count, row_count),
             self.assets
                 .par_iter()
-                .map(|a| a.values.clone())
+                .map(|a| a.market_values.clone())
                 .flatten()
                 .collect::<Vec<f64>>(),
         )
@@ -288,8 +238,18 @@ mod tests {
     #[test]
     fn var_test() {
         let assets = vec![
-            PortfolioAsset::new(0.3, "awdad".to_string(), vec![2f64, 3f64, 4f64]),
-            PortfolioAsset::new(0.7, "awdad".to_string(), vec![1f64, 6f64, 8f64]),
+            PortfolioAsset::new(
+                // 0.3,
+                "awdad".to_string(),
+                4.0,
+                vec![2f64, 3f64, 4f64],
+            ),
+            PortfolioAsset::new(
+                // 0.7,
+                "awdad".to_string(),
+                4.0,
+                vec![1f64, 6f64, 8f64],
+            ),
         ];
 
         let m = Portfolio::from(assets).get_matrix().unwrap();

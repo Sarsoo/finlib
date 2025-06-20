@@ -6,6 +6,7 @@ pub mod ffi;
 pub mod indicators;
 pub mod interest;
 pub mod options;
+pub mod portfolio;
 pub mod price;
 pub mod risk;
 pub mod stats;

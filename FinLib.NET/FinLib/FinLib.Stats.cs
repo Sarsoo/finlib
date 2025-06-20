@@ -14,14 +14,7 @@ public static class Stats
             var valuesTwoArr = valuesTwo.ToArray();
             fixed (double* ptrOne = valuesOneArr)
             fixed (double* ptrTwo = valuesTwoArr) {
-                var ret = NativeMethods.covariance(ptrOne, (UIntPtr)valuesOneArr.Length, ptrTwo, (UIntPtr) valuesTwoArr.Length);
-
-                if (ret.is_valid)
-                {
-                    return ret.val;
-                }
-
-                return null;
+                return NativeMethods.covariance(ptrOne, (UIntPtr)valuesOneArr.Length, ptrTwo, (UIntPtr) valuesTwoArr.Length);
             }
         }
     }

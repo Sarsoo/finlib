@@ -1,6 +1,7 @@
 /target
 bin
 obj
+build
 cmake-build-debug
 .venv
 .idea

@@ -1,9 +1,14 @@
-use rayon::prelude::*;
 use crate::options::blackscholes::{CallOption, Option, OptionVariables, PutOption};
+use ndarray::Array6;
+use rayon::prelude::*;
 
-pub fn generate_options(option_variables: &Vec<OptionVariables>) -> Vec<(CallOption, PutOption)> {
-    option_variables
-        .iter()
+pub fn generate_options(
+    option_variables: Array6<OptionVariables>,
+) -> Result<Array6<(CallOption, PutOption)>, ()> {
+    let shape = option_variables.raw_dim();
+
+    let vec = option_variables
+        .into_iter()
         .map(|v| {
             let mut call = v.call();
             let mut put = v.put();
@@ -13,12 +18,21 @@ pub fn generate_options(option_variables: &Vec<OptionVariables>) -> Vec<(CallOpt
 
             (call, put)
         })
-        .collect::<Vec<(CallOption, PutOption)>>()
+        .collect::<Vec<(CallOption, PutOption)>>();
+
+    match Array6::<(CallOption, PutOption)>::from_shape_vec(shape, vec) {
+        Ok(a) => Ok(a),
+        Err(_) => Err(()),
+    }
 }
 
-pub fn par_generate_options(option_variables: &Vec<OptionVariables>) -> Vec<(CallOption, PutOption)> {
-    option_variables
-        .par_iter()
+pub fn par_generate_options(
+    option_variables: Array6<OptionVariables>,
+) -> Result<Array6<(CallOption, PutOption)>, ()> {
+    let shape = option_variables.raw_dim();
+
+    let vec = option_variables
+        .into_par_iter()
         .map(|v| {
             let mut call = v.call();
             let mut put = v.put();
@@ -28,5 +42,10 @@ pub fn par_generate_options(option_variables: &Vec<OptionVariables>) -> Vec<(Cal
 
             (call, put)
         })
-        .collect::<Vec<(CallOption, PutOption)>>()
+        .collect::<Vec<(CallOption, PutOption)>>();
+
+    match Array6::<(CallOption, PutOption)>::from_shape_vec(shape, vec) {
+        Ok(a) => Ok(a),
+        Err(_) => Err(()),
+    }
 }

@@ -18,7 +18,7 @@ public class Portfolio: IDisposable
         }
     }
 
-    public void AddAsset(double portfolioWeight, string assetName, IEnumerable<double> values)
+    public void AddAsset(string assetName, double quantity, IEnumerable<double> values)
     {
         unsafe
         {
@@ -26,8 +26,18 @@ public class Portfolio: IDisposable
             var v = values.ToArray();
             fixed (byte* namePtr = n)
             fixed (double* valuesPtr = v){
-                NativeMethods.portfolio_add_asset(_portfolio, NativeMethods.portfolio_asset_new(portfolioWeight, namePtr, assetName.Length, valuesPtr, (UIntPtr)v.Length));
+                NativeMethods.portfolio_add_asset(_portfolio, NativeMethods.portfolio_asset_new(
+                    // portfolioWeight,
+                    namePtr, assetName.Length, quantity, valuesPtr, (UIntPtr)v.Length));
             }
+        }
+    }
+
+    public void AddAsset(PortfolioAsset asset)
+    {
+        unsafe
+        {
+            NativeMethods.portfolio_add_asset(_portfolio, asset.GetPtr());
         }
     }
 
@@ -39,13 +49,21 @@ public class Portfolio: IDisposable
         }
     }
 
-    public bool ValidWeights()
+    public nuint Count()
     {
         unsafe
         {
-            return NativeMethods.portfolio_valid_weights(_portfolio);
+            return NativeMethods.portfolio_size(_portfolio);
         }
     }
+
+    // public bool ValidWeights()
+    // {
+    //     unsafe
+    //     {
+    //         return NativeMethods.portfolio_valid_weights(_portfolio);
+    //     }
+    // }
 
     public bool IsValid()
     {
@@ -67,13 +85,7 @@ public class Portfolio: IDisposable
     {
         unsafe
         {
-            var ret = NativeMethods.portfolio_get_mean_and_std(_portfolio);
-            if (ret.is_valid)
-            {
-                return (ret.one, ret.two);
-            }
-
-            return null;
+            return NativeMethods.portfolio_get_mean_and_std(_portfolio);
         }
     }
 
@@ -81,13 +93,7 @@ public class Portfolio: IDisposable
     {
         unsafe
         {
-            var ret = NativeMethods.portfolio_value_at_risk(_portfolio, confidence, initialInvestment);
-            if (ret.is_valid)
-            {
-                return ret.val;
-            }
-
-            return null;
+            return NativeMethods.portfolio_value_at_risk(_portfolio, confidence, initialInvestment);
         }
     }
 
@@ -95,13 +101,15 @@ public class Portfolio: IDisposable
     {
         unsafe
         {
-            var ret = NativeMethods.portfolio_value_at_risk_percent(_portfolio, confidence);
-            if (ret.is_valid)
-            {
-                return ret.val;
-            }
+            return NativeMethods.portfolio_value_at_risk_percent(_portfolio, confidence);
+        }
+    }
 
-            return null;
+    public double? ProfitLoss()
+    {
+        unsafe
+        {
+            return NativeMethods.portfolio_profit_loss(_portfolio);
         }
     }
 

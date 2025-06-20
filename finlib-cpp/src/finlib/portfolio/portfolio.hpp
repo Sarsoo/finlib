@@ -19,7 +19,11 @@ namespace finlib {
 
         bool valid_sizes();
 
-        bool valid_weights();
+        finlibrs::NullableFloat profit_loss();
+
+        size_t size();
+
+        // bool valid_weights();
 
         bool is_valid();
 

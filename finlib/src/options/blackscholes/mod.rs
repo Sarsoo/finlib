@@ -1,6 +1,9 @@
 pub mod generate;
 pub mod option_surface;
+
 pub use generate::*;
+
+use super::{Option, OptionGreeks};
 
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
@@ -98,16 +101,6 @@ impl OptionVariables {
     }
 }
 
-pub trait Option {
-    fn delta(&self) -> f64;
-    fn gamma(&self) -> f64;
-    fn vega(&self) -> f64;
-    fn theta(&self) -> f64;
-    fn rho(&self) -> f64;
-    fn calc_greeks(&mut self);
-    fn has_greeks(&self) -> bool;
-}
-
 // #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
@@ -129,6 +122,14 @@ impl CallOption {
 }
 
 impl Option for CallOption {
+    fn price(&self) -> f64 {
+        self.price
+    }
+
+    fn strike(&self) -> f64 {
+        self.variables.strike_price
+    }
+
     fn delta(&self) -> f64 {
         let n = Normal::new(0., 1.0).unwrap();
 
@@ -200,6 +201,14 @@ impl PutOption {
 }
 
 impl Option for PutOption {
+    fn price(&self) -> f64 {
+        self.price
+    }
+
+    fn strike(&self) -> f64 {
+        self.variables.strike_price
+    }
+
     fn delta(&self) -> f64 {
         let n = Normal::new(0., 1.0).unwrap();
 
@@ -272,30 +281,6 @@ pub fn vega(v: &OptionVariables) -> f64 {
     let numerator = (-v.dividend * v.time_to_expiration).exp();
 
     v.underlying_price * numerator * f64::sqrt(v.time_to_expiration) * n.pdf(v.d1.unwrap())
-}
-
-#[cfg_attr(feature = "wasm", wasm_bindgen)]
-#[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
-#[cfg_attr(feature = "ffi", repr(C))]
-#[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
-pub struct OptionGreeks {
-    pub delta: f64,
-    pub gamma: f64,
-    pub vega: f64,
-    pub theta: f64,
-    pub rho: f64,
-}
-
-impl OptionGreeks {
-    pub fn from(option: &impl Option) -> Self {
-        Self {
-            delta: option.delta(),
-            gamma: option.gamma(),
-            vega: option.vega(),
-            theta: option.theta(),
-            rho: option.rho(),
-        }
-    }
 }
 
 #[cfg(test)]

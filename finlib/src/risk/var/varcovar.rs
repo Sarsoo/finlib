@@ -15,7 +15,11 @@ pub fn value_at_risk_percent(values: &[f64], confidence: f64) -> f64 {
     n.inverse_cdf(confidence)
 }
 
-pub fn investment_value_at_risk(confidence: f64, investment_mean: f64, investment_std_dev: f64) -> f64 {
+pub fn investment_value_at_risk(
+    confidence: f64,
+    investment_mean: f64,
+    investment_std_dev: f64,
+) -> f64 {
     let n = Normal::new(investment_mean, investment_std_dev).unwrap();
 
     n.inverse_cdf(confidence)
@@ -27,28 +31,39 @@ pub fn scale_value_at_risk(initial_value: f64, time_cycles: isize) -> f64 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::risk::portfolio::Portfolio;
-    use crate::risk::portfolio::PortfolioAsset;
+    use crate::portfolio::Portfolio;
+    use crate::portfolio::PortfolioAsset;
 
     #[test]
     fn var_test() {
         let assets = vec![
-            PortfolioAsset::new(0.3, "awdad".to_string(), vec![2f64, 3f64, 4f64]),
-            PortfolioAsset::new(0.7, "awdad".to_string(), vec![1f64, 6f64, 8f64]),
+            PortfolioAsset::new(
+                // 0.3,
+                "awdad".to_string(),
+                4.0,
+                vec![2f64, 3f64, 4f64],
+            ),
+            PortfolioAsset::new(
+                // 0.7,
+                "awdad".to_string(),
+                4.0,
+                vec![1f64, 6f64, 8f64],
+            ),
         ];
 
         let mut portfolio = Portfolio::from(assets);
 
         portfolio.value_at_risk_percent(0.1);
-
     }
 
     #[test]
     fn var_test_one_asset() {
-        let assets = vec![
-            PortfolioAsset::new(0.3, "awdad".to_string(), vec![2f64, 3f64, 4f64])
-        ];
+        let assets = vec![PortfolioAsset::new(
+            // 0.3,
+            "awdad".to_string(),
+            4.0,
+            vec![2f64, 3f64, 4f64],
+        )];
 
         let mut portfolio = Portfolio::from(assets);
 
@@ -58,8 +73,12 @@ mod tests {
     #[test]
     fn var_test_one_asset_investment() {
         let assets = vec![
-            PortfolioAsset::new(1., "awdad".to_string(), vec![10., 9., 8., 7.])
-            // PortfolioAsset::new(1., "awdad".to_string(), vec![2.1, 2., 2.1, 1., 1.])
+            PortfolioAsset::new(
+                // 1.,
+                "awdad".to_string(),
+                4.0,
+                vec![10., 9., 8., 7.],
+            ), // PortfolioAsset::new(1., "awdad".to_string(), vec![2.1, 2., 2.1, 1., 1.])
         ];
 
         let mut portfolio = Portfolio::from(assets);

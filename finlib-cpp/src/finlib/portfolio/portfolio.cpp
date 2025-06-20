@@ -21,9 +21,17 @@ namespace finlib {
         return finlibrs::portfolio_valid_sizes(handle);
     }
 
-    bool Portfolio::valid_weights() {
-        return finlibrs::portfolio_valid_weights(handle);
+    finlibrs::NullableFloat Portfolio::profit_loss() {
+        return finlibrs::portfolio_profit_loss(handle);
     }
+
+    size_t Portfolio::size() {
+        return finlibrs::portfolio_size(handle);
+    }
+
+    // bool Portfolio::valid_weights() {
+    //     return finlibrs::portfolio_valid_weights(handle);
+    // }
 
     bool Portfolio::is_valid() {
         return finlibrs::portfolio_is_valid(handle);

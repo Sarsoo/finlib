@@ -12,9 +12,9 @@ mod pyfinlib {
     use finlib::curve::point::CurvePoint;
 
     #[pymodule_export]
-    use finlib::risk::portfolio::Portfolio;
+    use finlib::portfolio::Portfolio;
     #[pymodule_export]
-    use finlib::risk::portfolio::PortfolioAsset;
+    use finlib::portfolio::PortfolioAsset;
 
     #[pymodule_export]
     use finlib::price::price::Price;
@@ -90,27 +90,17 @@ mod pyfinlib {
         use super::*;
 
         #[pymodule_export]
-        use finlib::options::blackscholes::CallOption;
+        use finlib::options::blackscholes::option_surface::OptionSurfaceParameters;
         #[pymodule_export]
-        use finlib::options::blackscholes::OptionGreeks;
+        use finlib::options::blackscholes::option_surface::OptionsSurface;
+        #[pymodule_export]
+        use finlib::options::blackscholes::CallOption;
         #[pymodule_export]
         use finlib::options::blackscholes::OptionVariables;
         #[pymodule_export]
         use finlib::options::blackscholes::PutOption;
-
-        #[pyfunction]
-        pub fn generate_options(
-            vals: Vec<OptionVariables>,
-        ) -> PyResult<Vec<(CallOption, PutOption)>> {
-            Ok(finlib::options::blackscholes::generate_options(&vals))
-        }
-
-        #[pyfunction]
-        pub fn par_generate_options(
-            vals: Vec<OptionVariables>,
-        ) -> PyResult<Vec<(CallOption, PutOption)>> {
-            Ok(finlib::options::blackscholes::par_generate_options(&vals))
-        }
+        #[pymodule_export]
+        use finlib::options::OptionGreeks;
     }
 
     #[pymodule]

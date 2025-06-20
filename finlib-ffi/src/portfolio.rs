@@ -1,10 +1,16 @@
-use std::{ptr, slice};
-use finlib::risk::portfolio::{Portfolio, PortfolioAsset};
 use crate::{NullableFloat, Tuple};
+use finlib::portfolio::{Portfolio, PortfolioAsset};
+use std::{ptr, slice};
 
 #[no_mangle]
-pub unsafe extern "C" fn portfolio_asset_new(portfolio_weight: f64, name: *const u8, name_len: i32, values: *const f64, len: usize) -> *mut PortfolioAsset {
-
+pub unsafe extern "C" fn portfolio_asset_new(
+    // portfolio_weight: f64,
+    name: *const u8,
+    name_len: i32,
+    quantity: f64,
+    values: *const f64,
+    len: usize,
+) -> *mut PortfolioAsset {
     if name.is_null() {
         return ptr::null_mut();
     }
@@ -17,8 +23,12 @@ pub unsafe extern "C" fn portfolio_asset_new(portfolio_weight: f64, name: *const
         slice::from_raw_parts(values, len)
     };
 
-
-    Box::into_raw(Box::new(PortfolioAsset::new(portfolio_weight, name, input_array.to_vec())))
+    Box::into_raw(Box::new(PortfolioAsset::new(
+        // portfolio_weight,
+        name,
+        quantity,
+        input_array.to_vec(),
+    )))
 }
 
 #[no_mangle]
@@ -35,16 +45,23 @@ pub unsafe extern "C" fn portfolio_asset_apply_rates_of_change(asset: *mut Portf
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_asset_get_mean_and_std(asset: *mut PortfolioAsset) -> Tuple {
-    match (&mut *asset).get_mean_and_std() {
-        None => Tuple { one: 0.0, two: 0.0, is_valid: false },
-        Some((one, two)) => {
-            Tuple {
-                one, two, is_valid: true
-            }
-        }
-    }
+    Tuple::from((&mut *asset).get_mean_and_std())
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn portfolio_asset_current_value(asset: *mut PortfolioAsset) -> f64 {
+    (&mut *asset).current_value()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn portfolio_asset_current_total_value(asset: *mut PortfolioAsset) -> f64 {
+    (&mut *asset).current_total_value()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn portfolio_asset_profit_loss(asset: *mut PortfolioAsset) -> NullableFloat {
+    NullableFloat::from((&mut *asset).profit_loss())
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_new() -> *mut Portfolio {
@@ -59,7 +76,10 @@ pub unsafe extern "C" fn portfolio_destroy(portfolio: *mut Portfolio) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn portfolio_add_asset(portfolio: *mut Portfolio, asset: *mut PortfolioAsset) {
+pub unsafe extern "C" fn portfolio_add_asset(
+    portfolio: *mut Portfolio,
+    asset: *mut PortfolioAsset,
+) {
     (&mut *portfolio).add_asset((*asset).clone());
 }
 
@@ -74,9 +94,19 @@ pub unsafe extern "C" fn portfolio_valid_sizes(portfolio: *mut Portfolio) -> boo
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn portfolio_valid_weights(portfolio: *mut Portfolio) -> bool {
-    (&mut *portfolio).valid_weights()
+pub unsafe extern "C" fn portfolio_size(portfolio: *mut Portfolio) -> usize {
+    (&mut *portfolio).size()
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn portfolio_profit_loss(asset: *mut Portfolio) -> NullableFloat {
+    NullableFloat::from((&mut *asset).profit_loss())
+}
+
+// #[no_mangle]
+// pub unsafe extern "C" fn portfolio_valid_weights(portfolio: *mut Portfolio) -> bool {
+//     (&mut *portfolio).valid_weights()
+// }
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_is_valid(portfolio: *mut Portfolio) -> bool {
@@ -85,28 +115,22 @@ pub unsafe extern "C" fn portfolio_is_valid(portfolio: *mut Portfolio) -> bool {
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_get_mean_and_std(portfolio: *mut Portfolio) -> Tuple {
-    match (&mut *portfolio).get_mean_and_std() {
-        None => Tuple { one: 0.0, two: 0.0, is_valid: false },
-        Some((one, two)) => {
-            Tuple {
-                one, two, is_valid: true
-            }
-        }
-    }
+    Tuple::from((&mut *portfolio).get_mean_and_std())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn portfolio_value_at_risk(portfolio: *mut Portfolio, confidence: f64, initial_investment: f64) -> NullableFloat {
-    match (&mut *portfolio).value_at_risk(confidence, initial_investment) {
-        None => NullableFloat { val: 0.0, is_valid: false },
-        Some(v) => NullableFloat { val: v, is_valid: true }
-    }
+pub unsafe extern "C" fn portfolio_value_at_risk(
+    portfolio: *mut Portfolio,
+    confidence: f64,
+    initial_investment: f64,
+) -> NullableFloat {
+    NullableFloat::from((&mut *portfolio).value_at_risk(confidence, initial_investment))
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn portfolio_value_at_risk_percent(portfolio: *mut Portfolio, confidence: f64) -> NullableFloat {
-    match (&mut *portfolio).value_at_risk_percent(confidence) {
-        None => NullableFloat { val: 0.0, is_valid: false },
-        Some(v) => NullableFloat { val: v, is_valid: true }
-    }
+pub unsafe extern "C" fn portfolio_value_at_risk_percent(
+    portfolio: *mut Portfolio,
+    confidence: f64,
+) -> NullableFloat {
+    NullableFloat::from((&mut *portfolio).value_at_risk_percent(confidence))
 }
