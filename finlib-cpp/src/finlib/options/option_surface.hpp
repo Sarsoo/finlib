@@ -16,5 +16,6 @@ namespace finlib {
         explicit OptionsSurface(finlibrs::OptionsSurface *handle);
 
         finlibrs::OptionsSurface *handle;
+        friend class OptionSurfaceParameters;
     };
 }

@@ -2,7 +2,7 @@ use criterion::{
     criterion_group, criterion_main, AxisScale, BatchSize, BenchmarkId, Criterion,
     PlotConfiguration, Throughput,
 };
-use finlib::options::blackscholes::option_surface::OptionSurfaceParameters;
+use finlib::derivatives::options::blackscholes::option_surface::OptionSurfaceParameters;
 
 pub fn bench_generate_options(c: &mut Criterion) {
     let mut group = c.benchmark_group("Options::generate_options");

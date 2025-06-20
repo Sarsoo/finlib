@@ -1,11 +1,21 @@
 pub mod blackscholes;
 pub mod intrinsic_value;
+pub mod strategy;
 
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
+
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+#[cfg_attr(feature = "py", pyclass(eq, ord))]
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+pub enum OptionType {
+    Call,
+    Put,
+}
 
 pub trait Option {
     fn price(&self) -> f64;

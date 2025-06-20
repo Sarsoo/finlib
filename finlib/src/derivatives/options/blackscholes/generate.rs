@@ -1,4 +1,4 @@
-use crate::options::blackscholes::{CallOption, Option, OptionVariables, PutOption};
+use crate::derivatives::options::blackscholes::{CallOption, Option, OptionVariables, PutOption};
 use ndarray::Array6;
 use rayon::prelude::*;
 

@@ -1,5 +1,13 @@
-use crate::options::blackscholes::option_surface::{OptionSurfaceParameters, OptionsSurface};
-use crate::options::blackscholes::OptionVariables;
+use crate::derivatives::options::blackscholes::option_surface::{
+    OptionSurfaceParameters, OptionsSurface,
+};
+use crate::derivatives::options::blackscholes::OptionVariables;
+use crate::derivatives::options::strategy::component::OptionStrategyComponent;
+use crate::derivatives::options::strategy::strategy::OptionStrategy;
+use crate::derivatives::options::strategy::{IOptionStrategy, IOptionStrategyComponent};
+use crate::derivatives::options::OptionType;
+use crate::price::enums::Side;
+use crate::price::payoff::{Payoff, Premium, Profit};
 use pyo3::prelude::*;
 use std::ops::Range;
 
@@ -112,5 +120,71 @@ impl OptionsSurface {
                 "Failed to construct matrix",
             )),
         }
+    }
+}
+
+#[pymethods]
+impl OptionStrategy {
+    #[new]
+    pub fn init() -> Self {
+        Self::new()
+    }
+
+    pub fn __len__(&self) -> usize {
+        self.size()
+    }
+
+    #[pyo3(name = "payoff")]
+    pub fn payoff_py(&self, underlying: f64) -> f64 {
+        self.payoff(underlying)
+    }
+
+    #[pyo3(name = "profit")]
+    pub fn profit_py(&self, underlying: f64) -> f64 {
+        self.profit(underlying)
+    }
+
+    #[pyo3(name = "components")]
+    pub fn components_py(&self) -> Vec<OptionStrategyComponent> {
+        self.components()
+            .into_iter()
+            .map(|x| {
+                let val = x.lock().unwrap();
+                OptionStrategyComponent::from(
+                    val.option_type(),
+                    val.side(),
+                    val.strike(),
+                    val.premium(),
+                )
+            })
+            .collect()
+    }
+
+    #[pyo3(name = "add_component")]
+    pub fn add_component_py(&mut self, component: OptionStrategyComponent) {
+        self.add_component(component);
+    }
+}
+
+#[pymethods]
+impl OptionStrategyComponent {
+    #[new]
+    pub fn init(option_type: OptionType, side: Side, strike: f64, premium: f64) -> Self {
+        Self::from(option_type, side, strike, premium)
+    }
+
+    #[pyo3(name = "payoff")]
+    pub fn payoff_py(&self, underlying: f64) -> f64 {
+        self.payoff(underlying)
+    }
+
+    #[pyo3(name = "profit")]
+    pub fn profit_py(&self, underlying: f64) -> f64 {
+        self.profit(underlying)
+    }
+
+    #[pyo3(name = "will_be_exercised")]
+    pub fn will_be_exercised_py(&self, underlying: f64) -> bool {
+        self.will_be_exercised(underlying)
     }
 }

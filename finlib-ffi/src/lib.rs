@@ -1,6 +1,7 @@
 pub mod curve;
 pub mod indicators;
 pub mod options;
+pub mod options_strategy;
 pub mod portfolio;
 pub mod price;
 pub mod swap;
@@ -35,8 +36,8 @@ impl Tuple {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct NullableFloat {
-    val: f64,
-    is_valid: bool,
+    pub val: f64,
+    pub is_valid: bool,
 }
 
 impl NullableFloat {

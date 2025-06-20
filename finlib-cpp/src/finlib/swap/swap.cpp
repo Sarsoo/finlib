@@ -10,11 +10,11 @@ namespace finlib {
     }
 
     double Swap::fixed_rate(double floating_rate) const {
-        return finlibrs::swap_net_return(handle, floating_rate);
+        return finlibrs::swap_payoff(handle, floating_rate);
     }
 
     double Swap::fixed_rate_from_multiple(std::vector<double> values) const {
-        return finlibrs::swap_net_return_from_multiple(handle, values.data(), values.size());
+        return finlibrs::swap_payoff_from_multiple(handle, values.data(), values.size());
     }
 
     Swap::~Swap() {

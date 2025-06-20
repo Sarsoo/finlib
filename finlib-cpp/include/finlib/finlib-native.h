@@ -20,6 +20,12 @@ enum class CurveType : uint8_t
   Differential,
 };
 
+enum class OptionType : uint8_t
+{
+  Call,
+  Put,
+};
+
 enum class Side : uint8_t
 {
   Buy,
@@ -27,6 +33,10 @@ enum class Side : uint8_t
 };
 
 struct Curve;
+
+struct OptionStrategy;
+
+struct OptionStrategyComponent;
 
 struct OptionSurfaceParameters;
 
@@ -95,6 +105,32 @@ NullableFloat historical_value_at_risk(const double *arr, size_t len, double con
 
 double interest_compound(double principal, double rate, double time, double n);
 
+void option_strategy_add_component(OptionStrategy *option, OptionStrategyComponent *component);
+
+void option_strategy_component_destroy(OptionStrategyComponent *option);
+
+OptionStrategyComponent *option_strategy_component_from(OptionType option_type,
+                                                        Side side,
+                                                        double strike,
+                                                        double premium);
+
+double option_strategy_component_payoff(OptionStrategyComponent *option, double underlying);
+
+double option_strategy_component_profit(OptionStrategyComponent *option, double underlying);
+
+bool option_strategy_component_will_be_exercised(OptionStrategyComponent *option,
+                                                 double underlying);
+
+void option_strategy_destroy(OptionStrategy *option);
+
+OptionStrategy *option_strategy_new();
+
+double option_strategy_payoff(OptionStrategy *option, double underlying);
+
+double option_strategy_profit(OptionStrategy *option, double underlying);
+
+size_t option_strategy_size(OptionStrategy *option);
+
 void option_surface_destroy(OptionsSurface *option);
 
 void option_surface_generate(OptionsSurface *option);
@@ -159,6 +195,8 @@ PortfolioAsset *portfolio_asset_new(const uint8_t *name,
                                     const double *values,
                                     size_t len);
 
+double portfolio_asset_payoff(PortfolioAsset *asset, NullableFloat underlying);
+
 NullableFloat portfolio_asset_profit_loss(PortfolioAsset *asset);
 
 void portfolio_destroy(Portfolio *portfolio);
@@ -168,6 +206,8 @@ Tuple portfolio_get_mean_and_std(Portfolio *portfolio);
 bool portfolio_is_valid(Portfolio *portfolio);
 
 Portfolio *portfolio_new();
+
+double portfolio_payoff(Portfolio *asset, NullableFloat underlying);
 
 NullableFloat portfolio_profit_loss(Portfolio *asset);
 
@@ -223,9 +263,13 @@ void swap_destroy(Swap *swap);
 
 Swap *swap_from(double fixed_rate, Side fixed_side, double premium);
 
-double swap_net_return(Swap *swap, double floating_rate);
+double swap_payoff(Swap *swap, double floating_rate);
 
-double swap_net_return_from_multiple(Swap *swap, const double *values, size_t len);
+double swap_payoff_from_multiple(Swap *swap, const double *values, size_t len);
+
+double swap_profit(Swap *swap, double floating_rate);
+
+double swap_profit_from_multiple(Swap *swap, const double *values, size_t len);
 
 NullableFloat varcovar_value_at_risk(const double *arr, size_t len, double confidence);
 

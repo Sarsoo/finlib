@@ -12,7 +12,7 @@ public class PortfolioTest
         portfolio.AddAsset("first", 1, [0.5, 0.5, 0.5, 0.5]);
         portfolio.AddAsset("second", 1, [0.5, 0.5, 0.5, 0.5]);
 
-        var (mean, std) = portfolio.GetMeanAndStdDev()!.Value;
+        var (mean, std) = portfolio.MeanAndStdDev!.Value;
         mean.Should().Be(0);
         std.Should().Be(0);
     }
@@ -24,12 +24,12 @@ public class PortfolioTest
         portfolio.AddAsset("first", 1, [0.5, 0.5, 0.5, 0.5]);
         portfolio.AddAsset("second", 1, [0.5, 0.5, 0.5]);
 
-        portfolio.IsValid().Should().BeFalse();
+        portfolio.IsValid.Should().BeFalse();
 
         var portfolio2 = new Portfolio();
         portfolio2.AddAsset("first", 1, [0.5, 0.5, 0.5, 0.5]);
         portfolio2.AddAsset("second", 1, [0.5, 0.5, 0.5, 0.5]);
 
-        portfolio2.IsValid().Should().BeTrue();
+        portfolio2.IsValid.Should().BeTrue();
     }
 }

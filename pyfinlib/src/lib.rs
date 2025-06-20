@@ -25,7 +25,7 @@ mod pyfinlib {
     use finlib::price::enums::Side;
 
     #[pymodule_export]
-    use finlib::swaps::Swap;
+    use finlib::derivatives::swaps::Swap;
 
     #[pymodule_init]
     fn init(_m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -90,17 +90,21 @@ mod pyfinlib {
         use super::*;
 
         #[pymodule_export]
-        use finlib::options::blackscholes::option_surface::OptionSurfaceParameters;
+        use finlib::derivatives::options::blackscholes::option_surface::OptionSurfaceParameters;
         #[pymodule_export]
-        use finlib::options::blackscholes::option_surface::OptionsSurface;
+        use finlib::derivatives::options::blackscholes::option_surface::OptionsSurface;
         #[pymodule_export]
-        use finlib::options::blackscholes::CallOption;
+        use finlib::derivatives::options::blackscholes::CallOption;
         #[pymodule_export]
-        use finlib::options::blackscholes::OptionVariables;
+        use finlib::derivatives::options::blackscholes::OptionVariables;
         #[pymodule_export]
-        use finlib::options::blackscholes::PutOption;
+        use finlib::derivatives::options::blackscholes::PutOption;
         #[pymodule_export]
-        use finlib::options::OptionGreeks;
+        use finlib::derivatives::options::strategy::component::OptionStrategyComponent;
+        #[pymodule_export]
+        use finlib::derivatives::options::strategy::strategy::OptionStrategy;
+        #[pymodule_export]
+        use finlib::derivatives::options::OptionGreeks;
     }
 
     #[pymodule]

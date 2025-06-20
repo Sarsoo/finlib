@@ -1,3 +1,4 @@
+use crate::price::payoff::Payoff;
 use crate::stats;
 use crate::util::roc::rates_of_change;
 use log::info;
@@ -89,6 +90,16 @@ impl PortfolioAsset {
                 stats::mean(&self.market_values),
                 stats::sample_std_dev(&self.market_values),
             )),
+        }
+    }
+}
+
+impl Payoff<Option<f64>> for PortfolioAsset {
+    fn payoff(&self, underlying: Option<f64>) -> f64 {
+        match (underlying, self.value_at_position_open) {
+            (None, _) => self.profit_loss().unwrap_or(0.0),
+            (Some(u), Some(i)) => (u - i) * self.quantity,
+            (_, None) => 0.0,
         }
     }
 }

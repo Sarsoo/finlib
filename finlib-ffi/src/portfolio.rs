@@ -1,5 +1,6 @@
 use crate::{NullableFloat, Tuple};
 use finlib::portfolio::{Portfolio, PortfolioAsset};
+use finlib::price::payoff::Payoff;
 use std::{ptr, slice};
 
 #[no_mangle]
@@ -64,6 +65,17 @@ pub unsafe extern "C" fn portfolio_asset_profit_loss(asset: *mut PortfolioAsset)
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn portfolio_asset_payoff(
+    asset: *mut PortfolioAsset,
+    underlying: NullableFloat,
+) -> f64 {
+    match underlying.is_valid {
+        true => (&mut *asset).payoff(Some(underlying.val)),
+        false => (&mut *asset).payoff(None),
+    }
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn portfolio_new() -> *mut Portfolio {
     Box::into_raw(Box::new(Portfolio::from(vec![])))
 }
@@ -101,6 +113,14 @@ pub unsafe extern "C" fn portfolio_size(portfolio: *mut Portfolio) -> usize {
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_profit_loss(asset: *mut Portfolio) -> NullableFloat {
     NullableFloat::from((&mut *asset).profit_loss())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn portfolio_payoff(asset: *mut Portfolio, underlying: NullableFloat) -> f64 {
+    match underlying.is_valid {
+        true => (&mut *asset).payoff(Some(underlying.val)),
+        false => (&mut *asset).payoff(None),
+    }
 }
 
 // #[no_mangle]

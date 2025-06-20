@@ -20,11 +20,11 @@ mod ffi {
 use finlib::curve::curve::Curve;
 use finlib::curve::curve::CurveType;
 use finlib::curve::point::CurvePoint;
-use finlib::options::blackscholes::option_surface::OptionSurfaceParameters;
-use finlib::options::blackscholes::option_surface::OptionsSurface;
+use finlib::derivatives::options::blackscholes::option_surface::OptionSurfaceParameters;
+use finlib::derivatives::options::blackscholes::option_surface::OptionsSurface;
+use finlib::derivatives::swaps::Swap;
 use finlib::portfolio::Portfolio;
 use finlib::portfolio::PortfolioAsset;
 use finlib::price::enums::Side;
 use finlib::price::price::Price;
 use finlib::price::price::PricePair;
-use finlib::swaps::Swap;

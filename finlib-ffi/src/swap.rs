@@ -1,5 +1,6 @@
+use finlib::derivatives::swaps::Swap;
 use finlib::price::enums::Side;
-use finlib::swaps::Swap;
+use finlib::price::payoff::{Payoff, Profit};
 use std::slice;
 
 #[no_mangle]
@@ -8,12 +9,12 @@ pub unsafe extern "C" fn swap_from(fixed_rate: f64, fixed_side: Side, premium: f
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn swap_net_return(swap: *mut Swap, floating_rate: f64) -> f64 {
-    (&mut *swap).net_return(floating_rate)
+pub unsafe extern "C" fn swap_payoff(swap: *mut Swap, floating_rate: f64) -> f64 {
+    (&mut *swap).payoff(floating_rate)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn swap_net_return_from_multiple(
+pub unsafe extern "C" fn swap_payoff_from_multiple(
     swap: *mut Swap,
     values: *const f64,
     len: usize,
@@ -26,7 +27,29 @@ pub unsafe extern "C" fn swap_net_return_from_multiple(
     .map(|x| *x)
     .collect();
 
-    (&mut *swap).net_return_from_multiple(input_array)
+    (&mut *swap).payoff(input_array)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn swap_profit(swap: *mut Swap, floating_rate: f64) -> f64 {
+    (&mut *swap).profit(floating_rate)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn swap_profit_from_multiple(
+    swap: *mut Swap,
+    values: *const f64,
+    len: usize,
+) -> f64 {
+    let input_array: Vec<f64> = unsafe {
+        assert!(!values.is_null());
+        slice::from_raw_parts(values, len)
+    }
+    .iter()
+    .map(|x| *x)
+    .collect();
+
+    (&mut *swap).profit(input_array)
 }
 
 #[no_mangle]

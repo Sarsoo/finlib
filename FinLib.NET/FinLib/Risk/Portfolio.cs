@@ -5,7 +5,7 @@ using System.Text;
 
 namespace FinLib.Risk;
 
-public class Portfolio: IDisposable
+public class Portfolio: IDisposable, IPayoff<double?>
 {
     private readonly unsafe Portfolio_native* _portfolio;
     internal unsafe Portfolio_native* GetPtr() => _portfolio;
@@ -41,19 +41,25 @@ public class Portfolio: IDisposable
         }
     }
 
-    public bool ValidSize()
+    public bool SizeValid
     {
-        unsafe
+        get
         {
-            return NativeMethods.portfolio_valid_sizes(_portfolio);
+            unsafe
+            {
+                return NativeMethods.portfolio_valid_sizes(_portfolio);
+            }
         }
     }
 
-    public nuint Count()
+    public nuint Count
     {
-        unsafe
+        get
         {
-            return NativeMethods.portfolio_size(_portfolio);
+            unsafe
+            {
+                return NativeMethods.portfolio_size(_portfolio);
+            }
         }
     }
 
@@ -65,11 +71,14 @@ public class Portfolio: IDisposable
     //     }
     // }
 
-    public bool IsValid()
+    public bool IsValid
     {
-        unsafe
+        get
         {
-            return NativeMethods.portfolio_is_valid(_portfolio);
+            unsafe
+            {
+                return NativeMethods.portfolio_is_valid(_portfolio);
+            }
         }
     }
 
@@ -81,11 +90,14 @@ public class Portfolio: IDisposable
         }
     }
 
-    public (double, double)? GetMeanAndStdDev()
+    public (double, double)? MeanAndStdDev
     {
-        unsafe
+        get
         {
-            return NativeMethods.portfolio_get_mean_and_std(_portfolio);
+            unsafe
+            {
+                return NativeMethods.portfolio_get_mean_and_std(_portfolio);
+            }
         }
     }
 
@@ -105,11 +117,22 @@ public class Portfolio: IDisposable
         }
     }
 
-    public double? ProfitLoss()
+    public double? ProfitLoss
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethods.portfolio_profit_loss(_portfolio);
+            }
+        }
+    }
+
+    public double Payoff(double? underlying)
     {
         unsafe
         {
-            return NativeMethods.portfolio_profit_loss(_portfolio);
+            return NativeMethods.portfolio_payoff(_portfolio, underlying);
         }
     }
 

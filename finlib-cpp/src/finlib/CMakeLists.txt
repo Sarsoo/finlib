@@ -5,6 +5,10 @@ project(finlib C CXX)
 set(SOURCE_FILES
         finlib.cpp
         curve/curve.cpp
+        options/option_surface.cpp
+        options/option_surface_params.cpp
+        options/option_strategy.cpp
+        options/option_strategy_component.cpp
         portfolio/portfolio.cpp
         portfolio/portfolio_asset.cpp
         price/price.cpp

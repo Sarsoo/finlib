@@ -1,5 +1,8 @@
-use crate::options::Moneyness;
-use crate::options::Moneyness::{AtTheMoney, InTheMoney, OutOfTheMoney};
+use crate::derivatives::options::Moneyness;
+use crate::derivatives::options::Moneyness::{AtTheMoney, InTheMoney, OutOfTheMoney};
+use crate::impl_premium_profit;
+use crate::price::enums::Side;
+use crate::price::payoff::{Payoff, Premium, Profit};
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 #[cfg(feature = "wasm")]
@@ -13,9 +16,11 @@ pub trait IntrinsicValue {
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
-#[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub struct CallOption {
     pub strike: f64,
+    pub premium: f64,
+    pub side: Side,
 }
 
 impl IntrinsicValue for CallOption {
@@ -35,12 +40,32 @@ impl IntrinsicValue for CallOption {
     }
 }
 
+impl Premium for CallOption {
+    fn premium(&self) -> f64 {
+        self.premium
+    }
+
+    fn side(&self) -> Side {
+        self.side
+    }
+}
+
+impl Payoff<f64> for CallOption {
+    fn payoff(&self, underlying: f64) -> f64 {
+        self.value(underlying).max(0.)
+    }
+}
+
+impl_premium_profit!(f64, CallOption);
+
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
-#[derive(Debug, Copy, Clone, Default, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub struct PutOption {
     pub strike: f64,
+    pub premium: f64,
+    pub side: Side,
 }
 
 impl IntrinsicValue for PutOption {
@@ -59,3 +84,21 @@ impl IntrinsicValue for PutOption {
         }
     }
 }
+
+impl Premium for PutOption {
+    fn premium(&self) -> f64 {
+        self.premium
+    }
+
+    fn side(&self) -> Side {
+        self.side
+    }
+}
+
+impl Payoff<f64> for PutOption {
+    fn payoff(&self, underlying: f64) -> f64 {
+        self.value(underlying).max(0.)
+    }
+}
+
+impl_premium_profit!(f64, PutOption);

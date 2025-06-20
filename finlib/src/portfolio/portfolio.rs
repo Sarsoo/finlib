@@ -1,4 +1,5 @@
 use crate::portfolio::PortfolioAsset;
+use crate::price::payoff::Payoff;
 use crate::risk::forecast::{mean_investment, std_dev_investment};
 use crate::risk::var::varcovar::investment_value_at_risk;
 use log::{debug, error};
@@ -228,6 +229,12 @@ impl Portfolio {
                 Some(n.inverse_cdf(confidence))
             }
         }
+    }
+}
+
+impl Payoff<Option<f64>> for Portfolio {
+    fn payoff(&self, underlying: Option<f64>) -> f64 {
+        self.assets.iter().map(|x| x.payoff(underlying)).sum()
     }
 }
 

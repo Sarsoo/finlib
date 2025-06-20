@@ -1,4 +1,4 @@
-use crate::options::blackscholes::{
+use crate::derivatives::options::blackscholes::{
     generate_options, par_generate_options, CallOption, OptionVariables, PutOption,
 };
 use core::ops::Range;

@@ -3,6 +3,7 @@ bin
 obj
 build
 cmake-build-debug
+cmake-build-release
 .venv
 .idea
 /finlib-wasm/pkg

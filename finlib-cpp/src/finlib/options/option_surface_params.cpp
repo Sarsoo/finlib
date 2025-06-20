@@ -50,8 +50,7 @@ namespace finlib {
     }
 
     std::unique_ptr<OptionsSurface> OptionSurfaceParameters::walk() {
-        auto surface_handle = finlibrs::option_surface_parameters_walk(handle);
-
-        return std::make_unique<OptionsSurface>(surface_handle);
+        std::unique_ptr<OptionsSurface> result(new OptionsSurface(finlibrs::option_surface_parameters_walk(handle)));
+        return result;
     }
 }

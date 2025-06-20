@@ -5,7 +5,7 @@ using System.Text;
 
 namespace FinLib.Risk;
 
-public class PortfolioAsset: IDisposable
+public class PortfolioAsset: IDisposable, IPayoff<double?>
 {
     private readonly unsafe PortfolioAsset_native* _handle;
     internal unsafe PortfolioAsset_native* GetPtr() => _handle;
@@ -32,27 +32,44 @@ public class PortfolioAsset: IDisposable
         }
     }
 
-    public double CurrentValue()
+    public double CurrentValue
     {
-        unsafe
+        get
         {
-            return NativeMethods.portfolio_asset_current_value(_handle);
+            unsafe
+            {
+                return NativeMethods.portfolio_asset_current_value(_handle);
+            }
         }
     }
 
-    public double CurrentTotalValue()
+    public double CurrentTotalValue
     {
-        unsafe
+        get
         {
-            return NativeMethods.portfolio_asset_current_total_value(_handle);
+            unsafe
+            {
+                return NativeMethods.portfolio_asset_current_total_value(_handle);
+            }
         }
     }
 
-    public double? ProfitLoss()
+    public double? ProfitLoss
+    {
+        get
+        {
+            unsafe
+            {
+                return NativeMethods.portfolio_asset_profit_loss(_handle);
+            }
+        }
+    }
+
+    public double Payoff(double? underlying)
     {
         unsafe
         {
-            return NativeMethods.portfolio_asset_profit_loss(_handle);
+            return NativeMethods.portfolio_asset_payoff(_handle, underlying);
         }
     }
 

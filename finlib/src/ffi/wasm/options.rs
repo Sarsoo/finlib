@@ -1,5 +1,13 @@
-use crate::options::blackscholes::option_surface::{OptionSurfaceParameters, OptionsSurface};
-use crate::options::blackscholes::OptionVariables;
+use crate::derivatives::options::blackscholes::option_surface::{
+    OptionSurfaceParameters, OptionsSurface,
+};
+use crate::derivatives::options::blackscholes::OptionVariables;
+use crate::derivatives::options::strategy::component::OptionStrategyComponent;
+use crate::derivatives::options::strategy::strategy::OptionStrategy;
+use crate::derivatives::options::strategy::{IOptionStrategy, IOptionStrategyComponent};
+use crate::derivatives::options::OptionType;
+use crate::price::enums::Side;
+use crate::price::payoff::{Payoff, Profit};
 use std::ops::Range;
 use wasm_bindgen::prelude::*;
 
@@ -110,5 +118,72 @@ impl OptionsSurface {
             Ok(_) => Ok(self.len()),
             Err(_) => Err(JsValue::from("failed to construct matrix")),
         }
+    }
+}
+
+#[wasm_bindgen]
+impl OptionStrategy {
+    #[wasm_bindgen(constructor)]
+    pub fn init_wasm() -> Self {
+        Self::new()
+    }
+
+    #[wasm_bindgen(getter = length)]
+    pub fn len_wasm(&self) -> usize {
+        self.size()
+    }
+
+    #[wasm_bindgen(js_name = "payoff")]
+    pub fn payoff_wasm(&mut self, underlying: f64) -> f64 {
+        self.payoff(underlying)
+    }
+
+    #[wasm_bindgen(js_name = "profit")]
+    pub fn profit_wasm(&mut self, underlying: f64) -> f64 {
+        self.profit(underlying)
+    }
+
+    #[wasm_bindgen(js_name = "components")]
+    pub fn components_wasm(&self) -> Vec<OptionStrategyComponent> {
+        self.components()
+            .into_iter()
+            .map(|x| {
+                let val = x.lock().unwrap();
+                OptionStrategyComponent::from(
+                    val.option_type(),
+                    val.side(),
+                    val.strike(),
+                    val.premium(),
+                )
+            })
+            .collect()
+    }
+
+    #[wasm_bindgen(js_name = "add_component")]
+    pub fn add_component_wasm(&mut self, component: OptionStrategyComponent) {
+        self.add_component(component);
+    }
+}
+
+#[wasm_bindgen]
+impl OptionStrategyComponent {
+    #[wasm_bindgen(constructor)]
+    pub fn init_wasm(option_type: OptionType, side: Side, strike: f64, premium: f64) -> Self {
+        Self::from(option_type, side, strike, premium)
+    }
+
+    #[wasm_bindgen(js_name = "payoff")]
+    pub fn payoff_wasm(&mut self, underlying: f64) -> f64 {
+        self.payoff(underlying)
+    }
+
+    #[wasm_bindgen(js_name = "profit")]
+    pub fn profit_wasm(&mut self, underlying: f64) -> f64 {
+        self.profit(underlying)
+    }
+
+    #[wasm_bindgen(getter = "willBeExercised")]
+    pub fn will_be_exercised_wasm(&self, underlying: f64) -> bool {
+        self.will_be_exercised(underlying)
     }
 }

@@ -22,6 +22,5 @@ namespace finlib {
 
     private:
         finlibrs::OptionSurfaceParameters *handle;
-        friend class OptionsSurface;
     };
 }

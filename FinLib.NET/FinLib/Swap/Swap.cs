@@ -6,7 +6,7 @@ using FinLib.Price;
 
 namespace FinLib.Swap;
 
-public class Swap: IDisposable
+public class Swap: IDisposable, IProfit<double>, IProfit<IEnumerable<double>>
 {
     private readonly unsafe Swap_native* _swap;
     internal unsafe Swap_native* GetPtr() => _swap;
@@ -19,21 +19,40 @@ public class Swap: IDisposable
         }
     }
 
-    public double NetReturn(double floatingRate)
+    public double Payoff(double floatingRate)
     {
         unsafe
         {
-            return NativeMethods.swap_net_return(_swap, floatingRate);
+            return NativeMethods.swap_payoff(_swap, floatingRate);
         }
     }
 
-    public double NetReturn(IEnumerable<double> values)
+    public double Payoff(IEnumerable<double> values)
     {
         unsafe
         {
             var v = values.ToArray();
             fixed (double* valuesPtr = v){
-                return NativeMethods.swap_net_return_from_multiple(_swap, valuesPtr, (UIntPtr)v.Length);
+                return NativeMethods.swap_payoff_from_multiple(_swap, valuesPtr, (UIntPtr)v.Length);
+            }
+        }
+    }
+
+    public double Profit(double floatingRate)
+    {
+        unsafe
+        {
+            return NativeMethods.swap_profit(_swap, floatingRate);
+        }
+    }
+
+    public double Profit(IEnumerable<double> values)
+    {
+        unsafe
+        {
+            var v = values.ToArray();
+            fixed (double* valuesPtr = v){
+                return NativeMethods.swap_profit_from_multiple(_swap, valuesPtr, (UIntPtr)v.Length);
             }
         }
     }

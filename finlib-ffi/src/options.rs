@@ -1,5 +1,7 @@
-use finlib::options::blackscholes::option_surface::{OptionSurfaceParameters, OptionsSurface};
-use finlib::options::blackscholes::OptionVariables;
+use finlib::derivatives::options::blackscholes::option_surface::{
+    OptionSurfaceParameters, OptionsSurface,
+};
+use finlib::derivatives::options::blackscholes::OptionVariables;
 use std::ops::Range;
 
 #[no_mangle]
