@@ -1,6 +1,6 @@
-use wasm_bindgen::prelude::wasm_bindgen;
 use console_log;
 use log::Level;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 // #[wasm_bindgen(start)]
 // fn start() {
@@ -9,28 +9,45 @@ use log::Level;
 
 #[wasm_bindgen]
 pub fn init_logging() {
-    if let Err(_) = console_log::init_with_level(Level::Debug) {
-
-    }
+    if let Err(_) = console_log::init_with_level(Level::Debug) {}
 }
 
 #[wasm_bindgen]
-pub struct RelativeStrengthIndicator { }
+pub struct RelativeStrengthIndicator {}
 
 #[wasm_bindgen]
 impl RelativeStrengthIndicator {
-    pub fn relative_strength_indicator(time_period: f64, average_gain: f64, average_loss: f64)  -> f64 {
-        finlib::indicators::rsi::relative_strength_indicator(time_period, average_gain, average_loss)
+    pub fn relative_strength_indicator(
+        time_period: f64,
+        average_gain: f64,
+        average_loss: f64,
+    ) -> f64 {
+        finlib::indicators::rsi::relative_strength_indicator(
+            time_period,
+            average_gain,
+            average_loss,
+        )
     }
 
-    pub fn relative_strength_indicator_smoothed(time_period: f64, previous_average_gain: f64, current_gain: f64, previous_average_loss: f64, current_loss: f64)  -> f64 {
-        finlib::indicators::rsi::relative_strength_indicator_smoothed(time_period, previous_average_gain, current_gain, previous_average_loss, current_loss)
+    pub fn relative_strength_indicator_smoothed(
+        time_period: f64,
+        previous_average_gain: f64,
+        current_gain: f64,
+        previous_average_loss: f64,
+        current_loss: f64,
+    ) -> f64 {
+        finlib::indicators::rsi::relative_strength_indicator_smoothed(
+            time_period,
+            previous_average_gain,
+            current_gain,
+            previous_average_loss,
+            current_loss,
+        )
     }
 }
 
-
 #[wasm_bindgen]
-pub struct Interest { }
+pub struct Interest {}
 
 #[wasm_bindgen]
 impl Interest {
@@ -40,12 +57,12 @@ impl Interest {
 }
 
 #[wasm_bindgen]
-pub struct ValueAtRisk { }
+pub struct ValueAtRisk {}
 
 #[wasm_bindgen]
 impl ValueAtRisk {
     pub fn historical(values: Vec<f64>, confidence: f64) -> f64 {
-        finlib::risk::var::historical::value_at_risk(&values, confidence)
+        finlib::risk::var::historical::value_at_risk_percent(&values, confidence)
     }
 
     pub fn varcovar(values: Vec<f64>, confidence: f64) -> f64 {
@@ -54,7 +71,7 @@ impl ValueAtRisk {
 }
 
 #[wasm_bindgen]
-pub struct Stats { }
+pub struct Stats {}
 
 #[wasm_bindgen]
 impl Stats {
@@ -64,7 +81,7 @@ impl Stats {
 }
 
 #[wasm_bindgen]
-pub struct Util { }
+pub struct Util {}
 
 #[wasm_bindgen]
 impl Util {

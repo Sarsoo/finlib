@@ -19,16 +19,24 @@ pub struct Tuple {
 impl Tuple {
     pub fn from(val: Option<(f64, f64)>) -> Self {
         match val {
-            None => Tuple {
-                one: 0.0,
-                two: 0.0,
-                is_valid: false,
-            },
-            Some((one, two)) => Tuple {
-                one,
-                two,
-                is_valid: true,
-            },
+            None => Self::invalid(),
+            Some((one, two)) => Tuple::valid(one, two),
+        }
+    }
+
+    pub fn valid(one: f64, two: f64) -> Self {
+        Self {
+            one,
+            two,
+            is_valid: true,
+        }
+    }
+
+    pub fn invalid() -> Self {
+        Self {
+            one: 0.0,
+            two: 0.0,
+            is_valid: false,
         }
     }
 }
@@ -92,7 +100,7 @@ pub unsafe extern "C" fn historical_value_at_risk(
     };
 
     NullableFloat {
-        val: finlib::risk::var::historical::value_at_risk(input_array, confidence),
+        val: finlib::risk::var::historical::value_at_risk_percent(input_array, confidence),
         is_valid: true,
     }
 }
@@ -116,5 +124,5 @@ pub unsafe extern "C" fn varcovar_value_at_risk(
 
 #[no_mangle]
 pub unsafe extern "C" fn scale_value_at_risk(initial_value: f64, time_cycles: isize) -> f64 {
-    finlib::risk::var::varcovar::scale_value_at_risk(initial_value, time_cycles)
+    finlib::risk::var::scale_value_at_risk(initial_value, time_cycles)
 }

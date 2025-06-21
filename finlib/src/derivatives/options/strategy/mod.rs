@@ -1,5 +1,6 @@
 pub mod component;
 pub mod strategy;
+pub mod templates;
 
 use crate::derivatives::options::OptionType;
 use crate::price::payoff::{Payoff, Premium, Profit};

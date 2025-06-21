@@ -1,6 +1,13 @@
 use crate::stats;
 use crate::util::roc::rates_of_change;
+#[cfg(feature = "py")]
+use pyo3::prelude::*;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
 
+use crate::risk::var::ValueAtRisk;
 use statrs::distribution::{ContinuousCDF, Normal};
 // https://medium.com/@serdarilarslan/value-at-risk-var-and-its-implementation-in-python-5c9150f73b0e
 
@@ -25,8 +32,27 @@ pub fn investment_value_at_risk(
     n.inverse_cdf(confidence)
 }
 
-pub fn scale_value_at_risk(initial_value: f64, time_cycles: isize) -> f64 {
-    initial_value * f64::sqrt(time_cycles as f64)
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+#[cfg_attr(feature = "py", pyclass(eq, ord))]
+#[cfg_attr(feature = "ffi", repr(C))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
+pub struct VarianceCovariance {
+    values: Vec<f64>,
+}
+
+impl VarianceCovariance {
+    pub fn new(values: &[f64]) -> VarianceCovariance {
+        VarianceCovariance {
+            values: Vec::from(values),
+        }
+    }
+}
+
+impl ValueAtRisk for VarianceCovariance {
+    fn value_at_risk_pct(&self, confidence: f64) -> f64 {
+        value_at_risk_percent(&self.values, confidence)
+    }
 }
 
 #[cfg(test)]

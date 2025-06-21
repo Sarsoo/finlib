@@ -41,37 +41,10 @@ mod pyfinlib {
         mod rsi {
             use super::*;
 
-            #[pyfunction]
-            pub fn relative_strength_indicator(
-                time_period: f64,
-                average_gain: f64,
-                average_loss: f64,
-            ) -> PyResult<f64> {
-                Ok(finlib::indicators::rsi::relative_strength_indicator(
-                    time_period,
-                    average_gain,
-                    average_loss,
-                ))
-            }
-
-            #[pyfunction]
-            pub fn relative_strength_indicator_smoothed(
-                time_period: f64,
-                previous_average_gain: f64,
-                current_gain: f64,
-                previous_average_loss: f64,
-                current_loss: f64,
-            ) -> PyResult<f64> {
-                Ok(
-                    finlib::indicators::rsi::relative_strength_indicator_smoothed(
-                        time_period,
-                        previous_average_gain,
-                        current_gain,
-                        previous_average_loss,
-                        current_loss,
-                    ),
-                )
-            }
+            #[pymodule_export]
+            use finlib::indicators::rsi::relative_strength_indicator;
+            #[pymodule_export]
+            use finlib::indicators::rsi::relative_strength_indicator_smoothed;
         }
     }
 
@@ -105,6 +78,34 @@ mod pyfinlib {
         use finlib::derivatives::options::strategy::strategy::OptionStrategy;
         #[pymodule_export]
         use finlib::derivatives::options::OptionGreeks;
+
+        #[pymodule]
+        mod strategy {
+            use super::*;
+
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::bear_put_spread;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::bull_call_spread;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::collar;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::iron_butterfly_spread;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::long_call_butterfly_spread;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::long_put_butterfly_spread;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::long_straddle;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::long_strangle;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::reverse_iron_butterfly_spread;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::short_call_butterfly_spread;
+            #[pymodule_export]
+            use finlib::derivatives::options::strategy::templates::short_put_butterfly_spread;
+        }
     }
 
     #[pymodule]
@@ -132,7 +133,7 @@ mod pyfinlib {
 
             #[pyfunction]
             fn historical(values: Vec<f64>, confidence: f64) -> PyResult<f64> {
-                Ok(finlib::risk::var::historical::value_at_risk(
+                Ok(finlib::risk::var::historical::value_at_risk_percent(
                     &values, confidence,
                 ))
             }
@@ -144,13 +145,8 @@ mod pyfinlib {
                 ))
             }
 
-            #[pyfunction]
-            fn scale_value_at_risk(initial_value: f64, time_cycles: isize) -> PyResult<f64> {
-                Ok(finlib::risk::var::varcovar::scale_value_at_risk(
-                    initial_value,
-                    time_cycles,
-                ))
-            }
+            #[pymodule_export]
+            use finlib::risk::var::scale_value_at_risk;
         }
     }
 
