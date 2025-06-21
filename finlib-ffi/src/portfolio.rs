@@ -1,6 +1,7 @@
 use crate::{NullableFloat, Tuple};
 use finlib::portfolio::{Portfolio, PortfolioAsset};
 use finlib::price::payoff::Payoff;
+use finlib::stats::{MuSigma, PopulationStats};
 use std::{ptr, slice};
 
 #[no_mangle]
@@ -123,11 +124,6 @@ pub unsafe extern "C" fn portfolio_payoff(asset: *mut Portfolio, underlying: Nul
     }
 }
 
-// #[no_mangle]
-// pub unsafe extern "C" fn portfolio_valid_weights(portfolio: *mut Portfolio) -> bool {
-//     (&mut *portfolio).valid_weights()
-// }
-
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_is_valid(portfolio: *mut Portfolio) -> bool {
     (&mut *portfolio).is_valid()
@@ -135,7 +131,10 @@ pub unsafe extern "C" fn portfolio_is_valid(portfolio: *mut Portfolio) -> bool {
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_get_mean_and_std(portfolio: *mut Portfolio) -> Tuple {
-    Tuple::from((&mut *portfolio).get_mean_and_std())
+    match (&mut *portfolio).mean_and_std_dev() {
+        Ok(MuSigma { mean, std_dev }) => Tuple::valid(mean, std_dev),
+        Err(_) => Tuple::invalid(),
+    }
 }
 
 #[no_mangle]

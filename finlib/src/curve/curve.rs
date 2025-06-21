@@ -3,6 +3,7 @@ use crate::price::price::PricePair;
 use chrono::NaiveDate;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 #[cfg(feature = "btree_cursors")]
@@ -13,7 +14,8 @@ use wasm_bindgen::prelude::*;
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(eq, ord))]
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum CurveType {
     Absolute,
     Differential,
@@ -22,7 +24,7 @@ pub enum CurveType {
 // #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(get_all))]
 #[cfg_attr(feature = "ffi", repr(C))]
-#[derive(Serialize, Deserialize)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Curve {
     tree: BTreeMap<NaiveDate, CurvePoint>,
     pub curve_type: CurveType,

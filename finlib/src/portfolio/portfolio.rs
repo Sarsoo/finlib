@@ -1,13 +1,16 @@
-use crate::portfolio::PortfolioAsset;
+use crate::portfolio::{PortfolioAsset, ValueType};
 use crate::price::payoff::Payoff;
 use crate::risk::forecast::{mean_investment, std_dev_investment};
 use crate::risk::var::varcovar::investment_value_at_risk;
+use crate::stats::{MuSigma, PopulationStats};
 use log::{debug, error};
 use ndarray::prelude::*;
 use ndarray_stats::CorrelationExt;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 use rayon::prelude::*;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use statrs::distribution::{ContinuousCDF, Normal};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
@@ -16,6 +19,7 @@ use wasm_bindgen::prelude::*;
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Portfolio {
     assets: Vec<PortfolioAsset>,
@@ -89,20 +93,8 @@ impl Portfolio {
         true
     }
 
-    /// Do the proportions of the assets in the portfolio add up to 100%?
-    // pub fn valid_weights(&self) -> bool {
-    //     let mut weight = 1f64;
-    //
-    //     for asset in &self.assets {
-    //         weight -= asset.portfolio_weight;
-    //     }
-    //
-    //     f64::abs(weight) < 0.01
-    // }
-
     pub fn is_valid(&self) -> bool {
         self.valid_sizes()
-        // && self.valid_weights()
     }
 
     /// Format the asset values in the portfolio as a matrix such that statistical operations can be applied to it
@@ -147,53 +139,13 @@ impl Portfolio {
         Some(matrix.into_owned())
     }
 
-    /// Calculate the mean and the standard deviation of a portfolio, taking into account the relative weights and covariance of the portfolio's assets
-    ///
-    /// returns (mean, std_dev)
-    pub fn get_mean_and_std(&mut self) -> Option<(f64, f64)> {
-        if !self.valid_sizes() {
-            error!(
-                "Can't get portfolio mean and std dev because asset value counts arent't the same"
-            );
-            return None;
-        }
-
-        self.apply_rates_of_change();
-        let m = self.get_matrix();
-        if m.is_none() {
-            error!("Couldn't format portfolio as matrix");
-            return None;
-        }
-        let m = m.unwrap();
-
-        let cov = m.cov(1.);
-        if cov.is_err() {
-            error!("Failed to calculate portfolio covariance");
-            return None;
-        }
-        let cov = cov.unwrap();
-        let mean_return = m.mean_axis(Axis(1));
-        if mean_return.is_none() {
-            error!("Failed to calculate portfolio mean");
-            return None;
-        }
-        let mean_return = mean_return.unwrap();
-        let asset_weights =
-            Array::from_vec(self.get_asset_weight().collect::<Vec<f64>>()).to_owned();
-
-        let porfolio_mean_return = mean_return.dot(&asset_weights);
-        let portfolio_stddev = f64::sqrt(asset_weights.t().dot(&cov).dot(&asset_weights));
-
-        Some((porfolio_mean_return, portfolio_stddev))
-    }
-
     /// For a given confidence rate (0.01, 0.05, 0.10) and initial investment value, calculate the parametric value at risk
     ///
     /// https://www.interviewqs.com/blog/value-at-risk
     pub fn value_at_risk(&mut self, confidence: f64, initial_investment: f64) -> Option<f64> {
-        match self.get_mean_and_std() {
-            None => None,
-            Some((mean, std_dev)) => {
+        match self.mean_and_std_dev() {
+            Err(_) => None,
+            Ok(MuSigma { mean, std_dev }) => {
                 debug!(
                     "Portfolio percent movement mean[{}], std dev[{}]",
                     mean, std_dev
@@ -222,13 +174,68 @@ impl Portfolio {
     ///
     /// https://www.interviewqs.com/blog/value-at-risk
     pub fn value_at_risk_percent(&mut self, confidence: f64) -> Option<f64> {
-        match self.get_mean_and_std() {
-            None => None,
-            Some((mean, std_dev)) => {
+        match self.mean_and_std_dev() {
+            Err(_) => None,
+            Ok(MuSigma { mean, std_dev }) => {
                 let n = Normal::new(mean, std_dev).unwrap();
                 Some(n.inverse_cdf(confidence))
             }
         }
+    }
+
+    pub fn is_differential(&self) -> bool {
+        !self
+            .assets
+            .iter()
+            .any(|x| x.value_type == ValueType::Absolute)
+    }
+}
+
+impl PopulationStats for Portfolio {
+    /// Calculate the mean and the standard deviation of a portfolio, taking into account the relative weights and covariance of the portfolio's assets
+    ///
+    /// returns (mean, std_dev)
+    fn mean_and_std_dev(&self) -> Result<MuSigma, ()> {
+        if !self.valid_sizes() {
+            error!(
+                "Can't get portfolio mean and std dev because asset value counts arent't the same"
+            );
+            return Err(());
+        }
+
+        if !self.is_differential() {
+            return Err(());
+        }
+
+        let m = self.get_matrix();
+        if m.is_none() {
+            error!("Couldn't format portfolio as matrix");
+            return Err(());
+        }
+        let m = m.unwrap();
+
+        let cov = m.cov(1.);
+        if cov.is_err() {
+            error!("Failed to calculate portfolio covariance");
+            return Err(());
+        }
+        let cov = cov.unwrap();
+        let mean_return = m.mean_axis(Axis(1));
+        if mean_return.is_none() {
+            error!("Failed to calculate portfolio mean");
+            return Err(());
+        }
+        let mean_return = mean_return.unwrap();
+        let asset_weights =
+            Array::from_vec(self.get_asset_weight().collect::<Vec<f64>>()).to_owned();
+
+        let porfolio_mean_return = mean_return.dot(&asset_weights);
+        let portfolio_stddev = f64::sqrt(asset_weights.t().dot(&cov).dot(&asset_weights));
+
+        Ok(MuSigma {
+            mean: porfolio_mean_return,
+            std_dev: portfolio_stddev,
+        })
     }
 }
 

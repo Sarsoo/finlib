@@ -4,7 +4,7 @@ use num::{Float, NumCast};
 
 pub fn compound<T: Float>(principal: T, rate: T, time: T, n: T) -> T {
     let one: T = NumCast::from(1).unwrap();
-    principal *  T::powf(one  + (rate / n), time * n)
+    principal * T::powf(one + (rate / n), time * n)
 }
 
 /// https://www.thecalculatorsite.com/finance/calculators/compoundinterestcalculator.php

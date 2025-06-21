@@ -3,7 +3,7 @@ pub mod option_surface;
 
 pub use generate::*;
 
-use super::{Option, OptionGreeks};
+use super::{Greeks, Option, OptionGreeks};
 
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
@@ -129,7 +129,8 @@ impl Option for CallOption {
     fn strike(&self) -> f64 {
         self.variables.strike_price
     }
-
+}
+impl Greeks for CallOption {
     fn delta(&self) -> f64 {
         let n = Normal::new(0., 1.0).unwrap();
 
@@ -208,7 +209,9 @@ impl Option for PutOption {
     fn strike(&self) -> f64 {
         self.variables.strike_price
     }
+}
 
+impl Greeks for PutOption {
     fn delta(&self) -> f64 {
         let n = Normal::new(0., 1.0).unwrap();
 

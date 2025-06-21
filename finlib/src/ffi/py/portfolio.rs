@@ -1,4 +1,5 @@
 use crate::portfolio::{Portfolio, PortfolioAsset};
+use crate::stats::{MuSigma, PopulationStats};
 use pyo3::prelude::*;
 
 #[pymethods]
@@ -37,11 +38,6 @@ impl Portfolio {
         self.valid_sizes()
     }
 
-    // #[pyo3(name = "valid_weights")]
-    // pub fn valid_weights_py(&self) -> bool {
-    //     self.valid_weights()
-    // }
-
     #[pyo3(name = "is_valid")]
     pub fn is_valid_py(&self) -> bool {
         self.is_valid()
@@ -49,11 +45,11 @@ impl Portfolio {
 
     #[pyo3(name = "get_mean_and_std")]
     pub fn get_mean_and_std_py(&mut self) -> PyResult<(f64, f64)> {
-        match self.get_mean_and_std() {
-            None => Err(pyo3::exceptions::PyValueError::new_err(
+        match self.mean_and_std_dev() {
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
                 "failed to calculate mean and std",
             )),
-            Some(m) => Ok(m),
+            Ok(MuSigma { mean, std_dev }) => Ok((mean, std_dev)),
         }
     }
 
@@ -75,16 +71,8 @@ impl Portfolio {
 #[pymethods]
 impl PortfolioAsset {
     #[new]
-    pub fn init(
-        // portfolio_weight: f64,
-        name: String,
-        quantity: f64,
-        values: Vec<f64>,
-    ) -> Self {
-        PortfolioAsset::new(
-            // portfolio_weight,
-            name, quantity, values,
-        )
+    pub fn init(name: String, quantity: f64, values: Vec<f64>) -> Self {
+        PortfolioAsset::new(name, quantity, values)
     }
 
     #[pyo3(name = "current_value")]
