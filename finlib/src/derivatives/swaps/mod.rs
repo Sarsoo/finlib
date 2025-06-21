@@ -1,14 +1,18 @@
-use crate::impl_premium_profit;
+use crate::derivatives::TradeSide;
 use crate::price::enums::Side;
 use crate::price::payoff::{Payoff, Premium, Profit};
+use crate::{impl_premium, impl_premium_profit, impl_side};
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Swap {
     pub fixed_rate: f64,
@@ -34,15 +38,9 @@ impl Swap {
     }
 }
 
-impl Premium for Swap {
-    fn premium(&self) -> f64 {
-        self.premium
-    }
-
-    fn side(&self) -> Side {
-        self.fixed_side
-    }
-}
+impl_side!(Swap:fixed_side);
+impl_premium!(Swap);
+impl_premium_profit!(f64, Swap);
 
 impl Payoff<f64> for Swap {
     fn payoff(&self, underlying: f64) -> f64 {
@@ -52,8 +50,6 @@ impl Payoff<f64> for Swap {
         }
     }
 }
-
-impl_premium_profit!(f64, Swap);
 
 impl Payoff<Vec<f64>> for Swap {
     fn payoff(&self, underlying: Vec<f64>) -> f64 {
