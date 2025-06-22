@@ -80,6 +80,13 @@ impl PortfolioAsset {
             _ => {}
         }
     }
+
+    pub fn get_rates_of_change(&self) -> Vec<f64> {
+        match self.value_type {
+            ValueType::Absolute => rates_of_change(&self.market_values).collect(),
+            ValueType::RateOfChange => self.market_values.clone(),
+        }
+    }
 }
 
 impl PopulationStats for PortfolioAsset {

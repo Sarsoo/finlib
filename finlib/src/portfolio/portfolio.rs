@@ -97,25 +97,43 @@ impl Portfolio {
     }
 
     /// Format the asset values in the portfolio as a matrix such that statistical operations can be applied to it
-    pub fn get_matrix(&self) -> Option<Array2<f64>> {
+    pub fn get_matrix(&self, f: &dyn Fn(&PortfolioAsset) -> Vec<f64>) -> Result<Array2<f64>, ()> {
         if self.assets.is_empty() || !self.valid_sizes() {
-            return None;
+            return Err(());
+        }
+
+        let values = self.assets.iter().map(|a| f(a)).collect::<Vec<Vec<f64>>>();
+
+        let sizes_match = values.iter().map(|x| x.len()).all(|x| x == values[0].len());
+
+        if !sizes_match {
+            return Err(());
         }
 
         let column_count = self.assets.len();
-        let row_count = self.assets[0].market_values.len();
+        let row_count = values[0].len();
 
-        let matrix = Array2::from_shape_vec(
-            (column_count, row_count),
-            self.assets
-                .iter()
-                .map(|a| a.market_values.clone())
-                .flatten()
-                .collect::<Vec<f64>>(),
-        )
-        .unwrap();
+        let values = values.into_iter().flatten().collect::<Vec<f64>>();
 
-        Some(matrix.into_owned())
+        let matrix = Array2::from_shape_vec((column_count, row_count), values).unwrap();
+
+        Ok(matrix.into_owned())
+    }
+
+    fn get_raw_values(asset: &PortfolioAsset) -> Vec<f64> {
+        asset.market_values.clone()
+    }
+
+    pub fn get_raw_matrix(&self) -> Result<Array2<f64>, ()> {
+        self.get_matrix(&Self::get_raw_values)
+    }
+
+    fn get_roc_values(asset: &PortfolioAsset) -> Vec<f64> {
+        asset.get_rates_of_change()
+    }
+
+    pub fn get_roc_matrix(&self) -> Result<Array2<f64>, ()> {
+        self.get_matrix(&Self::get_roc_values)
     }
 
     /// Format the asset values in the portfolio as a matrix such that statistical operations can be applied to it
@@ -206,13 +224,9 @@ impl PopulationStats for Portfolio {
             return Err(());
         }
 
-        if !self.is_differential() {
-            error!("Can't get portfolio mean and std dev because asset values aren't differential");
-            return Err(());
-        }
+        let m = self.get_roc_matrix();
 
-        let m = self.get_matrix();
-        if m.is_none() {
+        if m.is_err() {
             error!("Couldn't format portfolio as matrix");
             return Err(());
         }
@@ -278,7 +292,7 @@ mod tests {
             ),
         ];
 
-        let m = Portfolio::from(assets).get_matrix().unwrap();
+        let m = Portfolio::from(assets).get_raw_matrix().unwrap();
         println!("matrix 0; {:?}", m);
 
         let col = m.row(0);
@@ -288,6 +302,20 @@ mod tests {
         println!("cov 0; {:?}", cov);
 
         col.len();
+    }
+
+    #[test]
+    fn mean_std_dev() {
+        let assets = vec![
+            PortfolioAsset::new("awdad".to_string(), 1.0, vec![0.5, 0.5, 0.5, 0.5]),
+            PortfolioAsset::new("awdad".to_string(), 1.0, vec![0.5, 0.5, 0.5, 0.5]),
+        ];
+
+        let m = Portfolio::from(assets);
+
+        let stats = m.mean_and_std_dev();
+
+        assert!(stats.is_ok());
     }
 
     #[test]
@@ -310,7 +338,6 @@ mod tests {
         ];
 
         let mut m = Portfolio::from(assets);
-        m.apply_rates_of_change();
 
         assert!(m.value_at_risk(0.01, None).is_ok());
     }
@@ -333,7 +360,6 @@ mod tests {
         ];
 
         let mut m = Portfolio::from(assets);
-        m.apply_rates_of_change();
 
         assert!(m.value_at_risk(0.01, None).is_err());
     }
