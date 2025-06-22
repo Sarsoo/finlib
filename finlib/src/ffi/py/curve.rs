@@ -33,7 +33,7 @@ impl Curve {
         offer: f64,
         date: &Bound<'_, PyDate>,
     ) -> PyResult<()> {
-        self.add_rate_from(bid, offer, date.extract().unwrap());
+        self.add_rate_from(bid, offer, date.extract()?);
         Ok(())
     }
 
@@ -42,17 +42,17 @@ impl Curve {
         &mut self,
         at: &Bound<'_, PyDate>,
     ) -> PyResult<Option<PricePair>> {
-        Ok(self.get_cumulative_rate(at.extract().unwrap()))
+        Ok(self.get_cumulative_rate(at.extract()?))
     }
 
     #[pyo3(name = "get_absolute_rate")]
     pub fn get_absolute_rate_py(&mut self, at: &Bound<'_, PyDate>) -> PyResult<Option<PricePair>> {
-        Ok(self.get_absolute_rate(at.extract().unwrap()))
+        Ok(self.get_absolute_rate(at.extract()?))
     }
 
     #[pyo3(name = "get_rate")]
     pub fn get_rate_py(&mut self, at: &Bound<'_, PyDate>) -> PyResult<Option<PricePair>> {
-        Ok(self.get_rate(at.extract().unwrap()))
+        Ok(self.get_rate(at.extract()?))
     }
 
     #[pyo3(name = "get_carry_rate")]
@@ -61,7 +61,7 @@ impl Curve {
         from: &Bound<'_, PyDate>,
         to: &Bound<'_, PyDate>,
     ) -> PyResult<Option<PricePair>> {
-        Ok(self.get_carry_rate(from.extract().unwrap(), to.extract().unwrap()))
+        Ok(self.get_carry_rate(from.extract()?, to.extract()?))
     }
 }
 

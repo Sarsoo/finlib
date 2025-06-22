@@ -419,6 +419,7 @@ dependencies = [
  "chrono",
  "criterion",
  "getrandom 0.2.16",
+ "js-sys",
  "log",
  "nalgebra",
  "ndarray",

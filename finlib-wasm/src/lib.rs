@@ -68,6 +68,22 @@ impl ValueAtRisk {
     pub fn varcovar(values: Vec<f64>, confidence: f64) -> f64 {
         finlib::risk::var::varcovar::value_at_risk_percent_1d(&values, confidence)
     }
+
+    pub fn varcovar_from_initial_investment_1d(
+        values: Vec<f64>,
+        confidence: f64,
+        initial_investment: f64,
+    ) -> f64 {
+        finlib::risk::var::varcovar::value_at_risk_from_initial_investment_1d(
+            &values,
+            confidence,
+            initial_investment,
+        )
+    }
+
+    pub fn scale_value_at_risk(initial_value: f64, time_cycles: isize) -> f64 {
+        finlib::risk::var::scale_value_at_risk(initial_value, time_cycles)
+    }
 }
 
 #[wasm_bindgen]
@@ -75,6 +91,30 @@ pub struct Stats {}
 
 #[wasm_bindgen]
 impl Stats {
+    pub fn mean(slice: Vec<f64>) -> f64 {
+        finlib::stats::mean(&slice)
+    }
+
+    pub fn population_variance(slice: Vec<f64>) -> f64 {
+        finlib::stats::population_variance(&slice)
+    }
+
+    pub fn sample_variance(slice: Vec<f64>) -> f64 {
+        finlib::stats::sample_variance(&slice)
+    }
+
+    pub fn population_std_dev(slice: Vec<f64>) -> f64 {
+        finlib::stats::population_std_dev(&slice)
+    }
+
+    pub fn sample_std_dev(slice: Vec<f64>) -> f64 {
+        finlib::stats::sample_std_dev(&slice)
+    }
+
+    pub fn inverse_cdf_value(confidence: f64, mean: f64, std_dev: f64) -> f64 {
+        finlib::stats::inverse_cdf_value(confidence, mean, std_dev)
+    }
+
     pub fn covariance(slice: Vec<f64>, slice_two: Vec<f64>) -> Option<f64> {
         finlib::stats::covariance(&slice, &slice_two)
     }
@@ -85,7 +125,19 @@ pub struct Util {}
 
 #[wasm_bindgen]
 impl Util {
+    pub fn changes(slice: Vec<f64>) -> Vec<f64> {
+        finlib::util::roc::changes(&slice).collect::<Vec<_>>()
+    }
+
     pub fn rates_of_change(slice: Vec<f64>) -> Vec<f64> {
         finlib::util::roc::rates_of_change(&slice).collect::<Vec<_>>()
+    }
+
+    pub fn dot_product(a: Vec<f64>, b: Vec<f64>) -> f64 {
+        finlib::util::vector::dot_product(&a, &b)
+    }
+
+    pub fn mag(slice: Vec<f64>) -> f64 {
+        finlib::util::vector::mag(&slice)
     }
 }

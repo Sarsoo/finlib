@@ -137,7 +137,7 @@ impl OptionContract {
         self.profit(underlying)
     }
 
-    #[wasm_bindgen(getter = "willBeExercised")]
+    #[wasm_bindgen(js_name = "willBeExercised")]
     pub fn will_be_exercised_wasm(&self, underlying: f64) -> bool {
         self.will_be_exercised(underlying)
     }

@@ -26,6 +26,7 @@ serde = { workspace = true, optional = true }
 serde-wasm-bindgen = { workspace = true, optional = true }
 num = "0.4.3"
 bon = { workspace = true }
+js-sys = { workspace = true, optional = true }
 
 [dev-dependencies]
 criterion = "0.6.0"
@@ -43,5 +44,5 @@ default = []
 serde = ["dep:serde", "chrono/serde"]
 btree_cursors = []
 py = ["dep:pyo3"]
-wasm = ["getrandom/js", "dep:wasm-bindgen", "dep:serde-wasm-bindgen", "chrono/wasmbind"]
+wasm = ["getrandom/js", "dep:wasm-bindgen", "dep:js-sys", "dep:serde-wasm-bindgen", "chrono/wasmbind"]
 ffi = []

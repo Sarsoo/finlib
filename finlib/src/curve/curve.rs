@@ -21,10 +21,11 @@ pub enum CurveType {
     Differential,
 }
 
-// #[cfg_attr(feature = "wasm", wasm_bindgen)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(get_all))]
 #[cfg_attr(feature = "ffi", repr(C))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
 pub struct Curve {
     tree: BTreeMap<NaiveDate, CurvePoint>,
     pub curve_type: CurveType,
