@@ -9,7 +9,7 @@ namespace finlib {
         handle = finlibrs::option_strategy_new();
     }
 
-    void OptionStrategy::add_component(std::unique_ptr<OptionStrategyComponent> component) {
+    void OptionStrategy::add_component(std::unique_ptr<OptionContract> component) {
         finlibrs::option_strategy_add_component(handle, component->handle);
     }
 

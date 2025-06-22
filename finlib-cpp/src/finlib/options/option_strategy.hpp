@@ -2,7 +2,7 @@
 
 #include <finlib/finlib-native.h>
 
-#include "option_strategy_component.hpp"
+#include "option_contract.hpp"
 
 
 namespace finlib {
@@ -10,7 +10,7 @@ namespace finlib {
     public:
         explicit OptionStrategy();
 
-        void add_component(std::unique_ptr<OptionStrategyComponent> component);
+        void add_component(std::unique_ptr<OptionContract> component);
 
         double payoff(double underlying);
 

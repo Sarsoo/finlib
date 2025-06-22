@@ -8,7 +8,7 @@ set(SOURCE_FILES
         options/option_surface.cpp
         options/option_surface_params.cpp
         options/option_strategy.cpp
-        options/option_strategy_component.cpp
+        options/option_contract.cpp
         portfolio/portfolio.cpp
         portfolio/portfolio_asset.cpp
         price/price.cpp

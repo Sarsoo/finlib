@@ -1,9 +1,12 @@
-use crate::derivatives::options::strategy::IOptionStrategyComponent;
-use crate::derivatives::options::OptionType;
+use crate::derivatives::options::blackscholes::OptionVariables;
+use crate::derivatives::options::{IOption, OptionGreeks, OptionType};
 use crate::derivatives::TradeSide;
 use crate::price::enums::Side;
-use crate::price::payoff::{Payoff, Premium, Profit};
+use crate::price::payoff::Payoff;
+use crate::price::payoff::Premium;
+use crate::price::payoff::Profit;
 use crate::{impl_premium, impl_premium_profit, impl_side};
+use bon::Builder;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 #[cfg(feature = "serde")]
@@ -15,30 +18,20 @@ use wasm_bindgen::prelude::*;
 #[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Clone, Debug, PartialEq, PartialOrd)]
-pub struct OptionStrategyComponent {
+#[derive(Builder, Debug, Copy, Clone, PartialEq, PartialOrd)]
+pub struct OptionContract {
     pub option_type: OptionType,
-    pub side: Side,
     pub strike: f64,
     pub premium: f64,
+    pub side: Side,
+    pub greeks: Option<OptionGreeks>,
 }
 
-impl OptionStrategyComponent {
-    pub fn from(option_type: OptionType, side: Side, strike: f64, premium: f64) -> Self {
-        Self {
-            option_type,
-            side,
-            strike,
-            premium,
-        }
-    }
-}
+impl_side!(OptionContract);
+impl_premium!(OptionContract);
+impl_premium_profit!(f64, OptionContract);
 
-impl_side!(OptionStrategyComponent);
-impl_premium!(OptionStrategyComponent);
-impl_premium_profit!(f64, OptionStrategyComponent);
-
-impl Payoff<f64> for OptionStrategyComponent {
+impl Payoff<f64> for OptionContract {
     fn payoff(&self, underlying: f64) -> f64 {
         match (self.option_type, self.side) {
             (OptionType::Call, Side::Buy) => (underlying - self.strike).max(0.0),
@@ -49,16 +42,41 @@ impl Payoff<f64> for OptionStrategyComponent {
     }
 }
 
-impl IOptionStrategyComponent for OptionStrategyComponent {
+impl IOption for OptionContract {
     fn option_type(&self) -> OptionType {
         self.option_type
+    }
+
+    fn price(&self) -> f64 {
+        self.premium
     }
 
     fn strike(&self) -> f64 {
         self.strike
     }
+}
 
-    fn will_be_exercised(&self, underlying: f64) -> bool {
+impl OptionContract {
+    pub fn from(option_type: OptionType, side: Side, strike: f64, premium: f64) -> Self {
+        Self {
+            option_type,
+            side,
+            strike,
+            premium,
+            greeks: None,
+        }
+    }
+
+    pub fn from_vars(vars: &OptionVariables, option_type: OptionType, side: Side) -> Self {
+        Self::builder()
+            .option_type(option_type)
+            .side(side)
+            .premium(f64::NAN)
+            .strike(vars.strike_price)
+            .build()
+    }
+
+    pub fn will_be_exercised(&self, underlying: f64) -> bool {
         match self.option_type {
             OptionType::Call => self.strike < underlying,
             OptionType::Put => self.strike > underlying,

@@ -2,10 +2,9 @@ use crate::derivatives::options::blackscholes::option_surface::{
     OptionSurfaceParameters, OptionsSurface,
 };
 use crate::derivatives::options::blackscholes::OptionVariables;
-use crate::derivatives::options::strategy::component::OptionStrategyComponent;
 use crate::derivatives::options::strategy::strategy::OptionStrategy;
-use crate::derivatives::options::strategy::{IOptionStrategy, IOptionStrategyComponent};
-use crate::derivatives::options::OptionType;
+use crate::derivatives::options::strategy::IOptionStrategy;
+use crate::derivatives::options::{OptionContract, OptionType};
 use crate::price::enums::Side;
 use crate::price::payoff::{Payoff, Premium, Profit};
 use pyo3::prelude::*;
@@ -15,6 +14,7 @@ use std::ops::Range;
 impl OptionVariables {
     #[new]
     pub fn init(
+        option_type: OptionType,
         underlying_price: f64,
         strike_price: f64,
         volatility: f64,
@@ -22,14 +22,15 @@ impl OptionVariables {
         dividend: f64,
         time_to_expiration: f64,
     ) -> Self {
-        OptionVariables::from(
-            underlying_price,
-            strike_price,
-            volatility,
-            risk_free_interest_rate,
-            dividend,
-            time_to_expiration,
-        )
+        OptionVariables::builder()
+            .option_type(option_type)
+            .underlying_price(underlying_price)
+            .strike_price(strike_price)
+            .volatility(volatility)
+            .risk_free_interest_rate(risk_free_interest_rate)
+            .dividend(dividend)
+            .time_to_expiration(time_to_expiration)
+            .build()
     }
 }
 
@@ -145,29 +146,24 @@ impl OptionStrategy {
     }
 
     #[pyo3(name = "components")]
-    pub fn components_py(&self) -> Vec<OptionStrategyComponent> {
+    pub fn components_py(&self) -> Vec<OptionContract> {
         self.components()
             .into_iter()
             .map(|x| {
                 let val = x.lock().unwrap();
-                OptionStrategyComponent::from(
-                    val.option_type(),
-                    val.side(),
-                    val.strike(),
-                    val.premium(),
-                )
+                OptionContract::from(val.option_type(), val.side(), val.strike(), val.premium())
             })
             .collect()
     }
 
     #[pyo3(name = "add_component")]
-    pub fn add_component_py(&mut self, component: OptionStrategyComponent) {
+    pub fn add_component_py(&mut self, component: OptionContract) {
         self.add_component(component);
     }
 }
 
 #[pymethods]
-impl OptionStrategyComponent {
+impl OptionContract {
     #[new]
     pub fn init(option_type: OptionType, side: Side, strike: f64, premium: f64) -> Self {
         Self::from(option_type, side, strike, premium)

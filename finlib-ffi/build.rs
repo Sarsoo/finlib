@@ -35,7 +35,6 @@ fn main() {
         .input_extern_file("../finlib/src/derivatives/options/mod.rs")
         .input_extern_file("../finlib/src/derivatives/options/blackscholes/mod.rs")
         .input_extern_file("../finlib/src/derivatives/options/blackscholes/option_surface.rs")
-        .input_extern_file("../finlib/src/derivatives/options/strategy/component.rs")
         .input_extern_file("../finlib/src/derivatives/options/strategy/strategy.rs")
         .csharp_dll_name("libfinlib_ffi")
         .csharp_namespace("FinLib")

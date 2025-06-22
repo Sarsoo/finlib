@@ -1,9 +1,10 @@
-use crate::derivatives::options::blackscholes::{
-    generate_options, par_generate_options, CallOption, OptionVariables, PutOption,
-};
+use crate::derivatives::options::blackscholes::{generate_options, par_generate_options};
 use core::ops::Range;
 use ndarray::Array6;
 
+use crate::derivatives::options::blackscholes::OptionVariables;
+use crate::derivatives::options::OptionContract;
+use crate::derivatives::options::OptionType::Call;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 #[cfg(feature = "wasm")]
@@ -86,30 +87,39 @@ impl OptionSurfaceParameters {
                     for i in self.risk_free_interest_rate.clone() {
                         for d in self.dividend.clone() {
                             for t in self.time_to_expiration.clone() {
-                                let v = OptionVariables::from(
-                                    Self::scale(
-                                        self.underlying_price_bounds,
-                                        p,
-                                        self.underlying_price.len(),
-                                    ),
-                                    Self::scale(
-                                        self.strike_price_bounds,
-                                        s,
-                                        self.strike_price.len(),
-                                    ),
-                                    Self::scale(self.volatility_bounds, v, self.volatility.len()),
-                                    Self::scale(
-                                        self.risk_free_interest_rate_bounds,
-                                        i,
-                                        self.risk_free_interest_rate.len(),
-                                    ),
-                                    Self::scale(self.dividend_bounds, d, self.dividend.len()),
-                                    Self::scale(
+                                let v = OptionVariables::builder()
+                                    .option_type(Call) // todo
+                                    .time_to_expiration(Self::scale(
                                         self.time_to_expiration_bounds,
                                         t,
                                         self.time_to_expiration.len(),
-                                    ),
-                                );
+                                    ))
+                                    .risk_free_interest_rate(Self::scale(
+                                        self.risk_free_interest_rate_bounds,
+                                        i,
+                                        self.risk_free_interest_rate.len(),
+                                    ))
+                                    .volatility(Self::scale(
+                                        self.volatility_bounds,
+                                        v,
+                                        self.volatility.len(),
+                                    ))
+                                    .strike_price(Self::scale(
+                                        self.strike_price_bounds,
+                                        s,
+                                        self.strike_price.len(),
+                                    ))
+                                    .underlying_price(Self::scale(
+                                        self.underlying_price_bounds,
+                                        p,
+                                        self.underlying_price.len(),
+                                    ))
+                                    .dividend(Self::scale(
+                                        self.dividend_bounds,
+                                        d,
+                                        self.dividend.len(),
+                                    ))
+                                    .build();
                                 vec.push(v);
                             }
                         }
@@ -131,7 +141,7 @@ impl OptionSurfaceParameters {
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct OptionsSurface {
     variables: Option<Array6<OptionVariables>>,
-    options: Option<Array6<(CallOption, PutOption)>>,
+    options: Option<Array6<(OptionContract, OptionContract)>>,
 }
 
 impl OptionsSurface {

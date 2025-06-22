@@ -2,10 +2,12 @@ use finlib::derivatives::options::blackscholes::option_surface::{
     OptionSurfaceParameters, OptionsSurface,
 };
 use finlib::derivatives::options::blackscholes::OptionVariables;
+use finlib::derivatives::options::OptionType;
 use std::ops::Range;
 
 #[no_mangle]
 pub unsafe extern "C" fn option_vars_from(
+    option_type: OptionType,
     underlying_price: f64,
     strike_price: f64,
     volatility: f64,
@@ -13,14 +15,17 @@ pub unsafe extern "C" fn option_vars_from(
     dividend: f64,
     time_to_expiration: f64,
 ) -> *mut OptionVariables {
-    Box::into_raw(Box::new(OptionVariables::from(
-        underlying_price,
-        strike_price,
-        volatility,
-        risk_free_interest_rate,
-        dividend,
-        time_to_expiration,
-    )))
+    Box::into_raw(Box::new(
+        OptionVariables::builder()
+            .option_type(option_type)
+            .underlying_price(underlying_price)
+            .strike_price(strike_price)
+            .volatility(volatility)
+            .risk_free_interest_rate(risk_free_interest_rate)
+            .dividend(dividend)
+            .time_to_expiration(time_to_expiration)
+            .build(),
+    ))
 }
 
 #[no_mangle]

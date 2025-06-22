@@ -9,19 +9,19 @@ public enum OptionType
     Put,
 }
 
-public class OptionStrategyComponent: IDisposable, IProfit<double>
+public class OptionContract: IDisposable, IProfit<double>
 {
-    private readonly unsafe OptionStrategyComponent_native* _handle;
-    internal unsafe OptionStrategyComponent_native* GetPtr() => _handle;
+    private readonly unsafe OptionContract_native* _handle;
+    internal unsafe OptionContract_native* GetPtr() => _handle;
 
     internal static OptionType_native MapType(OptionType type) => type == OptionType.Call ? OptionType_native.Call : OptionType_native.Put;
     internal static OptionType MapType(OptionType_native type) => type == OptionType_native.Call ? OptionType.Call : OptionType.Put;
 
-    public OptionStrategyComponent(OptionType optionType, Side side, double strike, double premium)
+    public OptionContract(OptionType optionType, Side side, double strike, double premium)
     {
         unsafe
         {
-            _handle = NativeMethods.option_strategy_component_from(MapType(optionType), Price.Price.MapSide(side), strike, premium);
+            _handle = NativeMethods.option_contract_from(MapType(optionType), Price.Price.MapSide(side), strike, premium);
         }
     }
 
@@ -29,7 +29,7 @@ public class OptionStrategyComponent: IDisposable, IProfit<double>
     {
         unsafe
         {
-            return NativeMethods.option_strategy_component_payoff(_handle, underlying);
+            return NativeMethods.option_contract_payoff(_handle, underlying);
         }
     }
 
@@ -37,7 +37,7 @@ public class OptionStrategyComponent: IDisposable, IProfit<double>
     {
         unsafe
         {
-            return NativeMethods.option_strategy_component_profit(_handle, underlying);
+            return NativeMethods.option_contract_profit(_handle, underlying);
         }
     }
 
@@ -45,7 +45,7 @@ public class OptionStrategyComponent: IDisposable, IProfit<double>
     {
         unsafe
         {
-            return NativeMethods.option_strategy_component_will_be_exercised(_handle, underlying);
+            return NativeMethods.option_contract_will_be_exercised(_handle, underlying);
         }
     }
 
@@ -53,7 +53,7 @@ public class OptionStrategyComponent: IDisposable, IProfit<double>
     {
         unsafe
         {
-            NativeMethods.option_strategy_component_destroy(_handle);
+            NativeMethods.option_contract_destroy(_handle);
         }
     }
 
@@ -63,7 +63,7 @@ public class OptionStrategyComponent: IDisposable, IProfit<double>
         GC.SuppressFinalize(this);
     }
 
-    ~OptionStrategyComponent()
+    ~OptionContract()
     {
         ReleaseUnmanagedResources();
     }

@@ -26,7 +26,7 @@ public class OptionStrategy: IDisposable, IProfit<double>
         }
     }
 
-    public void Add(OptionStrategyComponent component)
+    public void Add(OptionContract component)
     {
         unsafe
         {

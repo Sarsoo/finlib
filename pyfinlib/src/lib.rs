@@ -67,15 +67,11 @@ mod pyfinlib {
         #[pymodule_export]
         use finlib::derivatives::options::blackscholes::option_surface::OptionsSurface;
         #[pymodule_export]
-        use finlib::derivatives::options::blackscholes::CallOption;
-        #[pymodule_export]
         use finlib::derivatives::options::blackscholes::OptionVariables;
         #[pymodule_export]
-        use finlib::derivatives::options::blackscholes::PutOption;
-        #[pymodule_export]
-        use finlib::derivatives::options::strategy::component::OptionStrategyComponent;
-        #[pymodule_export]
         use finlib::derivatives::options::strategy::strategy::OptionStrategy;
+        #[pymodule_export]
+        use finlib::derivatives::options::OptionContract;
         #[pymodule_export]
         use finlib::derivatives::options::OptionGreeks;
 

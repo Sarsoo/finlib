@@ -34,9 +34,9 @@ enum class Side : uint8_t
 
 struct Curve;
 
-struct OptionStrategy;
+struct OptionContract;
 
-struct OptionStrategyComponent;
+struct OptionStrategy;
 
 struct OptionSurfaceParameters;
 
@@ -105,21 +105,20 @@ NullableFloat historical_value_at_risk(const double *arr, size_t len, double con
 
 double interest_compound(double principal, double rate, double time, double n);
 
-void option_strategy_add_component(OptionStrategy *option, OptionStrategyComponent *component);
+void option_contract_destroy(OptionContract *option);
 
-void option_strategy_component_destroy(OptionStrategyComponent *option);
+OptionContract *option_contract_from(OptionType option_type,
+                                     Side side,
+                                     double strike,
+                                     double premium);
 
-OptionStrategyComponent *option_strategy_component_from(OptionType option_type,
-                                                        Side side,
-                                                        double strike,
-                                                        double premium);
+double option_contract_payoff(OptionContract *option, double underlying);
 
-double option_strategy_component_payoff(OptionStrategyComponent *option, double underlying);
+double option_contract_profit(OptionContract *option, double underlying);
 
-double option_strategy_component_profit(OptionStrategyComponent *option, double underlying);
+bool option_contract_will_be_exercised(OptionContract *option, double underlying);
 
-bool option_strategy_component_will_be_exercised(OptionStrategyComponent *option,
-                                                 double underlying);
+void option_strategy_add_component(OptionStrategy *option, OptionContract *component);
 
 void option_strategy_destroy(OptionStrategy *option);
 
@@ -168,7 +167,8 @@ OptionsSurface *option_surface_parameters_walk(OptionSurfaceParameters *option);
 
 void option_vars_destroy(OptionVariables *option);
 
-OptionVariables *option_vars_from(double underlying_price,
+OptionVariables *option_vars_from(OptionType option_type,
+                                  double underlying_price,
                                   double strike_price,
                                   double volatility,
                                   double risk_free_interest_rate,

@@ -25,6 +25,7 @@ rand = { workspace = true }
 serde = { workspace = true, optional = true }
 serde-wasm-bindgen = { workspace = true, optional = true }
 num = "0.4.3"
+bon = { workspace = true }
 
 [dev-dependencies]
 criterion = "0.6.0"
