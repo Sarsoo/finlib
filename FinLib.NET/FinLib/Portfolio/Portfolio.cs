@@ -6,7 +6,7 @@ using FinLib.Risk;
 
 namespace FinLib.Portfolio;
 
-public class Portfolio: IDisposable, IPayoff<double?>
+public class Portfolio: IDisposable, IPayoff<double?>, IValueAtRisk
 {
     private readonly unsafe Portfolio_native* _portfolio;
     internal unsafe Portfolio_native* GetPtr() => _portfolio;
@@ -102,7 +102,7 @@ public class Portfolio: IDisposable, IPayoff<double?>
         }
     }
 
-    public double? ValueAtRisk(double confidence, double initialInvestment)
+    public double? ValueAtRisk(double confidence, double? initialInvestment = null)
     {
         unsafe
         {
@@ -118,6 +118,14 @@ public class Portfolio: IDisposable, IPayoff<double?>
         }
     }
 
+    public double? ValueAtRiskAfterTime(double confidence, nint at, double? initialInvestment = null)
+    {
+        unsafe
+        {
+            return NativeMethods.portfolio_value_at_risk_afer_time(_portfolio, confidence, initialInvestment, at);
+        }
+    }
+
     public double? ProfitLoss
     {
         get
@@ -129,7 +137,7 @@ public class Portfolio: IDisposable, IPayoff<double?>
         }
     }
 
-    public double Payoff(double? underlying)
+    public double Payoff(double? underlying = null)
     {
         unsafe
         {

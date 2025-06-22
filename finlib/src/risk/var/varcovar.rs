@@ -1,5 +1,6 @@
 use crate::stats;
 use crate::util::roc::rates_of_change;
+use log::debug;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 #[cfg(feature = "serde")]
@@ -7,29 +8,65 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
+use crate::risk::forecast::{investment_mean_from_portfolio, investment_std_dev_from_portfolio};
 use crate::risk::var::ValueAtRisk;
-use statrs::distribution::{ContinuousCDF, Normal};
+use crate::stats::{inverse_cdf_value, MuSigma, PopulationStats};
 // https://medium.com/@serdarilarslan/value-at-risk-var-and-its-implementation-in-python-5c9150f73b0e
 
-pub fn value_at_risk_percent(values: &[f64], confidence: f64) -> f64 {
+pub fn value_at_risk_percent(sample: &impl PopulationStats, confidence: f64) -> Result<f64, ()> {
+    match sample.mean_and_std_dev() {
+        Err(_) => Err(()),
+        Ok(MuSigma { mean, std_dev }) => Ok(inverse_cdf_value(confidence, mean, std_dev)),
+    }
+}
+
+pub fn value_at_risk_percent_1d(values: &[f64], confidence: f64) -> f64 {
     let roc = rates_of_change(values).collect::<Vec<_>>();
 
     let mean = stats::mean(&roc);
     let std_dev = stats::sample_std_dev(&roc);
 
-    let n = Normal::new(mean, std_dev).unwrap();
-
-    n.inverse_cdf(confidence)
+    inverse_cdf_value(confidence, mean, std_dev)
 }
 
-pub fn investment_value_at_risk(
+pub fn value_at_risk_from_initial_investment(
     confidence: f64,
-    investment_mean: f64,
-    investment_std_dev: f64,
+    mean: f64,
+    std_dev: f64,
+    initial_investment: f64,
 ) -> f64 {
-    let n = Normal::new(investment_mean, investment_std_dev).unwrap();
+    debug!(
+        "Portfolio percent movement mean[{}], std dev[{}]",
+        mean, std_dev
+    );
+    let investment_mean = investment_mean_from_portfolio(mean, initial_investment);
+    let investment_std_dev = investment_std_dev_from_portfolio(std_dev, initial_investment);
+    debug!(
+        "Investment[{}] mean[{}], std dev[{}]",
+        initial_investment, mean, std_dev
+    );
 
-    n.inverse_cdf(confidence)
+    let investment_var = inverse_cdf_value(confidence, investment_mean, investment_std_dev);
+
+    debug!(
+        "Investment[{}] value at risk [{}]",
+        initial_investment, investment_var
+    );
+
+    initial_investment - investment_var
+}
+
+pub fn value_at_risk_from_initial_investment_1d(
+    values: &[f64],
+    confidence: f64,
+    initial_investment: f64,
+) -> f64 {
+    let roc = rates_of_change(values).collect::<Vec<_>>();
+
+    let mean = stats::mean(&roc);
+    let std_dev = stats::sample_std_dev(&roc);
+
+    value_at_risk_from_initial_investment(confidence, mean, std_dev, initial_investment)
 }
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
@@ -51,7 +88,18 @@ impl VarianceCovariance {
 
 impl ValueAtRisk for VarianceCovariance {
     fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
-        Ok(value_at_risk_percent(&self.values, confidence))
+        Ok(value_at_risk_percent_1d(&self.values, confidence))
+    }
+
+    fn value_at_risk(&self, confidence: f64, initial_investment: Option<f64>) -> Result<f64, ()> {
+        match initial_investment {
+            None => Err(()),
+            Some(iv) => Ok(value_at_risk_from_initial_investment_1d(
+                &self.values,
+                confidence,
+                iv,
+            )),
+        }
     }
 }
 
@@ -110,8 +158,8 @@ mod tests {
 
         let mut portfolio = Portfolio::from(assets);
 
-        println!("{:?}", portfolio.value_at_risk(0.01, 1_000_000.));
-        println!("{:?}", portfolio.value_at_risk(0.1, 1_000_000.));
-        println!("{:?}", portfolio.value_at_risk(0.5, 1_000_000.));
+        println!("{:?}", portfolio.value_at_risk(0.01, Some(1_000_000.)));
+        println!("{:?}", portfolio.value_at_risk(0.1, Some(1_000_000.)));
+        println!("{:?}", portfolio.value_at_risk(0.5, Some(1_000_000.)));
     }
 }

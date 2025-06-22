@@ -61,14 +61,34 @@ impl Portfolio {
     pub fn value_at_risk_py(
         &mut self,
         confidence: f64,
-        initial_investment: f64,
+        initial_investment: Option<f64>,
     ) -> PyResult<Option<f64>> {
-        Ok(self.value_at_risk(confidence, initial_investment))
+        match self.value_at_risk(confidence, initial_investment) {
+            Ok(value) => Ok(Some(value)),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
     }
 
-    #[pyo3(name = "value_at_risk_percent")]
+    #[pyo3(name = "value_at_risk_pct")]
     pub fn value_at_risk_pct_py(&mut self, confidence: f64) -> PyResult<f64> {
         match self.value_at_risk_pct(confidence) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
+    }
+
+    #[pyo3(name = "value_at_risk_after_time")]
+    pub fn value_at_risk_after_time_py(
+        &mut self,
+        confidence: f64,
+        initial_investment: Option<f64>,
+        at: isize,
+    ) -> PyResult<f64> {
+        match self.value_at_risk_after_time(confidence, initial_investment, at) {
             Ok(value) => Ok(value),
             Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
                 "Failed to calculate",
@@ -111,6 +131,45 @@ impl PortfolioAsset {
                 "failed to calculate mean and std",
             )),
             Ok(m) => Ok(m),
+        }
+    }
+
+    #[pyo3(name = "value_at_risk")]
+    pub fn value_at_risk_py(
+        &mut self,
+        confidence: f64,
+        initial_investment: Option<f64>,
+    ) -> PyResult<Option<f64>> {
+        match self.value_at_risk(confidence, initial_investment) {
+            Ok(value) => Ok(Some(value)),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
+    }
+
+    #[pyo3(name = "value_at_risk_pct")]
+    pub fn value_at_risk_pct_py(&mut self, confidence: f64) -> PyResult<f64> {
+        match self.value_at_risk_pct(confidence) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
+    }
+
+    #[pyo3(name = "value_at_risk_after_time")]
+    pub fn value_at_risk_after_time_py(
+        &mut self,
+        confidence: f64,
+        initial_investment: Option<f64>,
+        at: isize,
+    ) -> PyResult<f64> {
+        match self.value_at_risk_after_time(confidence, initial_investment, at) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
         }
     }
 }

@@ -8,6 +8,18 @@ use pyo3::prelude::*;
 
 pub trait ValueAtRisk {
     fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()>;
+    fn value_at_risk(&self, confidence: f64, initial_investment: Option<f64>) -> Result<f64, ()>;
+    fn value_at_risk_after_time(
+        &self,
+        confidence: f64,
+        initial_investment: Option<f64>,
+        at: isize,
+    ) -> Result<f64, ()> {
+        Ok(scale_value_at_risk(
+            self.value_at_risk(confidence, initial_investment)?,
+            at,
+        ))
+    }
 }
 
 #[cfg_attr(feature = "py", pyfunction)]

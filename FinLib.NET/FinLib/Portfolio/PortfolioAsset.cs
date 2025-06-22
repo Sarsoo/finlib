@@ -5,7 +5,7 @@ using System.Text;
 
 namespace FinLib.Portfolio;
 
-public class PortfolioAsset: IDisposable, IPayoff<double?>, IProfit<double?>
+public class PortfolioAsset: IDisposable, IPayoff<double?>, IProfit<double?>, IValueAtRisk
 {
     private readonly unsafe PortfolioAsset_native* _handle;
     internal unsafe PortfolioAsset_native* GetPtr() => _handle;
@@ -65,7 +65,7 @@ public class PortfolioAsset: IDisposable, IPayoff<double?>, IProfit<double?>
         }
     }
 
-    public double Payoff(double? underlying)
+    public double Payoff(double? underlying = null)
     {
         unsafe
         {
@@ -73,11 +73,35 @@ public class PortfolioAsset: IDisposable, IPayoff<double?>, IProfit<double?>
         }
     }
 
-    public double Profit(double? underlying)
+    public double Profit(double? underlying = null)
     {
         unsafe
         {
             return NativeMethods.portfolio_asset_profit(_handle, underlying);
+        }
+    }
+
+    public double? ValueAtRisk(double confidence, double? initialInvestment = null)
+    {
+        unsafe
+        {
+            return NativeMethods.portfolio_asset_value_at_risk(_handle, confidence, initialInvestment);
+        }
+    }
+
+    public double? ValueAtRiskPercent(double confidence)
+    {
+        unsafe
+        {
+            return NativeMethods.portfolio_asset_value_at_risk_percent(_handle, confidence);
+        }
+    }
+
+    public double? ValueAtRiskAfterTime(double confidence, nint at, double? initialInvestment = null)
+    {
+        unsafe
+        {
+            return NativeMethods.portfolio_asset_value_at_risk_afer_time(_handle, confidence, initialInvestment, at);
         }
     }
 

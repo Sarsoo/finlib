@@ -1,9 +1,10 @@
 use crate::price::payoff::{Payoff, Profit};
-use crate::risk::var::varcovar::value_at_risk_percent;
+use crate::risk::var::varcovar::value_at_risk_from_initial_investment;
 use crate::risk::var::ValueAtRisk;
 use crate::stats;
 use crate::stats::{MuSigma, PopulationStats};
 use crate::util::roc::rates_of_change;
+use bon::Builder;
 use log::info;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
@@ -27,7 +28,7 @@ pub enum ValueType {
 #[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Clone, Debug, PartialEq, PartialOrd)]
+#[derive(Builder, Clone, Debug, PartialEq, PartialOrd)]
 pub struct PortfolioAsset {
     // pub portfolio_weight: f64,
     name: String,
@@ -124,6 +125,28 @@ impl Profit<Option<f64>> for PortfolioAsset {
 
 impl ValueAtRisk for PortfolioAsset {
     fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
-        Ok(value_at_risk_percent(&self.market_values, confidence))
+        crate::risk::var::varcovar::value_at_risk_percent(self, confidence)
+    }
+
+    fn value_at_risk(&self, confidence: f64, initial_investment: Option<f64>) -> Result<f64, ()> {
+        match (
+            self.mean_and_std_dev(),
+            initial_investment,
+            self.value_at_position_open,
+        ) {
+            (Err(_), _, _) => Err(()),
+            (Ok(MuSigma { mean, std_dev }), Some(iv), _) => Ok(
+                value_at_risk_from_initial_investment(confidence, mean, std_dev, iv),
+            ),
+            (Ok(MuSigma { mean, std_dev }), None, Some(vapo)) => {
+                Ok(value_at_risk_from_initial_investment(
+                    confidence,
+                    mean,
+                    std_dev,
+                    vapo * self.quantity,
+                ))
+            }
+            (_, _, None) => Err(()),
+        }
     }
 }

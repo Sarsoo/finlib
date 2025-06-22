@@ -29,7 +29,10 @@ namespace finlib {
 
         finlibrs::Tuple get_mean_and_std();
 
-        finlibrs::NullableFloat value_at_risk(double confidence, double initial_investment);
+        finlibrs::NullableFloat value_at_risk(double confidence, finlibrs::NullableFloat initial_investment);
+
+        finlibrs::NullableFloat value_at_risk_afer_time(double confidence, finlibrs::NullableFloat initial_investment,
+                                                        ptrdiff_t after_time);
 
         finlibrs::NullableFloat value_at_risk_percent(double confidence);
 

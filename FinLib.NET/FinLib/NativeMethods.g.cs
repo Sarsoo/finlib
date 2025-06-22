@@ -58,6 +58,15 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "portfolio_asset_payoff", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double portfolio_asset_payoff(PortfolioAsset_native* asset, NullableFloat underlying);
 
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_asset_value_at_risk(PortfolioAsset_native* portfolio, double confidence, NullableFloat initial_investment);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_value_at_risk_percent", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_asset_value_at_risk_percent(PortfolioAsset_native* portfolio, double confidence);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_value_at_risk_afer_time", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_asset_value_at_risk_afer_time(PortfolioAsset_native* portfolio, double confidence, NullableFloat initial_investment, nint at);
+
         [DllImport(__DllName, EntryPoint = "portfolio_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern Portfolio_native* portfolio_new();
 
@@ -91,10 +100,13 @@ namespace FinLib
         internal static extern Tuple portfolio_get_mean_and_std(Portfolio_native* portfolio);
 
         [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern NullableFloat portfolio_value_at_risk(Portfolio_native* portfolio, double confidence, double initial_investment);
+        internal static extern NullableFloat portfolio_value_at_risk(Portfolio_native* portfolio, double confidence, NullableFloat initial_investment);
 
         [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk_percent", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern NullableFloat portfolio_value_at_risk_percent(Portfolio_native* portfolio, double confidence);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk_afer_time", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_value_at_risk_afer_time(Portfolio_native* portfolio, double confidence, NullableFloat initial_investment, nint at);
 
         [DllImport(__DllName, EntryPoint = "relative_strength_indicator", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double relative_strength_indicator(double time_period, double average_gain, double average_loss);

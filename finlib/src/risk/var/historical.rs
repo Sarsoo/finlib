@@ -19,7 +19,7 @@ pub fn value_at_risk_percent(values: &[f64], confidence: f64) -> f64 {
     roc[threshold]
 }
 
-pub fn par_value_at_risk(values: &[f64], confidence: f64) -> f64 {
+pub fn par_value_at_risk_percent(values: &[f64], confidence: f64) -> f64 {
     let mut roc = rates_of_change(values).collect::<Vec<_>>();
 
     roc.par_sort_by(|x, y| x.partial_cmp(y).unwrap());
@@ -49,6 +49,10 @@ impl Historical {
 impl ValueAtRisk for Historical {
     fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
         Ok(value_at_risk_percent(&self.values, confidence))
+    }
+
+    fn value_at_risk(&self, _confidence: f64, _initial_investment: Option<f64>) -> Result<f64, ()> {
+        todo!()
     }
 }
 

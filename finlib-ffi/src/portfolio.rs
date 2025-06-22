@@ -89,6 +89,39 @@ pub unsafe extern "C" fn portfolio_asset_payoff(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn portfolio_asset_value_at_risk(
+    portfolio: *mut PortfolioAsset,
+    confidence: f64,
+    initial_investment: NullableFloat,
+) -> NullableFloat {
+    NullableFloat::from_result(
+        (&mut *portfolio).value_at_risk(confidence, initial_investment.to_option()),
+    )
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn portfolio_asset_value_at_risk_percent(
+    portfolio: *mut PortfolioAsset,
+    confidence: f64,
+) -> NullableFloat {
+    NullableFloat::from_result((&mut *portfolio).value_at_risk_pct(confidence))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn portfolio_asset_value_at_risk_afer_time(
+    portfolio: *mut PortfolioAsset,
+    confidence: f64,
+    initial_investment: NullableFloat,
+    at: isize,
+) -> NullableFloat {
+    NullableFloat::from_result((&mut *portfolio).value_at_risk_after_time(
+        confidence,
+        initial_investment.to_option(),
+        at,
+    ))
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn portfolio_new() -> *mut Portfolio {
     Box::into_raw(Box::new(Portfolio::from(vec![])))
 }
@@ -153,9 +186,11 @@ pub unsafe extern "C" fn portfolio_get_mean_and_std(portfolio: *mut Portfolio) -
 pub unsafe extern "C" fn portfolio_value_at_risk(
     portfolio: *mut Portfolio,
     confidence: f64,
-    initial_investment: f64,
+    initial_investment: NullableFloat,
 ) -> NullableFloat {
-    NullableFloat::from((&mut *portfolio).value_at_risk(confidence, initial_investment))
+    NullableFloat::from_result(
+        (&mut *portfolio).value_at_risk(confidence, initial_investment.to_option()),
+    )
 }
 
 #[no_mangle]
@@ -164,4 +199,18 @@ pub unsafe extern "C" fn portfolio_value_at_risk_percent(
     confidence: f64,
 ) -> NullableFloat {
     NullableFloat::from_result((&mut *portfolio).value_at_risk_pct(confidence))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn portfolio_value_at_risk_afer_time(
+    portfolio: *mut Portfolio,
+    confidence: f64,
+    initial_investment: NullableFloat,
+    at: isize,
+) -> NullableFloat {
+    NullableFloat::from_result((&mut *portfolio).value_at_risk_after_time(
+        confidence,
+        initial_investment.to_option(),
+        at,
+    ))
 }

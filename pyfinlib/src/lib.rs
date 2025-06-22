@@ -136,7 +136,7 @@ mod pyfinlib {
 
             #[pyfunction]
             fn varcovar(values: Vec<f64>, confidence: f64) -> PyResult<f64> {
-                Ok(finlib::risk::var::varcovar::value_at_risk_percent(
+                Ok(finlib::risk::var::varcovar::value_at_risk_percent_1d(
                     &values, confidence,
                 ))
             }

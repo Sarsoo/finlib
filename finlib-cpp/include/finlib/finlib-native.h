@@ -189,6 +189,17 @@ double portfolio_asset_profit(PortfolioAsset *asset, NullableFloat underlying);
 
 NullableFloat portfolio_asset_profit_loss(PortfolioAsset *asset);
 
+NullableFloat portfolio_asset_value_at_risk(PortfolioAsset *portfolio,
+                                            double confidence,
+                                            NullableFloat initial_investment);
+
+NullableFloat portfolio_asset_value_at_risk_afer_time(PortfolioAsset *portfolio,
+                                                      double confidence,
+                                                      NullableFloat initial_investment,
+                                                      ptrdiff_t at);
+
+NullableFloat portfolio_asset_value_at_risk_percent(PortfolioAsset *portfolio, double confidence);
+
 void portfolio_destroy(Portfolio *portfolio);
 
 Tuple portfolio_get_mean_and_std(Portfolio *portfolio);
@@ -207,7 +218,12 @@ bool portfolio_valid_sizes(Portfolio *portfolio);
 
 NullableFloat portfolio_value_at_risk(Portfolio *portfolio,
                                       double confidence,
-                                      double initial_investment);
+                                      NullableFloat initial_investment);
+
+NullableFloat portfolio_value_at_risk_afer_time(Portfolio *portfolio,
+                                                double confidence,
+                                                NullableFloat initial_investment,
+                                                ptrdiff_t at);
 
 NullableFloat portfolio_value_at_risk_percent(Portfolio *portfolio, double confidence);
 

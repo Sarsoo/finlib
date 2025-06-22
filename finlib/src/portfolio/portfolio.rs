@@ -1,10 +1,9 @@
 use crate::portfolio::{PortfolioAsset, ValueType};
 use crate::price::payoff::{Payoff, Profit};
-use crate::risk::forecast::{mean_investment, std_dev_investment};
-use crate::risk::var::varcovar::investment_value_at_risk;
+use crate::risk::var::varcovar::value_at_risk_from_initial_investment;
 use crate::risk::var::ValueAtRisk;
 use crate::stats::{MuSigma, PopulationStats};
-use log::{debug, error};
+use log::error;
 use ndarray::prelude::*;
 use ndarray_stats::CorrelationExt;
 #[cfg(feature = "py")]
@@ -12,7 +11,6 @@ use pyo3::prelude::*;
 use rayon::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use statrs::distribution::{ContinuousCDF, Normal};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
@@ -116,6 +114,7 @@ impl Portfolio {
                 .collect::<Vec<f64>>(),
         )
         .unwrap();
+
         Some(matrix.into_owned())
     }
 
@@ -140,35 +139,24 @@ impl Portfolio {
         Some(matrix.into_owned())
     }
 
-    /// For a given confidence rate (0.01, 0.05, 0.10) and initial investment value, calculate the parametric value at risk
-    ///
-    /// https://www.interviewqs.com/blog/value-at-risk
-    pub fn value_at_risk(&mut self, confidence: f64, initial_investment: f64) -> Option<f64> {
-        match self.mean_and_std_dev() {
-            Err(_) => None,
-            Ok(MuSigma { mean, std_dev }) => {
-                debug!(
-                    "Portfolio percent movement mean[{}], std dev[{}]",
-                    mean, std_dev
-                );
-                let investment_mean = mean_investment(mean, initial_investment);
-                let investment_std_dev = std_dev_investment(std_dev, initial_investment);
-                debug!(
-                    "Investment[{}] mean[{}], std dev[{}]",
-                    initial_investment, mean, std_dev
-                );
-
-                let investment_var =
-                    investment_value_at_risk(confidence, investment_mean, investment_std_dev);
-
-                debug!(
-                    "Investment[{}] value at risk [{}]",
-                    initial_investment, investment_var
-                );
-
-                Some(initial_investment - investment_var)
-            }
+    pub fn initial_investment(&self) -> Result<f64, ()> {
+        if self
+            .assets
+            .iter()
+            .all(|x| x.value_at_position_open.is_none())
+        {
+            error!("portfolio: invalid initial investment retrieved, all are 0");
+            return Err(());
         }
+
+        Ok(self
+            .assets
+            .iter()
+            .map(|x| match x.value_at_position_open {
+                None => 0.0,
+                Some(iv) => iv * x.quantity,
+            })
+            .sum())
     }
 
     pub fn is_differential(&self) -> bool {
@@ -184,12 +172,24 @@ impl ValueAtRisk for Portfolio {
     ///
     /// https://www.interviewqs.com/blog/value-at-risk
     fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
-        match self.mean_and_std_dev() {
-            Err(_) => Err(()),
-            Ok(MuSigma { mean, std_dev }) => {
-                let n = Normal::new(mean, std_dev).unwrap();
-                Ok(n.inverse_cdf(confidence))
-            }
+        crate::risk::var::varcovar::value_at_risk_percent(self, confidence)
+    }
+
+    /// For a given confidence rate (0.01, 0.05, 0.10) and initial investment value, calculate the parametric value at risk
+    ///
+    /// https://www.interviewqs.com/blog/value-at-risk
+    fn value_at_risk(&self, confidence: f64, initial_investment: Option<f64>) -> Result<f64, ()> {
+        match (self.mean_and_std_dev(), initial_investment) {
+            (Err(_), _) => Err(()),
+            (Ok(MuSigma { mean, std_dev }), Some(iv)) => Ok(value_at_risk_from_initial_investment(
+                confidence, mean, std_dev, iv,
+            )),
+            (Ok(MuSigma { mean, std_dev }), None) => match self.initial_investment() {
+                Ok(iv) => Ok(value_at_risk_from_initial_investment(
+                    confidence, mean, std_dev, iv,
+                )),
+                Err(_) => Err(()),
+            },
         }
     }
 }
@@ -201,12 +201,13 @@ impl PopulationStats for Portfolio {
     fn mean_and_std_dev(&self) -> Result<MuSigma, ()> {
         if !self.valid_sizes() {
             error!(
-                "Can't get portfolio mean and std dev because asset value counts arent't the same"
+                "Can't get portfolio mean and std dev because asset value counts aren't the same"
             );
             return Err(());
         }
 
         if !self.is_differential() {
+            error!("Can't get portfolio mean and std dev because asset values aren't differential");
             return Err(());
         }
 
@@ -223,6 +224,8 @@ impl PopulationStats for Portfolio {
             return Err(());
         }
         let cov = cov.unwrap();
+        assert_eq!(cov.shape()[0], self.assets.len());
+        assert_eq!(cov.shape()[1], self.assets.len());
         let mean_return = m.mean_axis(Axis(1));
         if mean_return.is_none() {
             error!("Failed to calculate portfolio mean");
@@ -259,7 +262,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn var_test() {
+    fn get_matrix() {
         let assets = vec![
             PortfolioAsset::new(
                 // 0.3,
@@ -285,5 +288,53 @@ mod tests {
         println!("cov 0; {:?}", cov);
 
         col.len();
+    }
+
+    #[test]
+    fn var_investment() {
+        let assets = vec![
+            PortfolioAsset::builder()
+                .name("awdad".into())
+                .quantity(4.0)
+                .market_values(vec![2f64, 3f64, 4f64])
+                .value_at_position_open(1.0)
+                .value_type(ValueType::Absolute)
+                .build(),
+            PortfolioAsset::builder()
+                .name("awdad".into())
+                .quantity(4.0)
+                .market_values(vec![1f64, 6f64, 8f64])
+                .value_at_position_open(1.0)
+                .value_type(ValueType::Absolute)
+                .build(),
+        ];
+
+        let mut m = Portfolio::from(assets);
+        m.apply_rates_of_change();
+
+        assert!(m.value_at_risk(0.01, None).is_ok());
+    }
+
+    #[test]
+    fn var_investment_error() {
+        let assets = vec![
+            PortfolioAsset::new(
+                // 0.3,
+                "awdad".to_string(),
+                4.0,
+                vec![2f64, 3f64, 4f64],
+            ),
+            PortfolioAsset::new(
+                // 0.7,
+                "awdad".to_string(),
+                4.0,
+                vec![1f64, 6f64, 8f64],
+            ),
+        ];
+
+        let mut m = Portfolio::from(assets);
+        m.apply_rates_of_change();
+
+        assert!(m.value_at_risk(0.01, None).is_err());
     }
 }

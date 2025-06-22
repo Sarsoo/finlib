@@ -42,8 +42,28 @@ impl Portfolio {
     }
 
     #[wasm_bindgen(js_name = "valueAtRisk")]
-    pub fn value_at_risk_wasm(&mut self, confidence: f64, initial_investment: f64) -> Option<f64> {
-        self.value_at_risk(confidence, initial_investment)
+    pub fn value_at_risk_wasm(
+        &mut self,
+        confidence: f64,
+        initial_investment: Option<f64>,
+    ) -> Result<f64, JsValue> {
+        match self.value_at_risk(confidence, initial_investment) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(JsValue::from("Failed to calculate")),
+        }
+    }
+
+    #[wasm_bindgen(js_name = "valueAtRiskAfterTime")]
+    pub fn value_at_risk_afer_time_py_wasm(
+        &mut self,
+        confidence: f64,
+        initial_investment: Option<f64>,
+        at: isize,
+    ) -> Result<f64, JsValue> {
+        match self.value_at_risk_after_time(confidence, initial_investment, at) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(JsValue::from("Failed to calculate")),
+        }
     }
 }
 
@@ -82,6 +102,39 @@ impl PortfolioAsset {
         match self.mean_and_std_dev() {
             Err(_) => Err(JsValue::from("Failed to calculate mean_and_std_dev")),
             Ok(m) => Ok(m),
+        }
+    }
+
+    #[wasm_bindgen(js_name = "valueAtRiskPercent")]
+    pub fn value_at_risk_pct_wasm(&mut self, confidence: f64) -> Result<f64, JsValue> {
+        match self.value_at_risk_pct(confidence) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(JsValue::from("Failed to calculate")),
+        }
+    }
+
+    #[wasm_bindgen(js_name = "valueAtRisk")]
+    pub fn value_at_risk_wasm(
+        &mut self,
+        confidence: f64,
+        initial_investment: Option<f64>,
+    ) -> Result<f64, JsValue> {
+        match self.value_at_risk(confidence, initial_investment) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(JsValue::from("Failed to calculate")),
+        }
+    }
+
+    #[wasm_bindgen(js_name = "valueAtRiskAfterTime")]
+    pub fn value_at_risk_afer_time_py_wasm(
+        &mut self,
+        confidence: f64,
+        initial_investment: Option<f64>,
+        at: isize,
+    ) -> Result<f64, JsValue> {
+        match self.value_at_risk_after_time(confidence, initial_investment, at) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(JsValue::from("Failed to calculate")),
         }
     }
 }

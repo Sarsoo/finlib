@@ -41,9 +41,16 @@ namespace finlib {
         return finlibrs::portfolio_get_mean_and_std(handle);
     }
 
-    finlibrs::NullableFloat Portfolio::value_at_risk(double confidence, double initial_investment) {
+    finlibrs::NullableFloat Portfolio::value_at_risk(double confidence, finlibrs::NullableFloat initial_investment) {
         return finlibrs::portfolio_value_at_risk(handle, confidence, initial_investment);
     }
+
+    finlibrs::NullableFloat Portfolio::value_at_risk_afer_time(double confidence,
+                                                               finlibrs::NullableFloat initial_investment,
+                                                               ptrdiff_t after_time) {
+        return finlibrs::portfolio_value_at_risk_afer_time(handle, confidence, initial_investment, after_time);
+    }
+
 
     finlibrs::NullableFloat Portfolio::value_at_risk_percent(double confidence) {
         return finlibrs::portfolio_value_at_risk_percent(handle, confidence);

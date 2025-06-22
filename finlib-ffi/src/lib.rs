@@ -85,6 +85,13 @@ impl NullableFloat {
             },
         }
     }
+
+    pub fn to_option(&self) -> Option<f64> {
+        match self.is_valid {
+            true => Some(self.val),
+            false => None,
+        }
+    }
 }
 
 #[no_mangle]
@@ -141,7 +148,7 @@ pub unsafe extern "C" fn varcovar_value_at_risk(
     };
 
     NullableFloat {
-        val: finlib::risk::var::varcovar::value_at_risk_percent(input_array, confidence),
+        val: finlib::risk::var::varcovar::value_at_risk_percent_1d(input_array, confidence),
         is_valid: true,
     }
 }
