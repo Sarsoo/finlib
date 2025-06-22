@@ -21,6 +21,6 @@ namespace finlib {
 
     private:
         finlibrs::OptionContract *handle;
-        friend class OptionStrategy;
+        friend class Strategy;
     };
 }

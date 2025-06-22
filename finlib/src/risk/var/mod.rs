@@ -7,7 +7,7 @@ pub mod varcovar;
 use pyo3::prelude::*;
 
 pub trait ValueAtRisk {
-    fn value_at_risk_pct(&self, confidence: f64) -> f64;
+    fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()>;
 }
 
 #[cfg_attr(feature = "py", pyfunction)]

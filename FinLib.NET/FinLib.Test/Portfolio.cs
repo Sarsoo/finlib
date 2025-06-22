@@ -8,7 +8,7 @@ public class PortfolioTest
     [Test]
     public void TestPortfolioCreation()
     {
-        using var portfolio = new Portfolio();
+        using var portfolio = new Portfolio.Portfolio();
         portfolio.AddAsset("first", 1, [0.5, 0.5, 0.5, 0.5]);
         portfolio.AddAsset("second", 1, [0.5, 0.5, 0.5, 0.5]);
 
@@ -20,13 +20,13 @@ public class PortfolioTest
     [Test]
     public void TestPortfolioValid()
     {
-        var portfolio = new Portfolio();
+        var portfolio = new Portfolio.Portfolio();
         portfolio.AddAsset("first", 1, [0.5, 0.5, 0.5, 0.5]);
         portfolio.AddAsset("second", 1, [0.5, 0.5, 0.5]);
 
         portfolio.IsValid.Should().BeFalse();
 
-        var portfolio2 = new Portfolio();
+        var portfolio2 = new Portfolio.Portfolio();
         portfolio2.AddAsset("first", 1, [0.5, 0.5, 0.5, 0.5]);
         portfolio2.AddAsset("second", 1, [0.5, 0.5, 0.5, 0.5]);
 

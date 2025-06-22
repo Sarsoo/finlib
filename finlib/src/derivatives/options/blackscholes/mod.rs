@@ -24,8 +24,6 @@ pub struct OptionVariables {
     pub risk_free_interest_rate: f64,
     pub dividend: f64,
     pub time_to_expiration: f64,
-    d1: Option<f64>,
-    d2: Option<f64>,
 }
 
 pub struct BlackscholesPricer {}

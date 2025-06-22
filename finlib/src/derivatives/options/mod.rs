@@ -2,7 +2,7 @@ pub mod blackscholes;
 pub mod greeks;
 pub mod intrinsic_value;
 pub mod option_contract;
-pub mod strategy;
+pub mod templates;
 
 pub use greeks::*;
 pub use option_contract::*;

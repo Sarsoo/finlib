@@ -12,6 +12,8 @@ mod pyfinlib {
     use finlib::curve::point::CurvePoint;
 
     #[pymodule_export]
+    use finlib::portfolio::strategy::Strategy;
+    #[pymodule_export]
     use finlib::portfolio::Portfolio;
     #[pymodule_export]
     use finlib::portfolio::PortfolioAsset;
@@ -69,8 +71,6 @@ mod pyfinlib {
         #[pymodule_export]
         use finlib::derivatives::options::blackscholes::OptionVariables;
         #[pymodule_export]
-        use finlib::derivatives::options::strategy::strategy::OptionStrategy;
-        #[pymodule_export]
         use finlib::derivatives::options::OptionContract;
         #[pymodule_export]
         use finlib::derivatives::options::OptionGreeks;
@@ -80,27 +80,27 @@ mod pyfinlib {
             use super::*;
 
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::bear_put_spread;
+            use finlib::derivatives::options::templates::bear_put_spread;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::bull_call_spread;
+            use finlib::derivatives::options::templates::bull_call_spread;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::collar;
+            use finlib::derivatives::options::templates::collar;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::iron_butterfly_spread;
+            use finlib::derivatives::options::templates::iron_butterfly_spread;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::long_call_butterfly_spread;
+            use finlib::derivatives::options::templates::long_call_butterfly_spread;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::long_put_butterfly_spread;
+            use finlib::derivatives::options::templates::long_put_butterfly_spread;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::long_straddle;
+            use finlib::derivatives::options::templates::long_straddle;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::long_strangle;
+            use finlib::derivatives::options::templates::long_strangle;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::reverse_iron_butterfly_spread;
+            use finlib::derivatives::options::templates::reverse_iron_butterfly_spread;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::short_call_butterfly_spread;
+            use finlib::derivatives::options::templates::short_call_butterfly_spread;
             #[pymodule_export]
-            use finlib::derivatives::options::strategy::templates::short_put_butterfly_spread;
+            use finlib::derivatives::options::templates::short_put_butterfly_spread;
         }
     }
 

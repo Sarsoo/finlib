@@ -2,8 +2,6 @@ use crate::derivatives::options::blackscholes::option_surface::{
     OptionSurfaceParameters, OptionsSurface,
 };
 use crate::derivatives::options::blackscholes::OptionVariables;
-use crate::derivatives::options::strategy::strategy::OptionStrategy;
-use crate::derivatives::options::strategy::IOptionStrategy;
 use crate::derivatives::options::{OptionContract, OptionType};
 use crate::price::enums::Side;
 use crate::price::payoff::{Payoff, Profit};
@@ -119,45 +117,6 @@ impl OptionsSurface {
             Ok(_) => Ok(self.len()),
             Err(_) => Err(JsValue::from("failed to construct matrix")),
         }
-    }
-}
-
-#[wasm_bindgen]
-impl OptionStrategy {
-    #[wasm_bindgen(constructor)]
-    pub fn init_wasm() -> Self {
-        Self::new()
-    }
-
-    #[wasm_bindgen(getter = length)]
-    pub fn len_wasm(&self) -> usize {
-        self.size()
-    }
-
-    #[wasm_bindgen(js_name = "payoff")]
-    pub fn payoff_wasm(&mut self, underlying: f64) -> f64 {
-        self.payoff(underlying)
-    }
-
-    #[wasm_bindgen(js_name = "profit")]
-    pub fn profit_wasm(&mut self, underlying: f64) -> f64 {
-        self.profit(underlying)
-    }
-
-    #[wasm_bindgen(js_name = "components")]
-    pub fn components_wasm(&self) -> Vec<OptionContract> {
-        self.components()
-            .into_iter()
-            .map(|x| {
-                let val = x.lock().unwrap();
-                OptionContract::from(val.option_type(), val.side(), val.strike(), val.premium())
-            })
-            .collect()
-    }
-
-    #[wasm_bindgen(js_name = "add_component")]
-    pub fn add_component_wasm(&mut self, component: OptionContract) {
-        self.add_component(component);
     }
 }
 

@@ -1,7 +1,8 @@
 use crate::portfolio::{PortfolioAsset, ValueType};
-use crate::price::payoff::Payoff;
+use crate::price::payoff::{Payoff, Profit};
 use crate::risk::forecast::{mean_investment, std_dev_investment};
 use crate::risk::var::varcovar::investment_value_at_risk;
+use crate::risk::var::ValueAtRisk;
 use crate::stats::{MuSigma, PopulationStats};
 use log::{debug, error};
 use ndarray::prelude::*;
@@ -170,24 +171,26 @@ impl Portfolio {
         }
     }
 
-    /// For a given confidence rate (0.01, 0.05, 0.10) calculate the percentage change in an investment
-    ///
-    /// https://www.interviewqs.com/blog/value-at-risk
-    pub fn value_at_risk_percent(&mut self, confidence: f64) -> Option<f64> {
-        match self.mean_and_std_dev() {
-            Err(_) => None,
-            Ok(MuSigma { mean, std_dev }) => {
-                let n = Normal::new(mean, std_dev).unwrap();
-                Some(n.inverse_cdf(confidence))
-            }
-        }
-    }
-
     pub fn is_differential(&self) -> bool {
         !self
             .assets
             .iter()
             .any(|x| x.value_type == ValueType::Absolute)
+    }
+}
+
+impl ValueAtRisk for Portfolio {
+    /// For a given confidence rate (0.01, 0.05, 0.10) calculate the percentage change in an investment
+    ///
+    /// https://www.interviewqs.com/blog/value-at-risk
+    fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
+        match self.mean_and_std_dev() {
+            Err(_) => Err(()),
+            Ok(MuSigma { mean, std_dev }) => {
+                let n = Normal::new(mean, std_dev).unwrap();
+                Ok(n.inverse_cdf(confidence))
+            }
+        }
     }
 }
 
@@ -242,6 +245,12 @@ impl PopulationStats for Portfolio {
 impl Payoff<Option<f64>> for Portfolio {
     fn payoff(&self, underlying: Option<f64>) -> f64 {
         self.assets.iter().map(|x| x.payoff(underlying)).sum()
+    }
+}
+
+impl Profit<Option<f64>> for Portfolio {
+    fn profit(&self, underlying: Option<f64>) -> f64 {
+        self.payoff(underlying)
     }
 }
 

@@ -1,5 +1,6 @@
 pub mod asset;
 pub mod portfolio;
+pub mod strategy;
 #[cfg(test)]
 mod test;
 

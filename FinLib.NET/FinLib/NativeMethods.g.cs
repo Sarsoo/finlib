@@ -52,6 +52,9 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "portfolio_asset_profit_loss", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern NullableFloat portfolio_asset_profit_loss(PortfolioAsset_native* asset);
 
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_profit", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double portfolio_asset_profit(PortfolioAsset_native* asset, NullableFloat underlying);
+
         [DllImport(__DllName, EntryPoint = "portfolio_asset_payoff", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double portfolio_asset_payoff(PortfolioAsset_native* asset, NullableFloat underlying);
 
@@ -207,24 +210,6 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "option_surface_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void option_surface_destroy(OptionsSurface_native* option);
 
-        [DllImport(__DllName, EntryPoint = "option_strategy_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern OptionStrategy_native* option_strategy_new();
-
-        [DllImport(__DllName, EntryPoint = "option_strategy_size", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern nuint option_strategy_size(OptionStrategy_native* option);
-
-        [DllImport(__DllName, EntryPoint = "option_strategy_add_component", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void option_strategy_add_component(OptionStrategy_native* option, OptionContract_native* component);
-
-        [DllImport(__DllName, EntryPoint = "option_strategy_payoff", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern double option_strategy_payoff(OptionStrategy_native* option, double underlying);
-
-        [DllImport(__DllName, EntryPoint = "option_strategy_profit", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern double option_strategy_profit(OptionStrategy_native* option, double underlying);
-
-        [DllImport(__DllName, EntryPoint = "option_strategy_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void option_strategy_destroy(OptionStrategy_native* option);
-
         [DllImport(__DllName, EntryPoint = "option_contract_from", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern OptionContract_native* option_contract_from(OptionType_native option_type, Side_native side, double strike, double premium);
 
@@ -240,6 +225,27 @@ namespace FinLib
 
         [DllImport(__DllName, EntryPoint = "option_contract_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void option_contract_destroy(OptionContract_native* option);
+
+        [DllImport(__DllName, EntryPoint = "strategy_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Strategy_native* strategy_new();
+
+        [DllImport(__DllName, EntryPoint = "strategy_size", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern nuint strategy_size(Strategy_native* option);
+
+        [DllImport(__DllName, EntryPoint = "strategy_add_option_component", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void strategy_add_option_component(Strategy_native* option, OptionContract_native* component);
+
+        [DllImport(__DllName, EntryPoint = "strategy_add_swap_component", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void strategy_add_swap_component(Strategy_native* option, Swap_native* component);
+
+        [DllImport(__DllName, EntryPoint = "strategy_payoff", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double strategy_payoff(Strategy_native* option, double underlying);
+
+        [DllImport(__DllName, EntryPoint = "strategy_profit", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double strategy_profit(Strategy_native* option, double underlying);
+
+        [DllImport(__DllName, EntryPoint = "strategy_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void strategy_destroy(Strategy_native* option);
 
 
     }
@@ -266,6 +272,11 @@ namespace FinLib
 
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct PortfolioAsset_native
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct Strategy_native
     {
     }
 
@@ -306,11 +317,6 @@ namespace FinLib
 
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct OptionsSurface_native
-    {
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe partial struct OptionStrategy_native
     {
     }
 

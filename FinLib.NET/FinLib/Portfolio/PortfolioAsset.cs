@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace FinLib.Risk;
+namespace FinLib.Portfolio;
 
-public class PortfolioAsset: IDisposable, IPayoff<double?>
+public class PortfolioAsset: IDisposable, IPayoff<double?>, IProfit<double?>
 {
     private readonly unsafe PortfolioAsset_native* _handle;
     internal unsafe PortfolioAsset_native* GetPtr() => _handle;
@@ -70,6 +70,14 @@ public class PortfolioAsset: IDisposable, IPayoff<double?>
         unsafe
         {
             return NativeMethods.portfolio_asset_payoff(_handle, underlying);
+        }
+    }
+
+    public double Profit(double? underlying)
+    {
+        unsafe
+        {
+            return NativeMethods.portfolio_asset_profit(_handle, underlying);
         }
     }
 

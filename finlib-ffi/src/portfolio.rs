@@ -1,6 +1,7 @@
 use crate::{NullableFloat, Tuple};
 use finlib::portfolio::{Portfolio, PortfolioAsset};
-use finlib::price::payoff::Payoff;
+use finlib::price::payoff::{Payoff, Profit};
+use finlib::risk::var::ValueAtRisk;
 use finlib::stats::{MuSigma, PopulationStats};
 use std::{ptr, slice};
 
@@ -47,7 +48,7 @@ pub unsafe extern "C" fn portfolio_asset_apply_rates_of_change(asset: *mut Portf
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_asset_get_mean_and_std(asset: *mut PortfolioAsset) -> Tuple {
-    Tuple::from((&mut *asset).get_mean_and_std())
+    Tuple::from_result((&mut *asset).mean_and_std_dev())
 }
 
 #[no_mangle]
@@ -63,6 +64,17 @@ pub unsafe extern "C" fn portfolio_asset_current_total_value(asset: *mut Portfol
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_asset_profit_loss(asset: *mut PortfolioAsset) -> NullableFloat {
     NullableFloat::from((&mut *asset).profit_loss())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn portfolio_asset_profit(
+    asset: *mut PortfolioAsset,
+    underlying: NullableFloat,
+) -> f64 {
+    match underlying.is_valid {
+        true => (&mut *asset).profit(Some(underlying.val)),
+        false => (&mut *asset).profit(None),
+    }
 }
 
 #[no_mangle]
@@ -151,5 +163,5 @@ pub unsafe extern "C" fn portfolio_value_at_risk_percent(
     portfolio: *mut Portfolio,
     confidence: f64,
 ) -> NullableFloat {
-    NullableFloat::from((&mut *portfolio).value_at_risk_percent(confidence))
+    NullableFloat::from_result((&mut *portfolio).value_at_risk_pct(confidence))
 }

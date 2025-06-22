@@ -47,8 +47,8 @@ impl Historical {
 }
 
 impl ValueAtRisk for Historical {
-    fn value_at_risk_pct(&self, confidence: f64) -> f64 {
-        value_at_risk_percent(&self.values, confidence)
+    fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
+        Ok(value_at_risk_percent(&self.values, confidence))
     }
 }
 

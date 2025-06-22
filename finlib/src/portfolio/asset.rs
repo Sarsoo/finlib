@@ -1,5 +1,8 @@
-use crate::price::payoff::Payoff;
+use crate::price::payoff::{Payoff, Profit};
+use crate::risk::var::varcovar::value_at_risk_percent;
+use crate::risk::var::ValueAtRisk;
 use crate::stats;
+use crate::stats::{MuSigma, PopulationStats};
 use crate::util::roc::rates_of_change;
 use log::info;
 #[cfg(feature = "py")]
@@ -76,11 +79,13 @@ impl PortfolioAsset {
             _ => {}
         }
     }
+}
 
+impl PopulationStats for PortfolioAsset {
     /// Get the mean and standard deviation of the rates of change of an asset
     ///
     /// returns (mean, std_dev)
-    pub fn get_mean_and_std(&self) -> Option<(f64, f64)> {
+    fn mean_and_std_dev(&self) -> Result<MuSigma, ()> {
         match self.value_type {
             ValueType::Absolute => {
                 info!(
@@ -88,12 +93,15 @@ impl PortfolioAsset {
                     self.name
                 );
                 let roc = rates_of_change(&self.market_values).collect::<Vec<f64>>();
-                Some((stats::mean(&roc), stats::sample_std_dev(&roc)))
+                Ok(MuSigma {
+                    mean: stats::mean(&roc),
+                    std_dev: stats::sample_std_dev(&roc),
+                })
             }
-            ValueType::RateOfChange => Some((
-                stats::mean(&self.market_values),
-                stats::sample_std_dev(&self.market_values),
-            )),
+            ValueType::RateOfChange => Ok(MuSigma {
+                mean: stats::mean(&self.market_values),
+                std_dev: stats::sample_std_dev(&self.market_values),
+            }),
         }
     }
 }
@@ -105,5 +113,17 @@ impl Payoff<Option<f64>> for PortfolioAsset {
             (Some(u), Some(i)) => (u - i) * self.quantity,
             (_, None) => 0.0,
         }
+    }
+}
+
+impl Profit<Option<f64>> for PortfolioAsset {
+    fn profit(&self, underlying: Option<f64>) -> f64 {
+        self.payoff(underlying)
+    }
+}
+
+impl ValueAtRisk for PortfolioAsset {
+    fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
+        Ok(value_at_risk_percent(&self.market_values, confidence))
     }
 }

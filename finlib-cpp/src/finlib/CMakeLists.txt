@@ -7,10 +7,10 @@ set(SOURCE_FILES
         curve/curve.cpp
         options/option_surface.cpp
         options/option_surface_params.cpp
-        options/option_strategy.cpp
         options/option_contract.cpp
         portfolio/portfolio.cpp
         portfolio/portfolio_asset.cpp
+        portfolio/strategy.cpp
         price/price.cpp
         price/price_pair.cpp
         swap/swap.cpp

@@ -19,5 +19,6 @@ namespace finlib {
 
     private:
         finlibrs::Swap *handle;
+        friend class Strategy;
     };
 } // finlib

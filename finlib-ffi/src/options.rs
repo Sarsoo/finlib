@@ -2,7 +2,9 @@ use finlib::derivatives::options::blackscholes::option_surface::{
     OptionSurfaceParameters, OptionsSurface,
 };
 use finlib::derivatives::options::blackscholes::OptionVariables;
-use finlib::derivatives::options::OptionType;
+use finlib::derivatives::options::{OptionContract, OptionType};
+use finlib::price::enums::Side;
+use finlib::price::payoff::{Payoff, Profit};
 use std::ops::Range;
 
 #[no_mangle]
@@ -122,16 +124,62 @@ pub unsafe extern "C" fn option_surface_parameters_destroy(option: *mut OptionSu
 
 #[no_mangle]
 pub unsafe extern "C" fn option_surface_generate(option: *mut OptionsSurface) {
-    (&mut *option).generate();
+    let _ = (&mut *option).generate();
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn option_surface_par_generate(option: *mut OptionsSurface) {
-    (&mut *option).par_generate();
+    let _ = (&mut *option).par_generate();
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn option_surface_destroy(option: *mut OptionsSurface) {
+    if !option.is_null() {
+        drop(Box::from_raw(option));
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn option_contract_from(
+    option_type: OptionType,
+    side: Side,
+    strike: f64,
+    premium: f64,
+) -> *mut OptionContract {
+    Box::into_raw(Box::new(OptionContract::from(
+        option_type,
+        side,
+        strike,
+        premium,
+    )))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn option_contract_payoff(
+    option: *mut OptionContract,
+    underlying: f64,
+) -> f64 {
+    (&mut *option).payoff(underlying)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn option_contract_profit(
+    option: *mut OptionContract,
+    underlying: f64,
+) -> f64 {
+    (&mut *option).profit(underlying)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn option_contract_will_be_exercised(
+    option: *mut OptionContract,
+    underlying: f64,
+) -> bool {
+    (&mut *option).will_be_exercised(underlying)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn option_contract_destroy(option: *mut OptionContract) {
     if !option.is_null() {
         drop(Box::from_raw(option));
     }

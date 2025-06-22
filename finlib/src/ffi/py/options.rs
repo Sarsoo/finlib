@@ -2,11 +2,9 @@ use crate::derivatives::options::blackscholes::option_surface::{
     OptionSurfaceParameters, OptionsSurface,
 };
 use crate::derivatives::options::blackscholes::OptionVariables;
-use crate::derivatives::options::strategy::strategy::OptionStrategy;
-use crate::derivatives::options::strategy::IOptionStrategy;
 use crate::derivatives::options::{OptionContract, OptionType};
 use crate::price::enums::Side;
-use crate::price::payoff::{Payoff, Premium, Profit};
+use crate::price::payoff::{Payoff, Profit};
 use pyo3::prelude::*;
 use std::ops::Range;
 
@@ -121,44 +119,6 @@ impl OptionsSurface {
                 "Failed to construct matrix",
             )),
         }
-    }
-}
-
-#[pymethods]
-impl OptionStrategy {
-    #[new]
-    pub fn init() -> Self {
-        Self::new()
-    }
-
-    pub fn __len__(&self) -> usize {
-        self.size()
-    }
-
-    #[pyo3(name = "payoff")]
-    pub fn payoff_py(&self, underlying: f64) -> f64 {
-        self.payoff(underlying)
-    }
-
-    #[pyo3(name = "profit")]
-    pub fn profit_py(&self, underlying: f64) -> f64 {
-        self.profit(underlying)
-    }
-
-    #[pyo3(name = "components")]
-    pub fn components_py(&self) -> Vec<OptionContract> {
-        self.components()
-            .into_iter()
-            .map(|x| {
-                let val = x.lock().unwrap();
-                OptionContract::from(val.option_type(), val.side(), val.strike(), val.premium())
-            })
-            .collect()
-    }
-
-    #[pyo3(name = "add_component")]
-    pub fn add_component_py(&mut self, component: OptionContract) {
-        self.add_component(component);
     }
 }
 

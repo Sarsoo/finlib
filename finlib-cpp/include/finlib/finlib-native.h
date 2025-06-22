@@ -36,8 +36,6 @@ struct Curve;
 
 struct OptionContract;
 
-struct OptionStrategy;
-
 struct OptionSurfaceParameters;
 
 struct OptionVariables;
@@ -53,6 +51,8 @@ struct PortfolioAsset;
 struct Price;
 
 struct PricePair;
+
+struct Strategy;
 
 struct Swap;
 
@@ -117,18 +117,6 @@ double option_contract_payoff(OptionContract *option, double underlying);
 double option_contract_profit(OptionContract *option, double underlying);
 
 bool option_contract_will_be_exercised(OptionContract *option, double underlying);
-
-void option_strategy_add_component(OptionStrategy *option, OptionContract *component);
-
-void option_strategy_destroy(OptionStrategy *option);
-
-OptionStrategy *option_strategy_new();
-
-double option_strategy_payoff(OptionStrategy *option, double underlying);
-
-double option_strategy_profit(OptionStrategy *option, double underlying);
-
-size_t option_strategy_size(OptionStrategy *option);
 
 void option_surface_destroy(OptionsSurface *option);
 
@@ -197,6 +185,8 @@ PortfolioAsset *portfolio_asset_new(const uint8_t *name,
 
 double portfolio_asset_payoff(PortfolioAsset *asset, NullableFloat underlying);
 
+double portfolio_asset_profit(PortfolioAsset *asset, NullableFloat underlying);
+
 NullableFloat portfolio_asset_profit_loss(PortfolioAsset *asset);
 
 void portfolio_destroy(Portfolio *portfolio);
@@ -258,6 +248,20 @@ double relative_strength_indicator_smoothed(double time_period,
                                             double current_loss);
 
 double scale_value_at_risk(double initial_value, ptrdiff_t time_cycles);
+
+void strategy_add_option_component(Strategy *option, OptionContract *component);
+
+void strategy_add_swap_component(Strategy *option, Swap *component);
+
+void strategy_destroy(Strategy *option);
+
+Strategy *strategy_new();
+
+double strategy_payoff(Strategy *option, double underlying);
+
+double strategy_profit(Strategy *option, double underlying);
+
+size_t strategy_size(Strategy *option);
 
 void swap_destroy(Swap *swap);
 

@@ -2,15 +2,18 @@
 
 #include <finlib/finlib-native.h>
 
-#include "option_contract.hpp"
+#include "../options/option_contract.hpp"
+#include "swap/swap.hpp"
 
 
 namespace finlib {
-    class OptionStrategy {
+    class Strategy {
     public:
-        explicit OptionStrategy();
+        explicit Strategy();
 
         void add_component(std::unique_ptr<OptionContract> component);
+
+        void add_component(std::unique_ptr<Swap> component);
 
         double payoff(double underlying);
 
@@ -18,9 +21,9 @@ namespace finlib {
 
         size_t size();
 
-        ~OptionStrategy();
+        ~Strategy();
 
     private:
-        finlibrs::OptionStrategy *handle;
+        finlibrs::Strategy *handle;
     };
 }

@@ -1,4 +1,8 @@
+use crate::derivatives::options::OptionContract;
+use crate::portfolio::strategy::{IStrategy, Strategy};
 use crate::portfolio::{Portfolio, PortfolioAsset};
+use crate::price::payoff::{Payoff, Profit};
+use crate::risk::var::ValueAtRisk;
 use crate::stats::{MuSigma, PopulationStats};
 use pyo3::prelude::*;
 
@@ -63,8 +67,13 @@ impl Portfolio {
     }
 
     #[pyo3(name = "value_at_risk_percent")]
-    pub fn value_at_risk_pct_py(&mut self, confidence: f64) -> PyResult<Option<f64>> {
-        Ok(self.value_at_risk_percent(confidence))
+    pub fn value_at_risk_pct_py(&mut self, confidence: f64) -> PyResult<f64> {
+        match self.value_at_risk_pct(confidence) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
     }
 }
 
@@ -95,13 +104,40 @@ impl PortfolioAsset {
         self.apply_rates_of_change();
     }
 
-    #[pyo3(name = "get_mean_and_std")]
-    pub fn get_mean_and_std_py(&mut self) -> PyResult<(f64, f64)> {
-        match self.get_mean_and_std() {
-            None => Err(pyo3::exceptions::PyValueError::new_err(
+    #[pyo3(name = "mean_and_std_dev")]
+    pub fn mean_and_std_dev_py(&mut self) -> PyResult<MuSigma> {
+        match self.mean_and_std_dev() {
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
                 "failed to calculate mean and std",
             )),
-            Some(m) => Ok(m),
+            Ok(m) => Ok(m),
         }
+    }
+}
+
+#[pymethods]
+impl Strategy {
+    #[new]
+    pub fn init() -> Self {
+        Self::new()
+    }
+
+    pub fn __len__(&self) -> usize {
+        self.size()
+    }
+
+    #[pyo3(name = "payoff")]
+    pub fn payoff_py(&self, underlying: f64) -> f64 {
+        self.payoff(underlying)
+    }
+
+    #[pyo3(name = "profit")]
+    pub fn profit_py(&self, underlying: f64) -> f64 {
+        self.profit(underlying)
+    }
+
+    #[pyo3(name = "add_component")]
+    pub fn add_component_py(&mut self, component: OptionContract) {
+        self.add_component(component);
     }
 }

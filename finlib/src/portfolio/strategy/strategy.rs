@@ -1,5 +1,4 @@
-use crate::derivatives::options::strategy::IOptionStrategy;
-use crate::derivatives::options::IOption;
+use crate::portfolio::strategy::IStrategy;
 use crate::price::payoff::{Payoff, Profit};
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
@@ -11,11 +10,11 @@ use wasm_bindgen::prelude::*;
 #[cfg_attr(feature = "py", pyclass)]
 #[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Clone)]
-pub struct OptionStrategy {
-    components: Vec<Arc<Mutex<dyn IOption>>>,
+pub struct Strategy {
+    components: Vec<Arc<Mutex<dyn Profit<f64> + Send>>>,
 }
 
-impl OptionStrategy {
+impl Strategy {
     pub fn new() -> Self {
         Self { components: vec![] }
     }
@@ -25,7 +24,7 @@ impl OptionStrategy {
     }
 }
 
-impl Payoff<f64> for OptionStrategy {
+impl Payoff<f64> for Strategy {
     fn payoff(&self, underlying: f64) -> f64 {
         self.components
             .iter()
@@ -34,7 +33,7 @@ impl Payoff<f64> for OptionStrategy {
     }
 }
 
-impl Profit<f64> for OptionStrategy {
+impl Profit<f64> for Strategy {
     fn profit(&self, underlying: f64) -> f64 {
         self.components
             .iter()
@@ -43,16 +42,19 @@ impl Profit<f64> for OptionStrategy {
     }
 }
 
-impl IOptionStrategy for OptionStrategy {
-    fn components(&self) -> Vec<Arc<Mutex<dyn IOption>>> {
+impl IStrategy for Strategy {
+    fn components(&self) -> Vec<Arc<Mutex<dyn Profit<f64> + Send>>> {
         self.components.clone()
     }
 
-    fn add_component(&mut self, component: impl IOption + 'static) {
+    fn add_component(&mut self, component: impl Profit<f64> + Send + 'static) {
         self.components.push(Arc::new(Mutex::new(component)));
     }
 
-    fn add_components(&mut self, components: impl IntoIterator<Item = impl IOption + 'static>) {
+    fn add_components(
+        &mut self,
+        components: impl IntoIterator<Item = impl Profit<f64> + Send + 'static>,
+    ) {
         components.into_iter().for_each(|c| self.add_component(c));
     }
 }

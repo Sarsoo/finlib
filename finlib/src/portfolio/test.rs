@@ -1,13 +1,13 @@
-use crate::derivatives::options::strategy::strategy::OptionStrategy;
-use crate::derivatives::options::strategy::IOptionStrategy;
 use crate::derivatives::options::OptionContract;
 use crate::derivatives::options::OptionType::Call;
+use crate::portfolio::strategy::strategy::Strategy;
+use crate::portfolio::strategy::IStrategy;
 use crate::price::enums::Side::{Buy, Sell};
 use crate::price::payoff::Profit;
 
 #[test]
 fn basic_strategy() {
-    let mut strat = OptionStrategy::new();
+    let mut strat = Strategy::new();
 
     strat.add_component(OptionContract::from(Call, Buy, 1000., 10.));
 
@@ -16,7 +16,7 @@ fn basic_strategy() {
 
 #[test]
 fn basic_short_strategy() {
-    let mut strat = OptionStrategy::new();
+    let mut strat = Strategy::new();
 
     strat.add_component(OptionContract::from(Call, Sell, 1000., 10.));
 

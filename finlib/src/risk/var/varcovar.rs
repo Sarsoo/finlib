@@ -50,8 +50,8 @@ impl VarianceCovariance {
 }
 
 impl ValueAtRisk for VarianceCovariance {
-    fn value_at_risk_pct(&self, confidence: f64) -> f64 {
-        value_at_risk_percent(&self.values, confidence)
+    fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
+        Ok(value_at_risk_percent(&self.values, confidence))
     }
 }
 
@@ -59,6 +59,7 @@ impl ValueAtRisk for VarianceCovariance {
 mod tests {
     use crate::portfolio::Portfolio;
     use crate::portfolio::PortfolioAsset;
+    use crate::risk::var::ValueAtRisk;
 
     #[test]
     fn var_test() {
@@ -79,7 +80,7 @@ mod tests {
 
         let mut portfolio = Portfolio::from(assets);
 
-        portfolio.value_at_risk_percent(0.1);
+        portfolio.value_at_risk_pct(0.1);
     }
 
     #[test]
@@ -93,7 +94,7 @@ mod tests {
 
         let mut portfolio = Portfolio::from(assets);
 
-        portfolio.value_at_risk_percent(0.1);
+        portfolio.value_at_risk_pct(0.1);
     }
 
     #[test]

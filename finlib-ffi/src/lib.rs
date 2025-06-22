@@ -1,11 +1,12 @@
 pub mod curve;
 pub mod indicators;
 pub mod options;
-pub mod options_strategy;
 pub mod portfolio;
 pub mod price;
+pub mod strategy;
 pub mod swap;
 
+use finlib::stats::MuSigma;
 use std::slice;
 
 #[repr(C)]
@@ -21,6 +22,16 @@ impl Tuple {
         match val {
             None => Self::invalid(),
             Some((one, two)) => Tuple::valid(one, two),
+        }
+    }
+
+    pub fn from_result(val: Result<MuSigma, ()>) -> Self {
+        match val {
+            Err(_) => Self::invalid(),
+            Ok(MuSigma {
+                mean: one,
+                std_dev: two,
+            }) => Tuple::valid(one, two),
         }
     }
 
@@ -56,6 +67,19 @@ impl NullableFloat {
                 is_valid: false,
             },
             Some(v) => NullableFloat {
+                val: v,
+                is_valid: true,
+            },
+        }
+    }
+
+    pub fn from_result(val: Result<f64, ()>) -> Self {
+        match val {
+            Err(_) => NullableFloat {
+                val: 0.0,
+                is_valid: false,
+            },
+            Ok(v) => NullableFloat {
                 val: v,
                 is_valid: true,
             },
