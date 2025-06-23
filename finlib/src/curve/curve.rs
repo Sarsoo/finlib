@@ -22,7 +22,7 @@ pub enum CurveType {
 }
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
-#[cfg_attr(feature = "py", pyclass(get_all))]
+#[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Debug, PartialEq, PartialOrd)]

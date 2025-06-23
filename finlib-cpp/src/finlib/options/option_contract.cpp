@@ -6,10 +6,11 @@
 
 namespace finlib {
     OptionContract::OptionContract(finlibrs::OptionType option_type,
+                                   finlibrs::OptionStyle option_style,
                                    finlibrs::Side side,
                                    double strike,
                                    double premium) {
-        handle = finlibrs::option_contract_from(option_type, side, strike, premium);
+        handle = finlibrs::option_contract_from(option_type, option_style, side, strike, premium);
     }
 
     double OptionContract::payoff(double underlying) {

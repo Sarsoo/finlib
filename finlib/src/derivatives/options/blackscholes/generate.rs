@@ -1,6 +1,6 @@
 use crate::derivatives::options::blackscholes::BlackscholesPricer;
 use crate::derivatives::options::blackscholes::OptionVariables;
-use crate::derivatives::options::{OptionContract, OptionType};
+use crate::derivatives::options::{OptionContract, OptionStyle, OptionType};
 use crate::price::enums::Side;
 use ndarray::Array6;
 use rayon::prelude::*;
@@ -40,8 +40,8 @@ pub fn par_generate_options(
 }
 
 fn process_var(v: &OptionVariables, p: &BlackscholesPricer) -> (OptionContract, OptionContract) {
-    let mut call = OptionContract::from_vars(v, OptionType::Call, Side::Buy);
-    let mut put = OptionContract::from_vars(v, OptionType::Put, Side::Buy);
+    let mut call = OptionContract::from_vars(v, OptionType::Call, OptionStyle::European, Side::Buy);
+    let mut put = OptionContract::from_vars(v, OptionType::Put, OptionStyle::European, Side::Buy);
 
     p.set_price(&mut call, &v);
     p.set_price(&mut put, &v);

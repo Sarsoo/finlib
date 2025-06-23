@@ -2,7 +2,7 @@ use crate::derivatives::options::blackscholes::option_surface::{
     OptionSurfaceParameters, OptionsSurface,
 };
 use crate::derivatives::options::blackscholes::OptionVariables;
-use crate::derivatives::options::{OptionContract, OptionType};
+use crate::derivatives::options::{OptionContract, OptionStyle, OptionType};
 use crate::price::enums::Side;
 use crate::price::payoff::{Payoff, Profit};
 use pyo3::prelude::*;
@@ -125,8 +125,14 @@ impl OptionsSurface {
 #[pymethods]
 impl OptionContract {
     #[new]
-    pub fn init(option_type: OptionType, side: Side, strike: f64, premium: f64) -> Self {
-        Self::from(option_type, side, strike, premium)
+    pub fn init(
+        option_type: OptionType,
+        option_style: OptionStyle,
+        side: Side,
+        strike: f64,
+        premium: f64,
+    ) -> Self {
+        Self::from(option_type, option_style, side, strike, premium)
     }
 
     #[pyo3(name = "payoff")]

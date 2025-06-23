@@ -20,6 +20,12 @@ enum class CurveType : uint8_t
   Differential,
 };
 
+enum class OptionStyle : uint8_t
+{
+  European,
+  American,
+};
+
 enum class OptionType : uint8_t
 {
   Call,
@@ -33,6 +39,8 @@ enum class Side : uint8_t
 };
 
 struct Curve;
+
+struct Mortgage;
 
 struct OptionContract;
 
@@ -105,9 +113,35 @@ NullableFloat historical_value_at_risk(const double *arr, size_t len, double con
 
 double interest_compound(double principal, double rate, double time, double n);
 
+void mortgage_destroy(Mortgage *mortgage);
+
+double mortgage_future_value(Mortgage *mortgage, double annual_interest_rate);
+
+double mortgage_loan_value(Mortgage *mortgage);
+
+double mortgage_ltv(Mortgage *mortgage);
+
+double mortgage_monthly_payment(Mortgage *mortgage);
+
+double mortgage_net_future_value_interest(Mortgage *mortgage, double annual_interest_rate);
+
+Mortgage *mortgage_new(double purchase_price,
+                       double deposit,
+                       double interest_rate,
+                       int32_t term_years);
+
+double mortgage_present_value(Mortgage *mortgage);
+
+double mortgage_total_interest(Mortgage *mortgage, double annual_interest_rate);
+
+double mortgage_total_interest_repayment(Mortgage *mortgage);
+
+double mortgage_total_repayment(Mortgage *mortgage);
+
 void option_contract_destroy(OptionContract *option);
 
 OptionContract *option_contract_from(OptionType option_type,
+                                     OptionStyle option_style,
                                      Side side,
                                      double strike,
                                      double premium);

@@ -25,6 +25,7 @@ fn main() {
         .input_extern_file("src/swap.rs")
         .input_extern_file("src/options.rs")
         .input_extern_file("src/strategy.rs")
+        .input_extern_file("src/mortgage.rs")
         .input_extern_file("../finlib/src/portfolio/portfolio.rs")
         .input_extern_file("../finlib/src/portfolio/asset.rs")
         .input_extern_file("../finlib/src/portfolio/strategy/strategy.rs")
@@ -37,6 +38,7 @@ fn main() {
         .input_extern_file("../finlib/src/derivatives/options/option_contract.rs")
         .input_extern_file("../finlib/src/derivatives/options/blackscholes/mod.rs")
         .input_extern_file("../finlib/src/derivatives/options/blackscholes/option_surface.rs")
+        .input_extern_file("../finlib/src/fixed_income/mortgage/mod.rs")
         .csharp_dll_name("libfinlib_ffi")
         .csharp_namespace("FinLib")
         .csharp_type_rename(|rust_type_name| match rust_type_name.as_str() {

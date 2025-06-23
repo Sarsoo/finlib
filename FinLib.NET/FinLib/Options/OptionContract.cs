@@ -9,6 +9,12 @@ public enum OptionType
     Put,
 }
 
+public enum OptionStyle
+{
+    European,
+    American,
+}
+
 public class OptionContract: IDisposable, IProfit<double>
 {
     private readonly unsafe OptionContract_native* _handle;
@@ -17,11 +23,14 @@ public class OptionContract: IDisposable, IProfit<double>
     internal static OptionType_native MapType(OptionType type) => type == OptionType.Call ? OptionType_native.Call : OptionType_native.Put;
     internal static OptionType MapType(OptionType_native type) => type == OptionType_native.Call ? OptionType.Call : OptionType.Put;
 
-    public OptionContract(OptionType optionType, Side side, double strike, double premium)
+    internal static OptionStyle_native MapStyle(OptionStyle type) => type == OptionStyle.European ? OptionStyle_native.European : OptionStyle_native.American;
+    internal static OptionStyle MapStyle(OptionStyle_native type) => type == OptionStyle_native.European ? OptionStyle.European : OptionStyle.American;
+
+    public OptionContract(OptionType optionType, OptionStyle optionStyle, Side side, double strike, double premium)
     {
         unsafe
         {
-            _handle = NativeMethods.option_contract_from(MapType(optionType), Price.Price.MapSide(side), strike, premium);
+            _handle = NativeMethods.option_contract_from(MapType(optionType), MapStyle(optionStyle), Price.Price.MapSide(side), strike, premium);
         }
     }
 

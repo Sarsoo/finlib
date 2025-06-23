@@ -1,5 +1,5 @@
 use crate::derivatives::options::blackscholes::OptionVariables;
-use crate::derivatives::options::{IOption, OptionGreeks, OptionType};
+use crate::derivatives::options::{IOption, OptionGreeks, OptionStyle, OptionType};
 use crate::derivatives::TradeSide;
 use crate::price::enums::Side;
 use crate::price::payoff::Payoff;
@@ -21,6 +21,7 @@ use wasm_bindgen::prelude::*;
 #[derive(Builder, Debug, Copy, Clone, PartialEq, PartialOrd)]
 pub struct OptionContract {
     pub option_type: OptionType,
+    pub option_style: OptionStyle,
     pub strike: f64,
     pub premium: f64,
     pub side: Side,
@@ -47,6 +48,10 @@ impl IOption for OptionContract {
         self.option_type
     }
 
+    fn option_style(&self) -> OptionStyle {
+        self.option_style
+    }
+
     fn price(&self) -> f64 {
         self.premium
     }
@@ -57,9 +62,16 @@ impl IOption for OptionContract {
 }
 
 impl OptionContract {
-    pub fn from(option_type: OptionType, side: Side, strike: f64, premium: f64) -> Self {
+    pub fn from(
+        option_type: OptionType,
+        option_style: OptionStyle,
+        side: Side,
+        strike: f64,
+        premium: f64,
+    ) -> Self {
         Self {
             option_type,
+            option_style,
             side,
             strike,
             premium,
@@ -67,9 +79,15 @@ impl OptionContract {
         }
     }
 
-    pub fn from_vars(vars: &OptionVariables, option_type: OptionType, side: Side) -> Self {
+    pub fn from_vars(
+        vars: &OptionVariables,
+        option_type: OptionType,
+        option_style: OptionStyle,
+        side: Side,
+    ) -> Self {
         Self::builder()
             .option_type(option_type)
+            .option_style(option_style)
             .side(side)
             .premium(f64::NAN)
             .strike(vars.strike_price)

@@ -7,6 +7,7 @@ namespace finlib {
     class OptionContract {
     public:
         explicit OptionContract(finlibrs::OptionType option_type,
+                                finlibrs::OptionStyle option_style,
                                 finlibrs::Side side,
                                 double strike,
                                 double premium);

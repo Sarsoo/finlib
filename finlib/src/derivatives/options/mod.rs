@@ -32,6 +32,16 @@ pub enum OptionType {
 #[repr(u8)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub enum OptionStyle {
+    European,
+    American,
+}
+
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+#[cfg_attr(feature = "py", pyclass(eq, ord))]
+#[repr(u8)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Moneyness {
     InTheMoney,
     AtTheMoney,
@@ -40,6 +50,7 @@ pub enum Moneyness {
 
 pub trait IOption: Send + TradeSide + Payoff<f64> + Profit<f64> + Premium {
     fn option_type(&self) -> OptionType;
+    fn option_style(&self) -> OptionStyle;
     fn price(&self) -> f64;
     fn strike(&self) -> f64;
 }

@@ -2,7 +2,7 @@ use finlib::derivatives::options::blackscholes::option_surface::{
     OptionSurfaceParameters, OptionsSurface,
 };
 use finlib::derivatives::options::blackscholes::OptionVariables;
-use finlib::derivatives::options::{OptionContract, OptionType};
+use finlib::derivatives::options::{OptionContract, OptionStyle, OptionType};
 use finlib::price::enums::Side;
 use finlib::price::payoff::{Payoff, Profit};
 use std::ops::Range;
@@ -142,12 +142,14 @@ pub unsafe extern "C" fn option_surface_destroy(option: *mut OptionsSurface) {
 #[no_mangle]
 pub unsafe extern "C" fn option_contract_from(
     option_type: OptionType,
+    option_style: OptionStyle,
     side: Side,
     strike: f64,
     premium: f64,
 ) -> *mut OptionContract {
     Box::into_raw(Box::new(OptionContract::from(
         option_type,
+        option_style,
         side,
         strike,
         premium,

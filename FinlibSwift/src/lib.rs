@@ -3,28 +3,22 @@ use finlib;
 #[swift_bridge::bridge]
 mod ffi {
     extern "Rust" {
-        type Curve;
-        type CurveType;
-        type CurvePoint;
-        type Portfolio;
-        type PortfolioAsset;
-        type Price;
         type PricePair;
-        type Side;
-        type Swap;
-        type OptionSurfaceParameters;
-        type OptionsSurface;
+
+        #[swift_bridge(init)]
+        fn new() -> PricePair;
+
+        #[swift_bridge(get(bid))]
+        fn bid(&self) -> f64;
+        #[swift_bridge(get(offer))]
+        fn offer(&self) -> f64;
+
+        fn set_offer(&self, offer: f64) {
+            self.offer = offer;
+        }
+
+        fn spread(&self) -> f64;
     }
 }
 
-use finlib::curve::curve::Curve;
-use finlib::curve::curve::CurveType;
-use finlib::curve::point::CurvePoint;
-use finlib::derivatives::options::blackscholes::option_surface::OptionSurfaceParameters;
-use finlib::derivatives::options::blackscholes::option_surface::OptionsSurface;
-use finlib::derivatives::swaps::Swap;
-use finlib::portfolio::Portfolio;
-use finlib::portfolio::PortfolioAsset;
-use finlib::price::enums::Side;
-use finlib::price::price::Price;
 use finlib::price::price::PricePair;
