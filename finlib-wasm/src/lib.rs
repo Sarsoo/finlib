@@ -52,7 +52,7 @@ pub struct Interest {}
 #[wasm_bindgen]
 impl Interest {
     pub fn compound(principal: f64, rate: f64, time: f64, n: f64) -> f64 {
-        finlib::interest::compound(principal, rate, time, n)
+        finlib::interest::compounded_principal(principal, rate, time, n)
     }
 }
 

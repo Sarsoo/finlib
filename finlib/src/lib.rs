@@ -3,7 +3,9 @@
 
 pub mod curve;
 pub mod derivatives;
+pub mod errors;
 pub mod ffi;
+pub mod fixed_income;
 pub mod indicators;
 pub mod interest;
 pub mod portfolio;

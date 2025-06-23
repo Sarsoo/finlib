@@ -36,6 +36,35 @@ mod pyfinlib {
     }
 
     #[pymodule]
+    mod fixed_income {
+        use super::*;
+
+        #[pymodule]
+        mod annuity {
+            use super::*;
+
+            #[pymodule_export]
+            use finlib::fixed_income::annuity::monthly_interest_payment;
+            #[pymodule_export]
+            use finlib::fixed_income::annuity::monthly_payment;
+            #[pymodule_export]
+            use finlib::fixed_income::annuity::monthly_principal_payment;
+            #[pymodule_export]
+            use finlib::fixed_income::annuity::total_interest_payment;
+            #[pymodule_export]
+            use finlib::fixed_income::annuity::total_repayment;
+        }
+
+        #[pymodule]
+        mod mortgage {
+            use super::*;
+
+            #[pymodule_export]
+            use finlib::fixed_income::mortgage::Mortgage;
+        }
+    }
+
+    #[pymodule]
     mod indicators {
         use super::*;
 
@@ -55,8 +84,15 @@ mod pyfinlib {
         use super::*;
 
         #[pyfunction]
-        pub fn compound(principal: f64, rate: f64, time: f64, n: f64) -> PyResult<f64> {
-            Ok(finlib::interest::compound(principal, rate, time, n))
+        pub fn compound_scaling_of_principal(
+            principal: f64,
+            rate: f64,
+            time: f64,
+            n: f64,
+        ) -> PyResult<f64> {
+            Ok(finlib::interest::compounded_principal(
+                principal, rate, time, n,
+            ))
         }
     }
 
@@ -74,6 +110,10 @@ mod pyfinlib {
         use finlib::derivatives::options::OptionContract;
         #[pymodule_export]
         use finlib::derivatives::options::OptionGreeks;
+        #[pymodule_export]
+        use finlib::derivatives::options::OptionStyle;
+        #[pymodule_export]
+        use finlib::derivatives::options::OptionType;
 
         #[pymodule]
         mod strategy {
