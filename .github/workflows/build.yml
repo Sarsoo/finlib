@@ -155,6 +155,26 @@ jobs:
         working-directory: ./finlib-wasm
         run: wasm-pack build
 
+  buildCPP:
+    name: Build C++
+    runs-on: ubuntu-latest
+    needs: [ build ] # for ignoring bad builds
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Install Build Tools
+        run: sudo apt update && sudo apt install -y build-essential
+
+      - name: Install Dependencies
+        working-directory: ./finlib-cpp
+        run: mkdir -p build ; cd build ; cmake .. -DCMAKE_BUILD_TYPE=Debug ; cmake --build .
+
   doc:
     name: Build Documentation
     environment:

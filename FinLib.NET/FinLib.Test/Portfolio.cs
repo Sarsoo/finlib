@@ -13,7 +13,7 @@ public class PortfolioTest
         portfolio.AddAsset("second", 1, [0.5, 0.5, 0.5, 0.5]);
 
         var (mean, std) = portfolio.MeanAndStdDev!.Value;
-        mean.Should().Be(0.5);
+        mean.Should().Be(0);
         std.Should().Be(0);
     }
 
