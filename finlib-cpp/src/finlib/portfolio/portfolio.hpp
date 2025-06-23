@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include <finlib/finlib-native.h>
 
 #include "portfolio_asset.hpp"

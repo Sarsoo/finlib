@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include <finlib/finlib-native.h>
 
 namespace finlib {

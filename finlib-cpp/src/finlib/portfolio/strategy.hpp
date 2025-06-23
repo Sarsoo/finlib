@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <finlib/finlib-native.h>
 
 #include "../options/option_contract.hpp"
