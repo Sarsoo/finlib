@@ -14,6 +14,7 @@ set(SOURCE_FILES
         price/price.cpp
         price/price_pair.cpp
         swap/swap.cpp
+        mortgage/mortgage.cpp
 )
 
 add_library(finlib SHARED STATIC ${SOURCE_FILES})

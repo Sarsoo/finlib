@@ -39,28 +39,31 @@ mod pyfinlib {
     mod fixed_income {
         use super::*;
 
+        #[pymodule_export]
+        use finlib::fixed_income::mortgage::Mortgage;
+
         #[pymodule]
         mod annuity {
             use super::*;
 
             #[pymodule_export]
+            use finlib::fixed_income::annuity::future_value_due;
+            #[pymodule_export]
+            use finlib::fixed_income::annuity::future_value_ordinary;
+            #[pymodule_export]
             use finlib::fixed_income::annuity::monthly_interest_payment;
             #[pymodule_export]
             use finlib::fixed_income::annuity::monthly_payment;
             #[pymodule_export]
-            use finlib::fixed_income::annuity::monthly_principal_payment;
+            use finlib::fixed_income::annuity::payment;
             #[pymodule_export]
-            use finlib::fixed_income::annuity::total_interest_payment;
+            use finlib::fixed_income::annuity::present_value_due;
+            #[pymodule_export]
+            use finlib::fixed_income::annuity::present_value_ordinary;
+            #[pymodule_export]
+            use finlib::fixed_income::annuity::total_interest_repayment;
             #[pymodule_export]
             use finlib::fixed_income::annuity::total_repayment;
-        }
-
-        #[pymodule]
-        mod mortgage {
-            use super::*;
-
-            #[pymodule_export]
-            use finlib::fixed_income::mortgage::Mortgage;
         }
     }
 
@@ -84,15 +87,25 @@ mod pyfinlib {
         use super::*;
 
         #[pyfunction]
-        pub fn compound_scaling_of_principal(
-            principal: f64,
-            rate: f64,
-            time: f64,
-            n: f64,
-        ) -> PyResult<f64> {
+        pub fn compounded_principal(principal: f64, rate: f64, time: f64, n: f64) -> PyResult<f64> {
             Ok(finlib::interest::compounded_principal(
                 principal, rate, time, n,
             ))
+        }
+
+        #[pyfunction]
+        pub fn compound_rate_per_n(rate: f64, time: f64, n: f64) -> PyResult<f64> {
+            Ok(finlib::interest::compound_rate_per_n(rate, time, n))
+        }
+
+        #[pyfunction]
+        pub fn anticompound_rate_per_n(rate: f64, time: f64, n: f64) -> PyResult<f64> {
+            Ok(finlib::interest::anticompound_rate_per_n(rate, time, n))
+        }
+
+        #[pyfunction]
+        pub fn rate_per_n(rate: f64, time: f64) -> PyResult<f64> {
+            Ok(finlib::interest::rate_per_n(rate, time))
         }
     }
 

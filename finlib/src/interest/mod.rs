@@ -1,21 +1,26 @@
 //! Compound interest etc
 
-use num::traits::{Inv, MulAdd};
-use num::{Float, Num, NumCast, ToPrimitive};
-use std::ops::Neg;
+use num::{Float, NumCast};
 
+/// Compound the provided `principal` by `rate` (0.05 or 5%) where `rate` is compounded for `time` periods where each `time` period has `n` interest payments
+///
+/// e.g a `principal` of 10,000 with an annual rate of 5% (`rate` = 0.05) for 10 years (`time` = 10) with monthly payments (`n` = 12)
 pub fn compounded_principal<T: Float>(principal: T, rate: T, time: T, n: T) -> T {
     principal * compound_rate_per_n(rate, time, n)
 }
 
+/// Compound the provided `rate` (0.05 or 5%) into a compounded rate for `time` periods where each `time` period has `n` interest payments
+///
+/// e.g an annual rate of 5% (`rate` = 0.05) for 10 years (`time` = 10) with monthly payments (`n` = 12)
 pub fn compound_rate_per_n<T: Float>(rate: T, time: T, n: T) -> T {
     rate_per_n(rate, n).powf(time * n)
 }
 
-pub fn compound_rate_per_n_neg<T: Float>(rate: T, time: T, n: T) -> T {
+pub fn anticompound_rate_per_n<T: Float>(rate: T, time: T, n: T) -> T {
     rate_per_n(rate, n).powf(-time * n)
 }
 
+/// Turn a `rate` = 0.05 (5%) into a scaling rate (1.05 or 105%) over `n` periods (`n` = 12 for an interest payment every month given an annual interest rate)
 pub fn rate_per_n<T: Float>(rate: T, n: T) -> T {
     let one: T = NumCast::from(1).unwrap();
     one + (rate / n)
@@ -26,6 +31,17 @@ pub fn rate_per_n<T: Float>(rate: T, n: T) -> T {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn compound_uncompound() {
+        let val = 10000.;
+
+        let scaled = val * compound_rate_per_n(0.05, 10., 12.);
+
+        let unscaled = scaled * anticompound_rate_per_n(0.05, 10., 12.);
+
+        assert_eq!(val, unscaled);
+    }
 
     #[test]
     fn annual_compound_32() {

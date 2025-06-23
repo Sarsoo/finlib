@@ -223,7 +223,7 @@ namespace FinLib
         internal static extern void option_surface_destroy(OptionsSurface_native* option);
 
         [DllImport(__DllName, EntryPoint = "option_contract_from", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern OptionContract_native* option_contract_from(OptionType_native option_type, Side_native side, double strike, double premium);
+        internal static extern OptionContract_native* option_contract_from(OptionType_native option_type, OptionStyle_native option_style, Side_native side, double strike, double premium);
 
         [DllImport(__DllName, EntryPoint = "option_contract_payoff", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double option_contract_payoff(OptionContract_native* option, double underlying);
@@ -258,6 +258,39 @@ namespace FinLib
 
         [DllImport(__DllName, EntryPoint = "strategy_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void strategy_destroy(Strategy_native* option);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Mortgage_native* mortgage_new(double purchase_price, double deposit, double interest_rate, int term_years);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_ltv", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double mortgage_ltv(Mortgage_native* mortgage);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_loan_value", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double mortgage_loan_value(Mortgage_native* mortgage);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_monthly_payment", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double mortgage_monthly_payment(Mortgage_native* mortgage);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_total_repayment", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double mortgage_total_repayment(Mortgage_native* mortgage);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_total_interest_repayment", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double mortgage_total_interest_repayment(Mortgage_native* mortgage);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_present_value", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double mortgage_present_value(Mortgage_native* mortgage);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_future_value", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double mortgage_future_value(Mortgage_native* mortgage, double annual_interest_rate);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_net_future_value_interest", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double mortgage_net_future_value_interest(Mortgage_native* mortgage, double annual_interest_rate);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_total_interest", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double mortgage_total_interest(Mortgage_native* mortgage, double annual_interest_rate);
+
+        [DllImport(__DllName, EntryPoint = "mortgage_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void mortgage_destroy(Mortgage_native* mortgage);
 
 
     }
@@ -332,6 +365,11 @@ namespace FinLib
     {
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct Mortgage_native
+    {
+    }
+
 
     internal enum Side_native : byte
     {
@@ -349,6 +387,12 @@ namespace FinLib
     {
         Call,
         Put,
+    }
+
+    internal enum OptionStyle_native : byte
+    {
+        European,
+        American,
     }
 
 
