@@ -11,25 +11,30 @@ readme.workspace = true
 license.workspace = true
 
 [dependencies]
-wasm-bindgen = { workspace = true, optional = true }
-pyo3 = { workspace = true, optional = true }
 rayon = { workspace = true }
 ndarray = { workspace = true }
 ndarray-stats = { workspace = true }
-nalgebra = { workspace = true }
 statrs = { workspace = true }
 chrono = { workspace = true, default-features = false }
 log = { workspace = true }
 getrandom = { workspace = true }
 rand = { workspace = true }
 serde = { workspace = true, optional = true }
-serde-wasm-bindgen = { workspace = true, optional = true }
-num = "0.4.3"
+num = { workspace = true }
 bon = { workspace = true }
+
+wasm-bindgen = { workspace = true, optional = true }
 js-sys = { workspace = true, optional = true }
+serde-wasm-bindgen = { workspace = true, optional = true }
+pyo3 = { workspace = true, optional = true }
+swift-bridge = { workspace = true, optional = true }
+
 
 [dev-dependencies]
 criterion = "0.6.0"
+
+[build-dependencies]
+swift-bridge-build = { workspace = true, optional = true }
 
 [[bench]]
 name = "rayon_roc"
@@ -41,8 +46,9 @@ harness = false
 
 [features]
 default = []
-serde = ["dep:serde", "chrono/serde"]
+serde = ["dep:serde", "chrono/serde", "ndarray/serde", "num/serde", "log/serde", "rand/serde", "wasm-bindgen?/serde-serialize", "pyo3/serde"]
 btree_cursors = []
 py = ["dep:pyo3"]
 wasm = ["getrandom/js", "dep:wasm-bindgen", "dep:js-sys", "dep:serde-wasm-bindgen", "chrono/wasmbind"]
 ffi = []
+swift = ["dep:swift-bridge", "dep:swift-bridge-build", "ffi"]

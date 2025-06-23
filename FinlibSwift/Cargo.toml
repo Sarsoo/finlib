@@ -23,9 +23,9 @@ name = "FinlibSwift"
 crate-type = ["staticlib"]
 
 [dependencies]
-finlib = { path = "../finlib", features = [] }
+finlib = { path = "../finlib", features = ["swift"] }
 log = { workspace = true }
-swift-bridge = "0.1"
+swift-bridge = { workspace = true }
 
 [build-dependencies]
-swift-bridge-build = "0.1"
+swift-bridge-build = { workspace = true }
