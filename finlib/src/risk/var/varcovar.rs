@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
+use alloc::vec::Vec;
+
 use crate::risk::forecast::{investment_mean_from_portfolio, investment_std_dev_from_portfolio};
 use crate::risk::var::ValueAtRisk;
 use crate::stats::{inverse_cdf_value, MuSigma, PopulationStats};
@@ -109,6 +111,9 @@ mod tests {
     use crate::portfolio::PortfolioAsset;
     use crate::risk::var::ValueAtRisk;
 
+    use alloc::string::ToString;
+    use alloc::vec;
+
     #[test]
     fn var_test() {
         let assets = vec![
@@ -126,9 +131,9 @@ mod tests {
             ),
         ];
 
-        let mut portfolio = Portfolio::from(assets);
+        let portfolio = Portfolio::from(assets);
 
-        portfolio.value_at_risk_pct(0.1);
+        let _ = portfolio.value_at_risk_pct(0.1);
     }
 
     #[test]
@@ -140,9 +145,9 @@ mod tests {
             vec![2f64, 3f64, 4f64],
         )];
 
-        let mut portfolio = Portfolio::from(assets);
+        let portfolio = Portfolio::from(assets);
 
-        portfolio.value_at_risk_pct(0.1);
+        let _ = portfolio.value_at_risk_pct(0.1);
     }
 
     #[test]
@@ -156,7 +161,7 @@ mod tests {
             ), // PortfolioAsset::new(1., "awdad".to_string(), vec![2.1, 2., 2.1, 1., 1.])
         ];
 
-        let mut portfolio = Portfolio::from(assets);
+        let portfolio = Portfolio::from(assets);
 
         println!("{:?}", portfolio.value_at_risk(0.01, Some(1_000_000.)));
         println!("{:?}", portfolio.value_at_risk(0.1, Some(1_000_000.)));

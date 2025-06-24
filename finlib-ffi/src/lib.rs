@@ -1,14 +1,43 @@
+#![cfg_attr(not(feature = "std"), no_std)]
+
+extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
+
+#[cfg(not(feature = "std"))]
+#[panic_handler]
+fn panic(_info: &core::panic::PanicInfo) -> ! {
+    loop {}
+}
+
+#[cfg(feature = "global_alloc")]
+use talc::*;
+
+#[cfg(feature = "global_alloc")]
+static mut ARENA: [u8; 10000] = [0; 10000];
+
+#[cfg(feature = "global_alloc")]
+#[global_allocator]
+static ALLOCATOR: Talck<spin::Mutex<()>, ClaimOnOom> = Talc::new(unsafe {
+    // if we're in a hosted environment, the Rust runtime may allocate before
+    // main() is called, so we need to initialize the arena automatically
+    ClaimOnOom::new(Span::from_array(core::ptr::addr_of!(ARENA).cast_mut()))
+})
+.lock();
+
 pub mod curve;
 pub mod indicators;
 pub mod mortgage;
+#[cfg(feature = "std")]
 pub mod options;
+pub mod options_contract;
 pub mod portfolio;
 pub mod price;
 pub mod strategy;
 pub mod swap;
 
+use alloc::slice;
 use finlib::stats::MuSigma;
-use std::slice;
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -137,6 +166,7 @@ pub unsafe extern "C" fn historical_value_at_risk(
     }
 }
 
+#[cfg(feature = "std")]
 #[no_mangle]
 pub unsafe extern "C" fn varcovar_value_at_risk(
     arr: *const f64,

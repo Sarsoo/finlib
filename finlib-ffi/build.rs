@@ -24,6 +24,7 @@ fn main() {
         .input_extern_file("src/curve.rs")
         .input_extern_file("src/swap.rs")
         .input_extern_file("src/options.rs")
+        .input_extern_file("src/options_contract.rs")
         .input_extern_file("src/strategy.rs")
         .input_extern_file("src/mortgage.rs")
         .input_extern_file("../finlib/src/portfolio/portfolio.rs")

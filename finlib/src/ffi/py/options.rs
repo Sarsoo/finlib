@@ -5,8 +5,8 @@ use crate::derivatives::options::blackscholes::OptionVariables;
 use crate::derivatives::options::{OptionContract, OptionStyle, OptionType};
 use crate::price::enums::Side;
 use crate::price::payoff::{Payoff, Profit};
+use core::ops::Range;
 use pyo3::prelude::*;
-use std::ops::Range;
 
 #[pymethods]
 impl OptionVariables {

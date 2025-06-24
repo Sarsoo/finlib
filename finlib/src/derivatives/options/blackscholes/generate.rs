@@ -3,7 +3,10 @@ use crate::derivatives::options::blackscholes::OptionVariables;
 use crate::derivatives::options::{OptionContract, OptionStyle, OptionType};
 use crate::price::enums::Side;
 use ndarray::Array6;
+#[cfg(feature = "rayon")]
 use rayon::prelude::*;
+
+use alloc::vec::Vec;
 
 pub fn generate_options(
     option_variables: Array6<OptionVariables>,
@@ -22,6 +25,7 @@ pub fn generate_options(
     }
 }
 
+#[cfg(feature = "rayon")]
 pub fn par_generate_options(
     option_variables: Array6<OptionVariables>,
 ) -> Result<Array6<(OptionContract, OptionContract)>, ()> {

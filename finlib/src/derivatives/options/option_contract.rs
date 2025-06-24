@@ -1,3 +1,4 @@
+#[cfg(feature = "std")]
 use crate::derivatives::options::blackscholes::OptionVariables;
 use crate::derivatives::options::{IOption, OptionGreeks, OptionStyle, OptionType};
 use crate::derivatives::TradeSide;
@@ -79,6 +80,7 @@ impl OptionContract {
         }
     }
 
+    #[cfg(feature = "std")]
     pub fn from_vars(
         vars: &OptionVariables,
         option_type: OptionType,

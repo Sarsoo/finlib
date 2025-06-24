@@ -1,12 +1,17 @@
 use crate::risk::var::ValueAtRisk;
 use crate::util::roc::rates_of_change;
+use num::traits::float::FloatCore;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
+#[cfg(feature = "rayon")]
 use rayon::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
+
+use alloc::vec::Vec;
+
 // https://www.simtrade.fr/blog_simtrade/historical-method-var-calculation/
 
 pub fn value_at_risk_percent(values: &[f64], confidence: f64) -> f64 {
@@ -19,6 +24,7 @@ pub fn value_at_risk_percent(values: &[f64], confidence: f64) -> f64 {
     roc[threshold]
 }
 
+#[cfg(feature = "rayon")]
 pub fn par_value_at_risk_percent(values: &[f64], confidence: f64) -> f64 {
     let mut roc = rates_of_change(values).collect::<Vec<_>>();
 

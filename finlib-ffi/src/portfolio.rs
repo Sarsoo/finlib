@@ -1,9 +1,14 @@
 use crate::{NullableFloat, Tuple};
+use alloc::boxed::Box;
+use alloc::string::String;
+use alloc::vec;
+use core::ptr;
+use core::slice;
 use finlib::portfolio::{Portfolio, PortfolioAsset};
 use finlib::price::payoff::{Payoff, Profit};
+#[cfg(feature = "std")]
 use finlib::risk::var::ValueAtRisk;
 use finlib::stats::{MuSigma, PopulationStats};
-use std::{ptr, slice};
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_asset_new(
@@ -88,6 +93,7 @@ pub unsafe extern "C" fn portfolio_asset_payoff(
     }
 }
 
+#[cfg(feature = "std")]
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_asset_value_at_risk(
     portfolio: *mut PortfolioAsset,
@@ -99,6 +105,7 @@ pub unsafe extern "C" fn portfolio_asset_value_at_risk(
     )
 }
 
+#[cfg(feature = "std")]
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_asset_value_at_risk_percent(
     portfolio: *mut PortfolioAsset,
@@ -107,6 +114,7 @@ pub unsafe extern "C" fn portfolio_asset_value_at_risk_percent(
     NullableFloat::from_result((&mut *portfolio).value_at_risk_pct(confidence))
 }
 
+#[cfg(feature = "std")]
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_asset_value_at_risk_afer_time(
     portfolio: *mut PortfolioAsset,
@@ -174,6 +182,7 @@ pub unsafe extern "C" fn portfolio_is_valid(portfolio: *mut Portfolio) -> bool {
     (&mut *portfolio).is_valid()
 }
 
+#[cfg(feature = "std")]
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_get_mean_and_std(portfolio: *mut Portfolio) -> Tuple {
     match (&mut *portfolio).mean_and_std_dev() {
@@ -182,6 +191,7 @@ pub unsafe extern "C" fn portfolio_get_mean_and_std(portfolio: *mut Portfolio) -
     }
 }
 
+#[cfg(feature = "std")]
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_value_at_risk(
     portfolio: *mut Portfolio,
@@ -193,6 +203,7 @@ pub unsafe extern "C" fn portfolio_value_at_risk(
     )
 }
 
+#[cfg(feature = "std")]
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_value_at_risk_percent(
     portfolio: *mut Portfolio,
@@ -201,6 +212,7 @@ pub unsafe extern "C" fn portfolio_value_at_risk_percent(
     NullableFloat::from_result((&mut *portfolio).value_at_risk_pct(confidence))
 }
 
+#[cfg(feature = "std")]
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_value_at_risk_afer_time(
     portfolio: *mut Portfolio,

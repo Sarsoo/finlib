@@ -1,4 +1,6 @@
-use crate::derivatives::options::blackscholes::{generate_options, par_generate_options};
+use crate::derivatives::options::blackscholes::generate_options;
+#[cfg(feature = "rayon")]
+use crate::derivatives::options::blackscholes::par_generate_options;
 use core::ops::Range;
 use ndarray::Array6;
 
@@ -9,6 +11,8 @@ use crate::derivatives::options::OptionType::Call;
 use pyo3::prelude::*;
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
+
+use alloc::vec::Vec;
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(eq))]
@@ -175,6 +179,7 @@ impl OptionsSurface {
         }
     }
 
+    #[cfg(feature = "rayon")]
     pub fn par_generate(&mut self) -> Result<(), ()> {
         let variables = self.variables.take();
         match variables {
@@ -212,7 +217,7 @@ mod tests {
         );
 
         let mut a = w.walk().unwrap();
-        a.generate();
+        let _ = a.generate();
 
         let _ = a.options.unwrap()[[0, 0, 0, 0, 0, 0]];
     }

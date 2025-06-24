@@ -1,13 +1,13 @@
 use crate::curve::point::CurvePoint;
 use crate::price::price::PricePair;
+use alloc::collections::BTreeMap;
 use chrono::NaiveDate;
+#[cfg(feature = "btree_cursors")]
+use core::ops::Bound;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
-#[cfg(feature = "btree_cursors")]
-use std::ops::Bound;
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 

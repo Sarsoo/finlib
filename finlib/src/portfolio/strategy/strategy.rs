@@ -2,9 +2,16 @@ use crate::portfolio::strategy::IStrategy;
 use crate::price::payoff::{Payoff, Profit};
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
-use std::sync::{Arc, Mutex};
+#[cfg(not(feature = "std"))]
+use spin::mutex::Mutex;
+#[cfg(feature = "std")]
+use std::sync::Mutex;
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
+
+use alloc::sync::Arc;
+use alloc::vec;
+use alloc::vec::Vec;
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass)]
@@ -24,6 +31,7 @@ impl Strategy {
     }
 }
 
+#[cfg(feature = "std")]
 impl Payoff<f64> for Strategy {
     fn payoff(&self, underlying: f64) -> f64 {
         self.components
@@ -33,11 +41,32 @@ impl Payoff<f64> for Strategy {
     }
 }
 
+#[cfg(feature = "std")]
 impl Profit<f64> for Strategy {
     fn profit(&self, underlying: f64) -> f64 {
         self.components
             .iter()
             .map(|c| c.lock().unwrap().profit(underlying))
+            .sum()
+    }
+}
+
+#[cfg(not(feature = "std"))]
+impl Payoff<f64> for Strategy {
+    fn payoff(&self, underlying: f64) -> f64 {
+        self.components
+            .iter()
+            .map(|c| c.lock().payoff(underlying))
+            .sum()
+    }
+}
+
+#[cfg(not(feature = "std"))]
+impl Profit<f64> for Strategy {
+    fn profit(&self, underlying: f64) -> f64 {
+        self.components
+            .iter()
+            .map(|c| c.lock().profit(underlying))
             .sum()
     }
 }

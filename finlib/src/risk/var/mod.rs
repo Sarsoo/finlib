@@ -1,7 +1,9 @@
 //! Calculate Value at Risk using either the [`historical`] or parametric [`varcovar`] methods for an asset or portfolio
 
 pub mod historical;
+#[cfg(feature = "std")]
 pub mod varcovar;
+use num::traits::real::Real;
 
 #[cfg(feature = "py")]
 use pyo3::prelude::*;

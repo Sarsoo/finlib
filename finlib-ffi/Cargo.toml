@@ -14,8 +14,16 @@ license.workspace = true
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-finlib = { path = "../finlib", features = ["ffi"] }
-chrono = { workspace = true }
+finlib = { path = "../finlib", default-features = false, features = ["ffi"] }
+chrono = { workspace = true, default-features = false }
+talc = { workspace = true, optional = true }
+spin = { workspace = true, optional = true }
+
+[features]
+default = ["std"]
+std = ["finlib/std"]
+rayon = ["finlib/rayon"]
+global_alloc = ["dep:talc", "dep:spin", "talc/lock_api"]
 
 [build-dependencies]
 cbindgen = "0.29.0"

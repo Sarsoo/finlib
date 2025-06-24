@@ -1,9 +1,10 @@
+use alloc::boxed::Box;
 use finlib::price::enums::Side;
 use finlib::price::price::{Price, PricePair};
 
 #[no_mangle]
 pub unsafe extern "C" fn price_new(price: f64, side: Side) -> *mut Price {
-    Box::into_raw(Box::new(Price{value: price, side}))
+    Box::into_raw(Box::new(Price { value: price, side }))
 }
 
 #[no_mangle]
@@ -35,7 +36,7 @@ pub unsafe extern "C" fn price_destroy(asset: *mut Price) {
 
 #[no_mangle]
 pub unsafe extern "C" fn price_pair_new(bid: f64, offer: f64) -> *mut PricePair {
-    Box::into_raw(Box::new(PricePair{bid, offer}))
+    Box::into_raw(Box::new(PricePair { bid, offer }))
 }
 
 #[no_mangle]
@@ -74,4 +75,3 @@ pub unsafe extern "C" fn price_pair_destroy(asset: *mut PricePair) {
         drop(Box::from_raw(asset));
     }
 }
-

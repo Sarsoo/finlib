@@ -1,4 +1,6 @@
+use alloc::boxed::Box;
 use chrono::NaiveDate;
+use core::ptr;
 use finlib::curve::curve::{Curve, CurveType};
 use finlib::price::price::PricePair;
 
@@ -36,7 +38,7 @@ pub unsafe extern "C" fn curve_get_rate(
     day: u32,
 ) -> *mut PricePair {
     match (&mut *curve).get_rate(NaiveDate::from_ymd_opt(year, month, day).unwrap()) {
-        None => std::ptr::null_mut(),
+        None => ptr::null_mut(),
         Some(v) => Box::into_raw(Box::new(v)),
     }
 }
@@ -49,7 +51,7 @@ pub unsafe extern "C" fn curve_get_absolute_rate(
     day: u32,
 ) -> *mut PricePair {
     match (&mut *curve).get_absolute_rate(NaiveDate::from_ymd_opt(year, month, day).unwrap()) {
-        None => std::ptr::null_mut(),
+        None => ptr::null_mut(),
         Some(v) => Box::into_raw(Box::new(v)),
     }
 }
@@ -62,7 +64,7 @@ pub unsafe extern "C" fn curve_get_cumulative_rate(
     day: u32,
 ) -> *mut PricePair {
     match (&mut *curve).get_cumulative_rate(NaiveDate::from_ymd_opt(year, month, day).unwrap()) {
-        None => std::ptr::null_mut(),
+        None => ptr::null_mut(),
         Some(v) => Box::into_raw(Box::new(v)),
     }
 }
@@ -81,7 +83,7 @@ pub unsafe extern "C" fn curve_get_carry_rate(
         NaiveDate::from_ymd_opt(from_year, from_month, from_day).unwrap(),
         NaiveDate::from_ymd_opt(to_year, to_month, to_day).unwrap(),
     ) {
-        None => std::ptr::null_mut(),
+        None => ptr::null_mut(),
         Some(v) => Box::into_raw(Box::new(v)),
     }
 }

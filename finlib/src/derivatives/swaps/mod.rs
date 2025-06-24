@@ -10,6 +10,8 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
+use alloc::vec::Vec;
+
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(get_all, eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
@@ -76,6 +78,8 @@ impl_premium_profit!(Vec<f64>, Swap);
 mod tests {
     use super::*;
     use crate::price::enums::Side::{Buy, Sell};
+
+    use alloc::vec;
 
     #[test]
     fn buy() {

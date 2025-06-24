@@ -12,6 +12,8 @@ use statrs::distribution::{Continuous, ContinuousCDF, Normal};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
+use core::f64;
+
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(eq, ord))]
 #[cfg_attr(feature = "ffi", repr(C))]
@@ -89,7 +91,7 @@ impl BlackscholesPricer {
     }
 
     pub fn d1(&self, variables: &OptionVariables) -> f64 {
-        let first = (variables.underlying_price / variables.strike_price).log(std::f64::consts::E);
+        let first = (variables.underlying_price / variables.strike_price).log(f64::consts::E);
 
         let second = variables.time_to_expiration
             * (variables.risk_free_interest_rate - variables.dividend
@@ -240,7 +242,7 @@ mod tests {
 
     #[test]
     fn call_test() {
-        let mut v = get_example_option(OptionType::Call);
+        let v = get_example_option(OptionType::Call);
 
         let pricer = BlackscholesPricer {};
         let diff = (pricer.price(&v) - 3.019).abs();
@@ -250,7 +252,7 @@ mod tests {
 
     #[test]
     fn put_test() {
-        let mut v = get_example_option(OptionType::Put);
+        let v = get_example_option(OptionType::Put);
 
         let pricer = BlackscholesPricer {};
         let diff = (pricer.price(&v) - 2.691).abs();

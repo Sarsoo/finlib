@@ -1,3 +1,4 @@
+use alloc::boxed::Box;
 use finlib::derivatives::options::OptionContract;
 use finlib::derivatives::swaps::Swap;
 use finlib::portfolio::strategy::strategy::Strategy;

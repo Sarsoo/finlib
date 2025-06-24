@@ -1,18 +1,23 @@
 use crate::portfolio::{PortfolioAsset, ValueType};
 use crate::price::payoff::{Payoff, Profit};
+#[cfg(feature = "std")]
 use crate::risk::var::varcovar::value_at_risk_from_initial_investment;
 use crate::risk::var::ValueAtRisk;
 use crate::stats::{MuSigma, PopulationStats};
 use log::error;
 use ndarray::prelude::*;
+#[cfg(feature = "std")]
 use ndarray_stats::CorrelationExt;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
+#[cfg(feature = "rayon")]
 use rayon::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
+
+use alloc::vec::Vec;
 
 /// Describes a Portfolio as a collection of [`PortfolioAsset`]s
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
@@ -65,6 +70,7 @@ impl Portfolio {
     }
 
     #[deprecated(note = "a lot slower than the sequential method, sans par prefix")]
+    #[cfg(feature = "rayon")]
     pub fn par_apply_rates_of_change(&mut self) {
         self.assets.par_iter_mut().for_each(|asset| {
             asset.apply_rates_of_change();
@@ -137,6 +143,7 @@ impl Portfolio {
     }
 
     /// Format the asset values in the portfolio as a matrix such that statistical operations can be applied to it
+    #[cfg(feature = "rayon")]
     pub fn par_get_matrix(&self) -> Option<Array2<f64>> {
         if self.assets.is_empty() || !self.valid_sizes() {
             return None;
@@ -185,6 +192,7 @@ impl Portfolio {
     }
 }
 
+#[cfg(feature = "std")]
 impl ValueAtRisk for Portfolio {
     /// For a given confidence rate (0.01, 0.05, 0.10) calculate the percentage change in an investment
     ///
@@ -212,6 +220,7 @@ impl ValueAtRisk for Portfolio {
     }
 }
 
+#[cfg(feature = "std")]
 impl PopulationStats for Portfolio {
     /// Calculate the mean and the standard deviation of a portfolio, taking into account the relative weights and covariance of the portfolio's assets
     ///
@@ -272,8 +281,12 @@ impl Profit<Option<f64>> for Portfolio {
 }
 
 #[cfg(test)]
+#[cfg(feature = "std")]
 mod tests {
     use super::*;
+
+    use alloc::string::ToString;
+    use alloc::vec;
 
     #[test]
     fn get_matrix() {
@@ -337,7 +350,7 @@ mod tests {
                 .build(),
         ];
 
-        let mut m = Portfolio::from(assets);
+        let m = Portfolio::from(assets);
 
         assert!(m.value_at_risk(0.01, None).is_ok());
     }
@@ -359,7 +372,7 @@ mod tests {
             ),
         ];
 
-        let mut m = Portfolio::from(assets);
+        let m = Portfolio::from(assets);
 
         assert!(m.value_at_risk(0.01, None).is_err());
     }

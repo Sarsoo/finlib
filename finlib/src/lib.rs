@@ -1,5 +1,11 @@
-#![cfg_attr(feature = "btree_cursors", feature(btree_cursors))]
 //! # Quant finance functionality for Rust with FFIs to C/C++, C#, Python and WASM
+
+#![cfg_attr(feature = "btree_cursors", feature(btree_cursors))]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
 
 pub mod curve;
 pub mod derivatives;

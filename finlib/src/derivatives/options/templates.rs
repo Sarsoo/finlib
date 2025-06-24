@@ -1,6 +1,9 @@
 use crate::derivatives::options::OptionType::{Call, Put};
 use crate::price::enums::Side::{Buy, Sell};
 
+use alloc::vec;
+use alloc::vec::Vec;
+
 use crate::derivatives::options::OptionContract;
 use crate::derivatives::options::OptionStyle::European;
 #[cfg(feature = "py")]

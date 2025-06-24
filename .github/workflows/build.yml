@@ -175,13 +175,40 @@ jobs:
         working-directory: ./finlib-cpp
         run: mkdir -p build ; cd build ; cmake .. -DCMAKE_BUILD_TYPE=Debug ; cmake --build .
 
+  buildEmbedded:
+    name: Build Embedded
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: thumbv7m-none-eabi
+
+      - name: Install check stable and nightly
+        run: |
+          cargo check --target thumbv7m-none-eabi --no-default-features --features global_alloc
+          rustup override set nightly
+          rustup target add thumbv7m-none-eabi
+          cargo check --target thumbv7m-none-eabi --no-default-features --features global_alloc
+
+  #          sudo apt-get update && sudo apt-get install qemu qemu-system-arm
+
+  #      - name: Test Embedded (in nightly)
+  #        timeout-minutes: 1
+  #        run: |
+  #          cd tests/embedded
+  #          cargo run
+
   doc:
     name: Build Documentation
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: [ build, buildPy, buildWASM, buildNET ] # for ignoring bad builds
+    needs: [ build, buildPy, buildWASM, buildNET, buildCPP, buildEmbedded ] # for ignoring bad builds
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout

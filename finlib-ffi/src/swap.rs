@@ -1,7 +1,9 @@
+use alloc::boxed::Box;
+use alloc::vec::Vec;
+use core::slice;
 use finlib::derivatives::swaps::Swap;
 use finlib::price::enums::Side;
 use finlib::price::payoff::{Payoff, Profit};
-use std::slice;
 
 #[no_mangle]
 pub unsafe extern "C" fn swap_from(fixed_rate: f64, fixed_side: Side, premium: f64) -> *mut Swap {

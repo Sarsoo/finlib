@@ -5,7 +5,7 @@ use crate::derivatives::options::blackscholes::OptionVariables;
 use crate::derivatives::options::{OptionContract, OptionStyle, OptionType};
 use crate::price::enums::Side;
 use crate::price::payoff::{Payoff, Profit};
-use std::ops::Range;
+use core::ops::Range;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]

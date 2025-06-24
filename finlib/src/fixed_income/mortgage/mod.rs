@@ -2,6 +2,7 @@ use crate::fixed_income::annuity::{
     future_value_ordinary, monthly_payment, present_value_ordinary, total_interest_repayment,
     total_repayment,
 };
+use crate::price::payoff::{Payoff, Profit};
 use bon::Builder;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
@@ -84,5 +85,17 @@ impl Mortgage {
             self.term_years,
             12,
         )
+    }
+}
+
+impl Payoff<f64> for Mortgage {
+    fn payoff(&self, _: f64) -> f64 {
+        self.total_repayment()
+    }
+}
+
+impl Profit<f64> for Mortgage {
+    fn profit(&self, _: f64) -> f64 {
+        self.total_interest_repayment()
     }
 }

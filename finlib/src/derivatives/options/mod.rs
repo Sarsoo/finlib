@@ -1,3 +1,4 @@
+#[cfg(feature = "std")]
 pub mod blackscholes;
 pub mod greeks;
 pub mod intrinsic_value;

@@ -1,8 +1,6 @@
 use crate::interest::{anticompound_rate_per_n, compound_rate_per_n, rate_per_n};
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
-#[cfg(feature = "wasm")]
-use wasm_bindgen::prelude::*;
 
 /// Calculate the constant monthly payment for an annuity on `principal` (100,000) with an `interest_rate` (0.05 for 5%) over a `term` (10 years)
 #[cfg_attr(feature = "py", pyfunction)]

@@ -2,11 +2,13 @@ mod covariance;
 
 pub use covariance::*;
 use log::error;
+use num::traits::real::Real;
 
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "std")]
 use statrs::distribution::{ContinuousCDF, Normal};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
@@ -47,6 +49,7 @@ pub fn sample_std_dev(slice: &[f64]) -> f64 {
     f64::sqrt(sample_variance(slice))
 }
 
+#[cfg(feature = "std")]
 pub fn inverse_cdf_value(confidence: f64, mean: f64, std_dev: f64) -> f64 {
     if std_dev.is_nan() || std_dev <= 0.0 {
         error!("invalid std_dev: mean[{}] std_dev[{}]", mean, std_dev);

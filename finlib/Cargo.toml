@@ -9,19 +9,21 @@ repository.workspace = true
 documentation.workspace = true
 readme.workspace = true
 license.workspace = true
+categories = ["no-std", "wasm", "finance", "mathematics"]
+keywords = ["no_std", "wasm", "finance"]
 
 [dependencies]
-rayon = { workspace = true }
-ndarray = { workspace = true }
-ndarray-stats = { workspace = true }
-statrs = { workspace = true }
+rayon = { workspace = true, optional = true, default-features = false }
+ndarray = { workspace = true, default-features = false }
+ndarray-stats = { workspace = true, optional = true, default-features = false }
+statrs = { workspace = true, optional = true, default-features = false }
 chrono = { workspace = true, default-features = false }
-log = { workspace = true }
-getrandom = { workspace = true }
-rand = { workspace = true }
-serde = { workspace = true, optional = true }
-num = { workspace = true }
-bon = { workspace = true }
+log = { workspace = true, default-features = false }
+getrandom = { workspace = true, optional = true, default-features = false }
+rand = { workspace = true, optional = true, default-features = false }
+serde = { workspace = true, optional = true, default-features = false }
+num = { workspace = true, default-features = false, features = ["libm"] }
+bon = { workspace = true, default-features = false }
 
 wasm-bindgen = { workspace = true, optional = true }
 js-sys = { workspace = true, optional = true }
@@ -29,6 +31,7 @@ serde-wasm-bindgen = { workspace = true, optional = true }
 pyo3 = { workspace = true, optional = true }
 swift-bridge = { workspace = true, optional = true }
 
+spin = { workspace = true }
 
 [dev-dependencies]
 criterion = "0.6.0"
@@ -45,9 +48,11 @@ name = "rayon_options"
 harness = false
 
 [features]
-default = []
+default = ["std"]
+std = ["dep:statrs", "dep:ndarray-stats", "ndarray/std", "num/std", "chrono/std", "log/std", "rand/std", "rand/std_rng", "getrandom/std", "serde?/std", "bon/std"]
 serde = ["dep:serde", "chrono/serde", "ndarray/serde", "num/serde", "log/serde", "rand/serde", "wasm-bindgen?/serde-serialize", "pyo3/serde"]
 btree_cursors = []
+rayon = ["dep:rayon", "ndarray/rayon"]
 py = ["dep:pyo3"]
 wasm = ["getrandom/js", "dep:wasm-bindgen", "dep:js-sys", "dep:serde-wasm-bindgen", "chrono/wasmbind"]
 ffi = []

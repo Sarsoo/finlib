@@ -1,4 +1,5 @@
 use crate::price::payoff::{Payoff, Profit};
+#[cfg(feature = "std")]
 use crate::risk::var::varcovar::value_at_risk_from_initial_investment;
 use crate::risk::var::ValueAtRisk;
 use crate::stats;
@@ -12,6 +13,9 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
+
+use alloc::string::String;
+use alloc::vec::Vec;
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(eq, ord))]
@@ -130,6 +134,7 @@ impl Profit<Option<f64>> for PortfolioAsset {
     }
 }
 
+#[cfg(feature = "std")]
 impl ValueAtRisk for PortfolioAsset {
     fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
         crate::risk::var::varcovar::value_at_risk_percent(self, confidence)
