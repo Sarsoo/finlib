@@ -23,7 +23,7 @@ name = "pyfinlib"
 crate-type = ["cdylib"]
 
 [dependencies]
-finlib = { path = "../finlib", features = ["py"] }
+finlib = { path = "../finlib", features = ["py", "rayon"] }
 pyo3 = { workspace = true }
 pyo3-log = { workspace = true }
 log = { workspace = true }

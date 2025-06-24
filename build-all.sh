@@ -8,6 +8,10 @@ cd $THISDIR
 echo "> building rust"
 cargo build
 
+cd $THISDIR
+echo "> building embedded"
+cargo check --target thumbv7m-none-eabi --no-default-features --features global_alloc
+
 cd $THISDIR/FinLib.NET
 echo "> building .net"
 dotnet build

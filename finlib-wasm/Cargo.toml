@@ -18,7 +18,7 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 wasm-bindgen = { workspace = true }
-finlib = { path = "../finlib", features = ["wasm"] }
+finlib = { path = "../finlib", features = ["wasm", "rayon"] }
 log = { workspace = true }
 console_log = { version = "1.0.0", features = ["color"] }
 
