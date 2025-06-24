@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "FinlibSwift"
-version = "0.0.9"
+version = "0.0.10"
 dependencies = [
  "finlib",
  "log",
@@ -407,7 +407,7 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
 name = "finlib"
-version = "0.0.9"
+version = "0.0.10"
 dependencies = [
  "bon",
  "chrono",
@@ -432,7 +432,7 @@ dependencies = [
 
 [[package]]
 name = "finlib-ffi"
-version = "0.0.9"
+version = "0.0.10"
 dependencies = [
  "cbindgen",
  "chrono",
@@ -444,7 +444,7 @@ dependencies = [
 
 [[package]]
 name = "finlib-wasm"
-version = "0.0.9"
+version = "0.0.10"
 dependencies = [
  "console_error_panic_hook",
  "console_log",
@@ -850,7 +850,7 @@ dependencies = [
 
 [[package]]
 name = "pyfinlib"
-version = "0.0.9"
+version = "0.0.10"
 dependencies = [
  "finlib",
  "log",
