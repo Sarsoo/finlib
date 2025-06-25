@@ -4,11 +4,12 @@ use alloc::string::String;
 use alloc::vec;
 use core::ptr;
 use core::slice;
+use finlib::market_data::price_range::TimeSpan;
 use finlib::portfolio::{Portfolio, PortfolioAsset};
 use finlib::price::payoff::{Payoff, Profit};
 #[cfg(feature = "std")]
 use finlib::risk::var::ValueAtRisk;
-use finlib::stats::{MuSigma, PopulationStats};
+use finlib::stats::PopulationStats;
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_asset_new(
@@ -16,8 +17,7 @@ pub unsafe extern "C" fn portfolio_asset_new(
     name: *const u8,
     name_len: i32,
     quantity: f64,
-    values: *const f64,
-    len: usize,
+    time_scale: TimeSpan,
 ) -> *mut PortfolioAsset {
     if name.is_null() {
         return ptr::null_mut();
@@ -26,16 +26,9 @@ pub unsafe extern "C" fn portfolio_asset_new(
     let slice = slice::from_raw_parts(name, name_len as usize);
     let name = String::from_utf8_unchecked(slice.to_vec());
 
-    let input_array = unsafe {
-        assert!(!values.is_null());
-        slice::from_raw_parts(values, len)
-    };
-
     Box::into_raw(Box::new(PortfolioAsset::new(
         // portfolio_weight,
-        name,
-        quantity,
-        input_array.to_vec(),
+        name, quantity, time_scale,
     )))
 }
 

@@ -111,27 +111,81 @@ mod tests {
     use crate::portfolio::PortfolioAsset;
     use crate::risk::var::ValueAtRisk;
 
+    use crate::market_data::price_range::PriceTimestamp;
+    use crate::market_data::price_range::TimeSpan::Second;
+    use crate::price::Side::Buy;
     use alloc::string::ToString;
     use alloc::vec;
+    use chrono::{TimeZone, Utc};
 
     #[test]
     fn var_test() {
         let assets = vec![
             PortfolioAsset::new(
                 // 0.3,
-                "awdad".to_string(),
+                "a".to_string(),
                 4.0,
-                vec![2f64, 3f64, 4f64],
+                Second,
             ),
             PortfolioAsset::new(
                 // 0.7,
-                "awdad".to_string(),
+                "b".to_string(),
                 4.0,
-                vec![1f64, 6f64, 8f64],
+                Second,
             ),
         ];
 
-        let portfolio = Portfolio::from(assets);
+        let mut portfolio = Portfolio::from(assets);
+
+        portfolio.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        portfolio.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(2.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        portfolio.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
+
+        portfolio.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        portfolio.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(2.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        portfolio.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
 
         let _ = portfolio.value_at_risk_pct(0.1);
     }
@@ -140,12 +194,37 @@ mod tests {
     fn var_test_one_asset() {
         let assets = vec![PortfolioAsset::new(
             // 0.3,
-            "awdad".to_string(),
+            "b".to_string(),
             4.0,
-            vec![2f64, 3f64, 4f64],
+            Second,
         )];
 
-        let portfolio = Portfolio::from(assets);
+        let mut portfolio = Portfolio::from(assets);
+
+        portfolio.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        portfolio.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(2.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        portfolio.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
 
         let _ = portfolio.value_at_risk_pct(0.1);
     }
@@ -155,13 +234,38 @@ mod tests {
         let assets = vec![
             PortfolioAsset::new(
                 // 1.,
-                "awdad".to_string(),
+                "b".to_string(),
                 4.0,
-                vec![10., 9., 8., 7.],
+                Second,
             ), // PortfolioAsset::new(1., "awdad".to_string(), vec![2.1, 2., 2.1, 1., 1.])
         ];
 
-        let portfolio = Portfolio::from(assets);
+        let mut portfolio = Portfolio::from(assets);
+
+        portfolio.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        portfolio.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(2.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        portfolio.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
 
         println!("{:?}", portfolio.value_at_risk(0.01, Some(1_000_000.)));
         println!("{:?}", portfolio.value_at_risk(0.1, Some(1_000_000.)));

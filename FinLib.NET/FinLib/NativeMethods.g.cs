@@ -32,7 +32,7 @@ namespace FinLib
         internal static extern double scale_value_at_risk(double initial_value, nint time_cycles);
 
         [DllImport(__DllName, EntryPoint = "portfolio_asset_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern PortfolioAsset_native* portfolio_asset_new(byte* name, int name_len, double quantity, double* values, nuint len);
+        internal static extern PortfolioAsset_native* portfolio_asset_new(byte* name, int name_len, double quantity, TimeSpan_native time_scale);
 
         [DllImport(__DllName, EntryPoint = "portfolio_asset_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void portfolio_asset_destroy(PortfolioAsset_native* asset);

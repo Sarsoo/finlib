@@ -14,6 +14,7 @@ pub mod ffi;
 pub mod fixed_income;
 pub mod indicators;
 pub mod interest;
+pub mod market_data;
 pub mod portfolio;
 pub mod price;
 pub mod risk;

@@ -14,8 +14,13 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
+use crate::market_data::price_range::{PriceRange, PriceRangePair, PriceTimestamp, TimeSpan};
+use crate::market_data::price_timeline::static_timeline::StaticPriceTimeline;
+use crate::market_data::price_timeline::PriceTimeline;
+use crate::price::{IPrice, PricePair, Side};
 use alloc::string::String;
 use alloc::vec::Vec;
+use chrono::{DateTime, Utc};
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(eq, ord))]
@@ -35,9 +40,9 @@ pub enum ValueType {
 #[derive(Builder, Clone, Debug, PartialEq, PartialOrd)]
 pub struct PortfolioAsset {
     // pub portfolio_weight: f64,
-    name: String,
+    pub(super) name: String,
     pub quantity: f64,
-    pub(super) market_values: Vec<f64>,
+    pub(super) market_values: StaticPriceTimeline,
     pub value_at_position_open: Option<f64>,
     pub value_type: ValueType,
 }
@@ -47,49 +52,85 @@ impl PortfolioAsset {
         // portfolio_weight: f64,
         name: String,
         quantity: f64,
-        market_values: Vec<f64>,
+        market_data_scale: TimeSpan,
     ) -> PortfolioAsset {
         PortfolioAsset {
             // portfolio_weight,
             name,
             quantity,
             value_at_position_open: None,
-            market_values,
+            market_values: StaticPriceTimeline::new(market_data_scale),
             value_type: ValueType::Absolute,
         }
     }
 
-    pub fn current_value(&self) -> f64 {
-        *self.market_values.last().unwrap()
+    pub fn current_value(&self) -> Result<PriceRangePair, ()> {
+        self.market_values.last()
     }
 
-    pub fn current_total_value(&self) -> f64 {
-        self.quantity * self.current_value()
+    pub fn current_total_value(&self) -> Result<f64, ()> {
+        match (self.current_value(), self.quantity > 0.) {
+            (Ok(v), true) => match v.side_value(Side::Sell) {
+                Ok(v) => Ok(v * self.quantity),
+                Err(e) => Err(()),
+            },
+            (Ok(v), false) => match v.side_value(Side::Sell) {
+                Ok(v) => Ok(v * self.quantity),
+                Err(_) => Err(()),
+            },
+            (Err(_), _) => Err(()),
+        }
     }
 
-    pub fn profit_loss(&self) -> Option<f64> {
+    pub fn profit_loss(&self) -> Result<f64, ()> {
         match self.value_at_position_open {
-            None => None,
-            Some(vo) => Some((self.current_value() - vo) * self.quantity),
+            None => Err(()),
+            Some(vo) => match self.current_total_value() {
+                Ok(v) => Ok(v - (vo * self.quantity)),
+                Err(_) => Err(()),
+            },
         }
     }
 
     /// If the asset's values have been given as absolute values, convert those to a percentage change between each
-    pub fn apply_rates_of_change(&mut self) {
-        match self.value_type {
-            ValueType::Absolute => {
-                self.market_values = rates_of_change(&self.market_values).collect();
-                self.value_type = ValueType::RateOfChange;
-            }
-            _ => {}
+    // pub fn apply_rates_of_change(&mut self) {
+    //     match self.value_type {
+    //         ValueType::Absolute => {
+    //             self.market_values = rates_of_change(&self.market_values).collect();
+    //             self.value_type = ValueType::RateOfChange;
+    //         }
+    //         _ => {}
+    //     }
+    // }
+
+    pub fn get_rates_of_change(&self) -> Result<Vec<f64>, ()> {
+        match (self.value_type, self.quantity > 0.) {
+            (ValueType::Absolute, true) => match &self.market_values.closing_prices(Side::Sell) {
+                Ok(vals) => Ok(rates_of_change(vals).collect()),
+                Err(_) => Err(()),
+            },
+            (ValueType::Absolute, false) => match &self.market_values.closing_prices(Side::Buy) {
+                Ok(vals) => Ok(rates_of_change(vals).collect()),
+                Err(_) => Err(()),
+            },
+            (ValueType::RateOfChange, true) => match &self.market_values.closing_prices(Side::Sell)
+            {
+                Ok(vals) => Ok(vals.clone()),
+                Err(_) => Err(()),
+            },
+            (ValueType::RateOfChange, false) => match &self.market_values.closing_prices(Side::Buy)
+            {
+                Ok(vals) => Ok(vals.clone()),
+                Err(_) => Err(()),
+            },
         }
     }
 
-    pub fn get_rates_of_change(&self) -> Vec<f64> {
-        match self.value_type {
-            ValueType::Absolute => rates_of_change(&self.market_values).collect(),
-            ValueType::RateOfChange => self.market_values.clone(),
-        }
+    pub fn add_price(&mut self, price: PriceTimestamp) -> Result<(), ()> {
+        self.market_values.add_price(price)
+    }
+    pub fn add_price_pair(&mut self, price: PricePair, time: DateTime<Utc>) -> Result<(), ()> {
+        self.market_values.add_price_pair(price, time)
     }
 }
 
@@ -98,22 +139,57 @@ impl PopulationStats for PortfolioAsset {
     ///
     /// returns (mean, std_dev)
     fn mean_and_std_dev(&self) -> Result<MuSigma, ()> {
-        match self.value_type {
-            ValueType::Absolute => {
+        match (self.value_type, self.quantity > 0.) {
+            (ValueType::Absolute, true) => {
                 info!(
                     "[{}] Asset's values are currently absolute, calculating rates of change first",
                     self.name
                 );
-                let roc = rates_of_change(&self.market_values).collect::<Vec<f64>>();
+                let roc = match &self.market_values.closing_prices(Side::Sell) {
+                    Ok(vals) => rates_of_change(vals).collect::<Vec<_>>(),
+                    Err(_) => return Err(()),
+                };
                 Ok(MuSigma {
                     mean: stats::mean(&roc),
                     std_dev: stats::sample_std_dev(&roc),
                 })
             }
-            ValueType::RateOfChange => Ok(MuSigma {
-                mean: stats::mean(&self.market_values),
-                std_dev: stats::sample_std_dev(&self.market_values),
-            }),
+            (ValueType::Absolute, false) => {
+                info!(
+                    "[{}] Asset's values are currently absolute, calculating rates of change first",
+                    self.name
+                );
+                let roc = match &self.market_values.closing_prices(Side::Buy) {
+                    Ok(vals) => rates_of_change(vals).collect::<Vec<_>>(),
+                    Err(_) => return Err(()),
+                };
+                Ok(MuSigma {
+                    mean: stats::mean(&roc),
+                    std_dev: stats::sample_std_dev(&roc),
+                })
+            }
+            (ValueType::RateOfChange, true) => {
+                let roc = match &self.market_values.closing_prices(Side::Sell) {
+                    Ok(vals) => rates_of_change(vals).collect::<Vec<_>>(),
+                    Err(_) => return Err(()),
+                };
+
+                Ok(MuSigma {
+                    mean: stats::mean(&roc),
+                    std_dev: stats::sample_std_dev(&roc),
+                })
+            }
+            (ValueType::RateOfChange, false) => {
+                let roc = match &self.market_values.closing_prices(Side::Buy) {
+                    Ok(vals) => rates_of_change(vals).collect::<Vec<_>>(),
+                    Err(_) => return Err(()),
+                };
+
+                Ok(MuSigma {
+                    mean: stats::mean(&roc),
+                    std_dev: stats::sample_std_dev(&roc),
+                })
+            }
         }
     }
 }

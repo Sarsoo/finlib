@@ -1,4 +1,4 @@
-import {Curve, CurveType, init_logging} from "finlib";
+import {Curve, CurveType, init_logging, Mortgage} from "finlib";
 
 init_logging();
 
@@ -9,10 +9,13 @@ init_logging();
 // console.log(portfolio.isValid());
 // console.log(portfolio.valueAtRisk(0.1, 1000000));
 
-let curve = new Curve(CurveType.Absolute);
-curve.addRateFrom(100, 100, new Date(2024, 1, 1));
-curve.addRateFrom(100, 100, new Date(2024, 1, 2));
-curve.addRateFrom(100, 100, new Date(2024, 1, 3));
-curve.addRateFrom(100, 100, new Date(2024, 1, 4));
-console.log(curve.length);
-console.log(curve.getRate(new Date(2024, 1, 4)).bid);
+// let curve = new Curve(CurveType.Absolute);
+// curve.addRateFrom(100, 100, new Date(2024, 1, 1));
+// curve.addRateFrom(100, 100, new Date(2024, 1, 2));
+// curve.addRateFrom(100, 100, new Date(2024, 1, 3));
+// curve.addRateFrom(100, 100, new Date(2024, 1, 4));
+// console.log(curve.length);
+// console.log(curve.getRate(new Date(2024, 1, 4)).bid);
+
+let mortgage = new Mortgage(500000, 50000, 0.05, 35);
+console.log(mortgage.ltv);

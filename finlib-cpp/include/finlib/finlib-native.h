@@ -38,6 +38,15 @@ enum class Side : uint8_t
   Sell,
 };
 
+enum class TimeSpan : uint8_t
+{
+  Second,
+  Minute,
+  Hourly,
+  Daily,
+  Weekly,
+};
+
 struct Curve;
 
 struct Mortgage;
@@ -214,8 +223,7 @@ Tuple portfolio_asset_get_mean_and_std(PortfolioAsset *asset);
 PortfolioAsset *portfolio_asset_new(const uint8_t *name,
                                     int32_t name_len,
                                     double quantity,
-                                    const double *values,
-                                    size_t len);
+                                    TimeSpan time_scale);
 
 double portfolio_asset_payoff(PortfolioAsset *asset, NullableFloat underlying);
 

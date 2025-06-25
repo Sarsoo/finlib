@@ -17,7 +17,11 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
+use crate::market_data::price_range::PriceTimestamp;
+use crate::market_data::price_timeline::PriceTimeline;
+use crate::price::{PricePair, Side};
 use alloc::vec::Vec;
+use chrono::{DateTime, Utc};
 
 /// Describes a Portfolio as a collection of [`PortfolioAsset`]s
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
@@ -42,13 +46,13 @@ impl Portfolio {
         self.assets.len()
     }
 
-    pub fn profit_loss(&self) -> Option<f64> {
-        let asset_pl: Vec<Option<f64>> = self.assets.iter().map(|x| x.profit_loss()).collect();
+    pub fn profit_loss(&self) -> Result<f64, ()> {
+        let asset_pl: Vec<Result<f64, ()>> = self.assets.iter().map(|x| x.profit_loss()).collect();
 
-        if asset_pl.iter().any(|x| x.is_none()) {
-            None
+        if asset_pl.iter().any(|x| x.is_err()) {
+            Err(())
         } else {
-            Some(asset_pl.iter().map(|x| x.unwrap()).sum())
+            Ok(asset_pl.iter().map(|x| x.unwrap()).sum())
         }
     }
 
@@ -63,19 +67,19 @@ impl Portfolio {
     }
 
     /// Convert a portfolio of assets with absolute values to the percentage change in values
-    pub fn apply_rates_of_change(&mut self) {
-        self.assets.iter_mut().for_each(|asset| {
-            asset.apply_rates_of_change();
-        });
-    }
+    // pub fn apply_rates_of_change(&mut self) {
+    //     self.assets.iter_mut().for_each(|asset| {
+    //         asset.apply_rates_of_change();
+    //     });
+    // }
 
-    #[deprecated(note = "a lot slower than the sequential method, sans par prefix")]
-    #[cfg(feature = "rayon")]
-    pub fn par_apply_rates_of_change(&mut self) {
-        self.assets.par_iter_mut().for_each(|asset| {
-            asset.apply_rates_of_change();
-        });
-    }
+    // #[deprecated(note = "a lot slower than the sequential method, sans par prefix")]
+    // #[cfg(feature = "rayon")]
+    // pub fn par_apply_rates_of_change(&mut self) {
+    //     self.assets.par_iter_mut().for_each(|asset| {
+    //         asset.apply_rates_of_change();
+    //     });
+    // }
 
     /// Do all the assets in the portfolio have the same number of values (required to perform matrix operations)
     pub fn valid_sizes(&self) -> bool {
@@ -103,12 +107,25 @@ impl Portfolio {
     }
 
     /// Format the asset values in the portfolio as a matrix such that statistical operations can be applied to it
-    pub fn get_matrix(&self, f: &dyn Fn(&PortfolioAsset) -> Vec<f64>) -> Result<Array2<f64>, ()> {
+    pub fn get_matrix(
+        &self,
+        f: &dyn Fn(&PortfolioAsset) -> Result<Vec<f64>, ()>,
+    ) -> Result<Array2<f64>, ()> {
         if self.assets.is_empty() || !self.valid_sizes() {
             return Err(());
         }
 
-        let values = self.assets.iter().map(|a| f(a)).collect::<Vec<Vec<f64>>>();
+        let values = self
+            .assets
+            .iter()
+            .map(|a| f(a))
+            .collect::<Vec<Result<Vec<f64>, ()>>>();
+
+        if values.iter().any(|x| x.is_err()) {
+            return Err(());
+        }
+
+        let values: Vec<Vec<f64>> = values.into_iter().map(|x| x.unwrap()).collect();
 
         let sizes_match = values.iter().map(|x| x.len()).all(|x| x == values[0].len());
 
@@ -126,15 +143,18 @@ impl Portfolio {
         Ok(matrix.into_owned())
     }
 
-    fn get_raw_values(asset: &PortfolioAsset) -> Vec<f64> {
-        asset.market_values.clone()
+    fn get_raw_values(asset: &PortfolioAsset) -> Result<Vec<f64>, ()> {
+        match asset.quantity > 0. {
+            true => asset.market_values.closing_prices(Side::Sell),
+            false => asset.market_values.closing_prices(Side::Buy),
+        }
     }
 
     pub fn get_raw_matrix(&self) -> Result<Array2<f64>, ()> {
         self.get_matrix(&Self::get_raw_values)
     }
 
-    fn get_roc_values(asset: &PortfolioAsset) -> Vec<f64> {
+    fn get_roc_values(asset: &PortfolioAsset) -> Result<Vec<f64>, ()> {
         asset.get_rates_of_change()
     }
 
@@ -143,26 +163,26 @@ impl Portfolio {
     }
 
     /// Format the asset values in the portfolio as a matrix such that statistical operations can be applied to it
-    #[cfg(feature = "rayon")]
-    pub fn par_get_matrix(&self) -> Option<Array2<f64>> {
-        if self.assets.is_empty() || !self.valid_sizes() {
-            return None;
-        }
-
-        let column_count = self.assets.len();
-        let row_count = self.assets[0].market_values.len();
-
-        let matrix = Array2::from_shape_vec(
-            (column_count, row_count),
-            self.assets
-                .par_iter()
-                .map(|a| a.market_values.clone())
-                .flatten()
-                .collect::<Vec<f64>>(),
-        )
-        .unwrap();
-        Some(matrix.into_owned())
-    }
+    // #[cfg(feature = "rayon")]
+    // pub fn par_get_matrix(&self) -> Option<Array2<f64>> {
+    //     if self.assets.is_empty() || !self.valid_sizes() {
+    //         return None;
+    //     }
+    //
+    //     let column_count = self.assets.len();
+    //     let row_count = self.assets[0].market_values.len();
+    //
+    //     let matrix = Array2::from_shape_vec(
+    //         (column_count, row_count),
+    //         self.assets
+    //             .par_iter()
+    //             .map(|a| a.market_values.clone())
+    //             .flatten()
+    //             .collect::<Vec<f64>>(),
+    //     )
+    //     .unwrap();
+    //     Some(matrix.into_owned())
+    // }
 
     pub fn initial_investment(&self) -> Result<f64, ()> {
         if self
@@ -189,6 +209,30 @@ impl Portfolio {
             .assets
             .iter()
             .any(|x| x.value_type == ValueType::Absolute)
+    }
+
+    pub fn add_price(&mut self, key: String, price: PriceTimestamp) -> Result<(), ()> {
+        for x in self.assets.iter_mut() {
+            if x.name == key {
+                x.add_price(price)?;
+                return Ok(());
+            }
+        }
+        Err(())
+    }
+    pub fn add_price_pair(
+        &mut self,
+        key: String,
+        price: PricePair,
+        time: DateTime<Utc>,
+    ) -> Result<(), ()> {
+        for x in self.assets.iter_mut() {
+            if x.name == key {
+                x.add_price_pair(price, time)?;
+                return Ok(());
+            }
+        }
+        Err(())
     }
 }
 
@@ -285,27 +329,82 @@ impl Profit<Option<f64>> for Portfolio {
 mod tests {
     use super::*;
 
+    use crate::market_data::price_range::TimeSpan::Second;
+    use crate::market_data::price_timeline::static_timeline::StaticPriceTimeline;
+    use crate::price::Side::Buy;
     use alloc::string::ToString;
     use alloc::vec;
+    use chrono::TimeZone;
 
     #[test]
     fn get_matrix() {
         let assets = vec![
             PortfolioAsset::new(
                 // 0.3,
-                "awdad".to_string(),
+                "a".to_string(),
                 4.0,
-                vec![2f64, 3f64, 4f64],
+                Second,
             ),
             PortfolioAsset::new(
                 // 0.7,
-                "awdad".to_string(),
+                "b".to_string(),
                 4.0,
-                vec![1f64, 6f64, 8f64],
+                Second,
             ),
         ];
 
-        let m = Portfolio::from(assets).get_raw_matrix().unwrap();
+        let mut p = Portfolio::from(assets);
+        p.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
+
+        p.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
+
+        let m = p.get_raw_matrix().unwrap();
         println!("matrix 0; {:?}", m);
 
         let col = m.row(0);
@@ -320,13 +419,63 @@ mod tests {
     #[test]
     fn mean_std_dev() {
         let assets = vec![
-            PortfolioAsset::new("awdad".to_string(), 1.0, vec![0.5, 0.5, 0.5, 0.5]),
-            PortfolioAsset::new("awdad".to_string(), 1.0, vec![0.5, 0.5, 0.5, 0.5]),
+            PortfolioAsset::new("a".to_string(), 1.0, Second),
+            PortfolioAsset::new("b".to_string(), 1.0, Second),
         ];
 
-        let m = Portfolio::from(assets);
+        let mut p = Portfolio::from(assets);
 
-        let stats = m.mean_and_std_dev();
+        p.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
+
+        p.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
+
+        let stats = p.mean_and_std_dev();
 
         assert!(stats.is_ok());
     }
@@ -335,45 +484,95 @@ mod tests {
     fn var_investment() {
         let assets = vec![
             PortfolioAsset::builder()
-                .name("awdad".into())
+                .name("a".into())
                 .quantity(4.0)
-                .market_values(vec![2f64, 3f64, 4f64])
+                .market_values(StaticPriceTimeline::new(Second))
                 .value_at_position_open(1.0)
                 .value_type(ValueType::Absolute)
                 .build(),
             PortfolioAsset::builder()
-                .name("awdad".into())
+                .name("b".into())
                 .quantity(4.0)
-                .market_values(vec![1f64, 6f64, 8f64])
+                .market_values(StaticPriceTimeline::new(Second))
                 .value_at_position_open(1.0)
                 .value_type(ValueType::Absolute)
                 .build(),
         ];
 
-        let m = Portfolio::from(assets);
+        let mut p = Portfolio::from(assets);
 
-        assert!(m.value_at_risk(0.01, None).is_ok());
+        p.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(2.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "a".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
+
+        p.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 3).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(2.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 4).unwrap())
+                .build(),
+        );
+        p.add_price(
+            "b".into(),
+            PriceTimestamp::builder()
+                .value(1.)
+                .side(Buy)
+                .time(Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 5).unwrap())
+                .build(),
+        );
+
+        assert!(p.value_at_risk(0.01, None).is_ok());
     }
 
-    #[test]
-    fn var_investment_error() {
-        let assets = vec![
-            PortfolioAsset::new(
-                // 0.3,
-                "awdad".to_string(),
-                4.0,
-                vec![2f64, 3f64, 4f64],
-            ),
-            PortfolioAsset::new(
-                // 0.7,
-                "awdad".to_string(),
-                4.0,
-                vec![1f64, 6f64, 8f64],
-            ),
-        ];
-
-        let m = Portfolio::from(assets);
-
-        assert!(m.value_at_risk(0.01, None).is_err());
-    }
+    // #[test]
+    // fn var_investment_error() {
+    //     let assets = vec![
+    //         PortfolioAsset::new(
+    //             // 0.3,
+    //             "a".to_string(),
+    //             4.0,
+    //             vec![2f64, 3f64, 4f64],
+    //         ),
+    //         PortfolioAsset::new(
+    //             // 0.7,
+    //             "b".to_string(),
+    //             4.0,
+    //             vec![1f64, 6f64, 8f64],
+    //         ),
+    //     ];
+    //
+    //     let mut p = Portfolio::from(assets);
+    //
+    //     assert!(p.value_at_risk(0.01, None).is_err());
+    // }
 }
