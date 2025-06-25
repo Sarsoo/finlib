@@ -3,6 +3,8 @@ name: Build Binaries
 on:
   # Runs on pushes targeting the default branch
   push:
+    branches:
+      - '**'
 
 jobs:
   # Build job

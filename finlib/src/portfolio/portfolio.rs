@@ -196,14 +196,14 @@ impl Portfolio {
 impl ValueAtRisk for Portfolio {
     /// For a given confidence rate (0.01, 0.05, 0.10) calculate the percentage change in an investment
     ///
-    /// https://www.interviewqs.com/blog/value-at-risk
+    /// [Reference](https://www.interviewqs.com/blog/value-at-risk)
     fn value_at_risk_pct(&self, confidence: f64) -> Result<f64, ()> {
         crate::risk::var::varcovar::value_at_risk_percent(self, confidence)
     }
 
     /// For a given confidence rate (0.01, 0.05, 0.10) and initial investment value, calculate the parametric value at risk
     ///
-    /// https://www.interviewqs.com/blog/value-at-risk
+    /// [Reference](https://www.interviewqs.com/blog/value-at-risk)
     fn value_at_risk(&self, confidence: f64, initial_investment: Option<f64>) -> Result<f64, ()> {
         match (self.mean_and_std_dev(), initial_investment) {
             (Err(_), _) => Err(()),

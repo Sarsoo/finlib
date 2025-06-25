@@ -20,7 +20,7 @@ talc = { workspace = true, optional = true }
 spin = { workspace = true, optional = true }
 
 [features]
-default = ["std"]
+default = ["std", "rayon"]
 std = ["finlib/std"]
 rayon = ["finlib/rayon"]
 global_alloc = ["dep:talc", "dep:spin", "talc/lock_api"]

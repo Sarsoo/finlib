@@ -1,3 +1,4 @@
+//! Pricing and modelling of derivatives including options and swaps
 use crate::price::enums::Side;
 
 pub mod options;

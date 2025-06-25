@@ -48,11 +48,12 @@ name = "rayon_options"
 harness = false
 
 [features]
-default = ["std"]
-std = ["dep:statrs", "dep:ndarray-stats", "ndarray/std", "num/std", "chrono/std", "log/std", "rand/std", "rand/std_rng", "getrandom/std", "serde?/std", "bon/std"]
-serde = ["dep:serde", "chrono/serde", "ndarray/serde", "num/serde", "log/serde", "rand/serde", "wasm-bindgen?/serde-serialize", "pyo3/serde"]
+default = ["std", "rayon", "rand"]
+std = ["dep:statrs", "dep:ndarray-stats", "ndarray/std", "num/std", "chrono/std", "log/std", "rand?/std", "rand?/std_rng", "getrandom?/std", "serde?/std", "bon/std"]
+serde = ["dep:serde", "chrono/serde", "ndarray/serde", "num/serde", "log/serde", "rand?/serde", "wasm-bindgen?/serde-serialize", "pyo3/serde"]
 btree_cursors = []
 rayon = ["dep:rayon", "ndarray/rayon"]
+rand = ["rand/std_rng"]
 py = ["dep:pyo3"]
 wasm = ["getrandom/js", "dep:wasm-bindgen", "dep:js-sys", "dep:serde-wasm-bindgen", "chrono/wasmbind"]
 ffi = []

@@ -21,7 +21,7 @@ description = "Quant finance functions implemented in Rust"
 edition = "2021"
 homepage = "https://github.com/sarsoo/finlib"
 repository = "https://github.com/sarsoo/finlib"
-documentation = "https://sarsoo.github.io/finlib"
+documentation = "https://docs.rs/finlib"
 readme = "README.md"
 license = "MIT"
 

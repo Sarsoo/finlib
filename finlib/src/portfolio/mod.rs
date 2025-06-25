@@ -1,3 +1,4 @@
+//! Modelling [portfolio](portfolio::Portfolio)s of [asset](asset::PortfolioAsset)s to allow risk and profit modelling
 pub mod asset;
 pub mod portfolio;
 pub mod strategy;

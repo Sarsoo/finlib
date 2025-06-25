@@ -1,3 +1,4 @@
+//! Basic stats calculations including [covariance](covariance::covariance)
 mod covariance;
 
 pub use covariance::*;
