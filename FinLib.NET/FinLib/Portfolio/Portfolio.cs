@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FinLib.Extensions;
+using FinLib.Price;
 using FinLib.Risk;
 
 namespace FinLib.Portfolio;
@@ -46,6 +47,17 @@ public class Portfolio: IDisposable, IPayoff<double?>, IValueAtRisk
         unsafe
         {
             NativeMethods.portfolio_add_asset(_portfolio, asset.GetPtr());
+        }
+    }
+
+    public void AddPrice(string assetName, PriceTimestamp price)
+    {
+        unsafe
+        {
+            var n = Encoding.UTF8.GetBytes(assetName);
+            fixed (byte* namePtr = n){
+                NativeMethods.portfolio_add_price(_portfolio, namePtr, assetName.Length, price.GetPtr());
+            }
         }
     }
 

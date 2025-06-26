@@ -25,6 +25,14 @@ public class PortfolioAsset: IDisposable, IPayoff<double?>, IProfit<double?>, IV
         }
     }
 
+    public void AddPrice(PriceTimestamp price)
+    {
+        unsafe
+        {
+            NativeMethods.portfolio_asset_add_price(_handle, price.GetPtr());
+        }
+    }
+
      public PriceRangePair? CurrentValue
      {
          get
