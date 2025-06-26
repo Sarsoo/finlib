@@ -2,8 +2,7 @@ use crate::price::payoff::{Payoff, Profit};
 #[cfg(feature = "std")]
 use crate::risk::var::varcovar::value_at_risk_from_initial_investment;
 use crate::risk::var::ValueAtRisk;
-use crate::stats;
-use crate::stats::{MuSigma, PopulationStats};
+use crate::stats::{IMuSigma, MuSigma};
 use crate::util::roc::rates_of_change;
 use bon::Builder;
 use log::info;
@@ -118,7 +117,7 @@ impl PortfolioAsset {
     }
 }
 
-impl PopulationStats for PortfolioAsset {
+impl IMuSigma for PortfolioAsset {
     /// Get the mean and standard deviation of the rates of change of an asset
     ///
     /// returns (mean, std_dev)
@@ -133,10 +132,8 @@ impl PopulationStats for PortfolioAsset {
                     Ok(vals) => rates_of_change(vals).collect::<Vec<_>>(),
                     Err(_) => return Err(()),
                 };
-                Ok(MuSigma {
-                    mean: stats::mean(&roc),
-                    std_dev: stats::sample_std_dev(&roc),
-                })
+
+                roc.as_slice().mean_and_std_dev()
             }
             (ValueType::Absolute, false) => {
                 info!(
@@ -147,10 +144,8 @@ impl PopulationStats for PortfolioAsset {
                     Ok(vals) => rates_of_change(vals).collect::<Vec<_>>(),
                     Err(_) => return Err(()),
                 };
-                Ok(MuSigma {
-                    mean: stats::mean(&roc),
-                    std_dev: stats::sample_std_dev(&roc),
-                })
+
+                roc.as_slice().mean_and_std_dev()
             }
             (ValueType::RateOfChange, true) => {
                 let roc = match &self.market_values.closing_prices(Side::Sell) {
@@ -158,10 +153,7 @@ impl PopulationStats for PortfolioAsset {
                     Err(_) => return Err(()),
                 };
 
-                Ok(MuSigma {
-                    mean: stats::mean(&roc),
-                    std_dev: stats::sample_std_dev(&roc),
-                })
+                roc.as_slice().mean_and_std_dev()
             }
             (ValueType::RateOfChange, false) => {
                 let roc = match &self.market_values.closing_prices(Side::Buy) {
@@ -169,10 +161,7 @@ impl PopulationStats for PortfolioAsset {
                     Err(_) => return Err(()),
                 };
 
-                Ok(MuSigma {
-                    mean: stats::mean(&roc),
-                    std_dev: stats::sample_std_dev(&roc),
-                })
+                roc.as_slice().mean_and_std_dev()
             }
         }
     }
@@ -226,6 +215,22 @@ impl ValueAtRisk for PortfolioAsset {
 impl Volatility for PortfolioAsset {
     fn daily_volatility(&self) -> f64 {
         let vals = self.market_values.price_ranges_by(TimeSpan::Daily);
+
+        if let Ok(v) = vals {
+            v.iter()
+                .map(|x| x.midpoint())
+                .collect::<Vec<f64>>()
+                .as_slice()
+                .daily_volatility()
+        } else {
+            f64::NAN
+        }
+    }
+
+    fn daily_volatility_between(&self, from: DateTime<Utc>, to: DateTime<Utc>) -> f64 {
+        let vals = self
+            .market_values
+            .price_ranges_by_between(from, to, TimeSpan::Daily);
 
         if let Ok(v) = vals {
             v.iter()

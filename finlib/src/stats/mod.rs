@@ -25,15 +25,20 @@ pub struct MuSigma {
     pub std_dev: f64,
 }
 
-pub trait PopulationStats {
+pub trait IMuSigma {
     fn mean_and_std_dev(&self) -> Result<MuSigma, ()>;
 }
 
-impl PopulationStats for &[f64] {
+impl IMuSigma for &[f64] {
     fn mean_and_std_dev(&self) -> Result<MuSigma, ()> {
+        if self.len() < 2 {
+            return Err(());
+        }
+
+        let mean = mean(self);
         Ok(MuSigma {
-            mean: mean(self),
-            std_dev: sample_std_dev(self),
+            mean,
+            std_dev: sample_std_dev_with_mean(self, mean),
         })
     }
 }
@@ -43,12 +48,18 @@ pub fn mean(slice: &[f64]) -> f64 {
 }
 
 pub fn population_variance(slice: &[f64]) -> f64 {
-    let mean = mean(slice);
+    population_variance_with_mean(slice, mean(slice))
+}
+
+fn population_variance_with_mean(slice: &[f64], mean: f64) -> f64 {
     slice.iter().map(|x| f64::powi(x - mean, 2)).sum::<f64>() / slice.len() as f64
 }
 
 pub fn sample_variance(slice: &[f64]) -> f64 {
-    let mean = mean(slice);
+    sample_variance_with_mean(slice, mean(slice))
+}
+
+fn sample_variance_with_mean(slice: &[f64], mean: f64) -> f64 {
     slice.iter().map(|x| f64::powi(x - mean, 2)).sum::<f64>() / ((slice.len() - 1) as f64)
 }
 
@@ -57,7 +68,11 @@ pub fn population_std_dev(slice: &[f64]) -> f64 {
 }
 
 pub fn sample_std_dev(slice: &[f64]) -> f64 {
-    f64::sqrt(sample_variance(slice))
+    sample_std_dev_with_mean(slice, mean(slice))
+}
+
+fn sample_std_dev_with_mean(slice: &[f64], mean: f64) -> f64 {
+    f64::sqrt(sample_variance_with_mean(slice, mean))
 }
 
 #[cfg(feature = "std")]

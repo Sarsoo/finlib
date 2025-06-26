@@ -6,7 +6,7 @@ use crate::portfolio::{Portfolio, PortfolioAsset};
 use crate::price::payoff::{Payoff, Profit};
 use crate::price::PricePair;
 use crate::risk::var::ValueAtRisk;
-use crate::stats::{MuSigma, PopulationStats};
+use crate::stats::{IMuSigma, MuSigma};
 use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
 

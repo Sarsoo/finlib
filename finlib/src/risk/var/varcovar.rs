@@ -12,10 +12,10 @@ use alloc::vec::Vec;
 
 use crate::risk::forecast::{investment_mean_from_portfolio, investment_std_dev_from_portfolio};
 use crate::risk::var::ValueAtRisk;
-use crate::stats::{inverse_cdf_value, MuSigma, PopulationStats};
+use crate::stats::{inverse_cdf_value, IMuSigma, MuSigma};
 // https://medium.com/@serdarilarslan/value-at-risk-var-and-its-implementation-in-python-5c9150f73b0e
 
-pub fn value_at_risk_percent(sample: &impl PopulationStats, confidence: f64) -> Result<f64, ()> {
+pub fn value_at_risk_percent(sample: &impl IMuSigma, confidence: f64) -> Result<f64, ()> {
     match sample.mean_and_std_dev() {
         Err(_) => Err(()),
         Ok(MuSigma { mean, std_dev }) => Ok(inverse_cdf_value(confidence, mean, std_dev)),

@@ -2,10 +2,7 @@ use crate::price::enums::Side;
 use crate::price::price::Price;
 use crate::price::PricePair;
 
-pub fn calculate_bbo<I>(vals: I) -> PricePair
-where
-    I: IntoIterator<Item = Price>,
-{
+pub fn calculate_bbo(vals: &[Price]) -> PricePair {
     let mut highest_buy: f64 = 0.;
     let mut lowest_sell = f64::MAX;
     for i in vals {
@@ -29,10 +26,7 @@ where
     }
 }
 
-pub fn calculate_pair_bbo<T>(vals: T) -> PricePair
-where
-    T: IntoIterator<Item = PricePair>,
-{
+pub fn calculate_pair_bbo(vals: &[PricePair]) -> PricePair {
     let mut highest_buy = 0.;
     let mut lowest_sell = f64::MAX;
     for i in vals {

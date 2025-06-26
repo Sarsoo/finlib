@@ -15,6 +15,7 @@ use alloc::collections::BTreeMap;
 type Map = BTreeMap<TimeSpan, StaticPriceTimeline>;
 
 use crate::market_data::TimeSpan;
+use crate::stats::{IMuSigma, MuSigma};
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 #[cfg(feature = "serde")]
@@ -88,6 +89,18 @@ impl VaryingPriceTimeline {
             None => Err(()),
             Some(timeline) => Ok(timeline),
         }
+    }
+}
+
+impl IMuSigma for VaryingPriceTimeline {
+    fn mean_and_std_dev(&self) -> Result<MuSigma, ()> {
+        for i in self.timelines.values() {
+            match i.mean_and_std_dev() {
+                Ok(v) => return Ok(v),
+                Err(_) => {}
+            }
+        }
+        Err(())
     }
 }
 

@@ -11,7 +11,7 @@ use finlib::price::payoff::{Payoff, Profit};
 use finlib::price::PricePair;
 #[cfg(feature = "std")]
 use finlib::risk::var::ValueAtRisk;
-use finlib::stats::PopulationStats;
+use finlib::stats::IMuSigma;
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_asset_new(

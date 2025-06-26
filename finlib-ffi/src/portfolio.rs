@@ -10,7 +10,7 @@ use finlib::price::payoff::Payoff;
 use finlib::price::PricePair;
 #[cfg(feature = "std")]
 use finlib::risk::var::ValueAtRisk;
-use finlib::stats::{MuSigma, PopulationStats};
+use finlib::stats::{IMuSigma, MuSigma};
 
 #[no_mangle]
 pub unsafe extern "C" fn portfolio_new() -> *mut Portfolio {

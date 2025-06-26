@@ -1,13 +1,14 @@
 use crate::market_data::price_range::{PriceRangePair, PriceTimestamp};
 use crate::market_data::TimeSpan;
 use crate::price::{PricePair, Side};
+use crate::stats::IMuSigma;
 use alloc::vec::Vec;
 use chrono::{DateTime, Utc};
 
 pub mod static_timeline;
 mod varying_timeline;
 
-pub trait PriceTimeline {
+pub trait PriceTimeline: IMuSigma {
     type Key;
     type Value;
 

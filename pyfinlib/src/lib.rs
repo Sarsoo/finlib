@@ -171,12 +171,12 @@ mod pyfinlib {
 
         #[pyfunction]
         pub fn calculate_bbo(vals: Vec<Price>) -> PyResult<PricePair> {
-            Ok(finlib::price::bbo::calculate_bbo(vals))
+            Ok(finlib::price::bbo::calculate_bbo(&vals))
         }
 
         #[pyfunction]
         pub fn calculate_pair_bbo(vals: Vec<PricePair>) -> PyResult<PricePair> {
-            Ok(finlib::price::bbo::calculate_pair_bbo(vals))
+            Ok(finlib::price::bbo::calculate_pair_bbo(&vals))
         }
     }
 

@@ -3,7 +3,7 @@ use crate::price::payoff::{Payoff, Profit};
 #[cfg(feature = "std")]
 use crate::risk::var::varcovar::value_at_risk_from_initial_investment;
 use crate::risk::var::ValueAtRisk;
-use crate::stats::{MuSigma, PopulationStats};
+use crate::stats::{IMuSigma, MuSigma};
 use alloc::string::String;
 use log::error;
 use ndarray::prelude::*;
@@ -21,6 +21,7 @@ use wasm_bindgen::prelude::*;
 use crate::market_data::price_range::PriceTimestamp;
 use crate::market_data::price_timeline::PriceTimeline;
 use crate::price::{PricePair, Side};
+use crate::risk::volatility::Volatility;
 use alloc::vec::Vec;
 use chrono::{DateTime, Utc};
 
@@ -250,7 +251,7 @@ impl ValueAtRisk for Portfolio {
 }
 
 #[cfg(feature = "std")]
-impl PopulationStats for Portfolio {
+impl IMuSigma for Portfolio {
     /// Calculate the mean and the standard deviation of a portfolio, taking into account the relative weights and covariance of the portfolio's assets
     ///
     /// returns (mean, std_dev)
@@ -306,6 +307,20 @@ impl Payoff<Option<f64>> for Portfolio {
 impl Profit<Option<f64>> for Portfolio {
     fn profit(&self, underlying: Option<f64>) -> f64 {
         self.payoff(underlying)
+    }
+}
+
+#[cfg(feature = "std")]
+impl Volatility for Portfolio {
+    fn daily_volatility(&self) -> f64 {
+        match self.mean_and_std_dev() {
+            Ok(MuSigma { mean, std_dev }) => std_dev,
+            Err(_) => f64::NAN,
+        }
+    }
+
+    fn daily_volatility_between(&self, from: DateTime<Utc>, to: DateTime<Utc>) -> f64 {
+        todo!()
     }
 }
 

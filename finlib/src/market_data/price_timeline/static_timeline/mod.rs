@@ -9,6 +9,7 @@ use chrono::{DateTime, Duration, Utc};
 
 use crate::market_data::price_timeline::PriceTimeline;
 use crate::market_data::TimeSpan;
+use crate::stats::{IMuSigma, MuSigma};
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 #[cfg(feature = "serde")]
@@ -54,6 +55,17 @@ impl IntoIterator for StaticPriceTimeline {
 
     fn into_iter(self) -> Self::IntoIter {
         self.raw_prices.into_iter()
+    }
+}
+
+impl IMuSigma for StaticPriceTimeline {
+    fn mean_and_std_dev(&self) -> Result<MuSigma, ()> {
+        self.raw_prices
+            .values()
+            .map(|x| x.midpoint())
+            .collect::<Vec<_>>()
+            .as_slice()
+            .mean_and_std_dev()
     }
 }
 
