@@ -154,3 +154,102 @@ fn price_ranges_test() {
 
     assert_eq!(ranges.len(), 2);
 }
+
+#[test]
+fn price_ranges_aggregation_test() {
+    let mut timeline = StaticPriceTimeline::new(TimeSpan::Second);
+
+    let datetime = Utc.with_ymd_and_hms(2025, 06, 25, 10, 40, 2).unwrap();
+    timeline
+        .add_price(
+            PriceTimestamp::builder()
+                .value(100.)
+                .side(Side::Buy)
+                .time(datetime)
+                .build(),
+        )
+        .unwrap();
+
+    let datetime = datetime.with_second(3).unwrap();
+    timeline
+        .add_price(
+            PriceTimestamp::builder()
+                .value(100.)
+                .side(Side::Buy)
+                .time(datetime)
+                .build(),
+        )
+        .unwrap();
+
+    let datetime = datetime.with_second(4).unwrap();
+    timeline
+        .add_price(
+            PriceTimestamp::builder()
+                .value(100.)
+                .side(Side::Buy)
+                .time(datetime)
+                .build(),
+        )
+        .unwrap();
+
+    let datetime = datetime.with_second(5).unwrap();
+    timeline
+        .add_price(
+            PriceTimestamp::builder()
+                .value(100.)
+                .side(Side::Buy)
+                .time(datetime)
+                .build(),
+        )
+        .unwrap();
+
+    let datetime = Utc.with_ymd_and_hms(2025, 06, 26, 10, 40, 2).unwrap();
+    timeline
+        .add_price(
+            PriceTimestamp::builder()
+                .value(100.)
+                .side(Side::Buy)
+                .time(datetime)
+                .build(),
+        )
+        .unwrap();
+
+    let datetime = datetime.with_second(3).unwrap();
+    timeline
+        .add_price(
+            PriceTimestamp::builder()
+                .value(100.)
+                .side(Side::Buy)
+                .time(datetime)
+                .build(),
+        )
+        .unwrap();
+
+    let datetime = datetime.with_second(4).unwrap();
+    timeline
+        .add_price(
+            PriceTimestamp::builder()
+                .value(100.)
+                .side(Side::Buy)
+                .time(datetime)
+                .build(),
+        )
+        .unwrap();
+
+    let datetime = datetime.with_second(5).unwrap();
+    timeline
+        .add_price(
+            PriceTimestamp::builder()
+                .value(100.)
+                .side(Side::Buy)
+                .time(datetime)
+                .build(),
+        )
+        .unwrap();
+
+    let daily = timeline.price_ranges_by(TimeSpan::Daily);
+
+    assert!(daily.is_ok());
+    let daily = daily.unwrap();
+    assert_eq!(daily.len(), 2);
+}

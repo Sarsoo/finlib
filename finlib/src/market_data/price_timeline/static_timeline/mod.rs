@@ -1,9 +1,7 @@
 #[cfg(test)]
 mod test;
 
-use crate::market_data::price_range::{
-    aggregate_ranges, PriceRange, PriceRangePair, PriceTimestamp,
-};
+use crate::market_data::price_range::{PriceRange, PriceRangePair, PriceTimestamp};
 use crate::price::{IPrice, PricePair, Side};
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
@@ -32,7 +30,7 @@ pub struct StaticPriceTimeline {
 }
 
 impl StaticPriceTimeline {
-    fn new_price_range(time: KeyType, duration: Duration) -> ValueType {
+    pub fn new_price_range(time: KeyType, duration: Duration) -> ValueType {
         ValueType::builder()
             .open(time)
             .close(time + duration)
@@ -41,83 +39,12 @@ impl StaticPriceTimeline {
             .build()
     }
 
-    fn iter(&self) -> impl Iterator<Item = (&KeyType, &ValueType)> {
+    pub fn iter(&self) -> impl Iterator<Item = (&KeyType, &ValueType)> {
         self.raw_prices.iter()
     }
 
-    fn iter_mut(&mut self) -> impl Iterator<Item = (&KeyType, &mut ValueType)> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = (&KeyType, &mut ValueType)> {
         self.raw_prices.iter_mut()
-    }
-
-    pub fn price_range_by(&self, from: KeyType, by: TimeSpan) -> Result<ValueType, ()> {
-        let from = by.snap_back(from);
-        let duration = by.duration();
-
-        Ok(aggregate_ranges(
-            &self
-                .raw_prices
-                .iter()
-                .filter(|(d, _)| &from <= (*d) && (*d) < &(from + duration))
-                .map(|(_, p)| p.clone())
-                .collect::<Vec<ValueType>>(),
-        ))
-    }
-
-    pub fn price_ranges_by(&self, by: TimeSpan) -> Result<Vec<ValueType>, ()> {
-        let duration = by.duration();
-
-        let mut ranges: Vec<Vec<ValueType>> = Vec::new();
-
-        match (
-            self.raw_prices.first_key_value(),
-            self.raw_prices.last_key_value(),
-        ) {
-            (Some(f), Some(l)) => {
-                let mut cursor = f.0.clone();
-
-                let to = l.0.clone();
-                while cursor + duration < to {
-                    let window: Vec<ValueType> = self.range_slice(cursor, duration);
-
-                    ranges.push(window);
-
-                    cursor += duration;
-                }
-
-                Ok(ranges.into_iter().map(|v| aggregate_ranges(&v)).collect())
-            }
-            _ => Err(()),
-        }
-    }
-
-    pub fn price_ranges_between_by(
-        &self,
-        from: KeyType,
-        to: KeyType,
-        by: TimeSpan,
-    ) -> Result<Vec<ValueType>, ()> {
-        let from = by.snap_back(from);
-        let duration = by.duration();
-
-        let mut ranges: Vec<Vec<ValueType>> = Vec::new();
-        let mut cursor = from;
-        while cursor + duration < to {
-            let window: Vec<ValueType> = self.range_slice(cursor, duration);
-
-            ranges.push(window);
-
-            cursor += duration;
-        }
-
-        Ok(ranges.into_iter().map(|v| aggregate_ranges(&v)).collect())
-    }
-
-    fn range_slice(&self, cursor: DateTime<Utc>, duration: Duration) -> Vec<ValueType> {
-        self.raw_prices
-            .iter()
-            .filter(|(d, _)| &cursor <= (*d) && (*d) < &(cursor + duration))
-            .map(|(_, p)| p.clone())
-            .collect()
     }
 }
 
@@ -173,6 +100,20 @@ impl PriceTimeline for StaticPriceTimeline {
         Ok(())
     }
 
+    fn add_price_range(&mut self, price: PriceRangePair) -> Result<(), ()> {
+        let time = self.scale.snap_back(price.time()?);
+        let duration = self.scale.duration();
+
+        let current_range = self
+            .raw_prices
+            .entry(time)
+            .or_insert(Self::new_price_range(time, duration));
+
+        current_range.merge_price_range(price);
+
+        Ok(())
+    }
+
     fn price_range(&self, time: KeyType) -> Result<ValueType, ()> {
         let time = self.scale.snap_back(time);
 
@@ -189,6 +130,62 @@ impl PriceTimeline for StaticPriceTimeline {
             .filter(|(d, _)| &from <= (*d) && (*d) < &to)
             .map(|(_, p)| p.clone())
             .collect())
+    }
+
+    fn price_range_by(&self, from: KeyType, by: TimeSpan) -> Result<ValueType, ()> {
+        if by < self.scale {
+            return Err(());
+        }
+
+        let mut aggregated = StaticPriceTimeline::new(by);
+        let to = from + by.duration();
+
+        for i in self
+            .raw_prices
+            .values()
+            .filter(|x| from < x.time().unwrap() && x.time().unwrap() < to)
+        {
+            aggregated.add_price_range(i.clone())?;
+        }
+
+        Ok(aggregated.price_range(from)?)
+    }
+
+    fn price_ranges_by(&self, by: TimeSpan) -> Result<Vec<ValueType>, ()> {
+        if by < self.scale {
+            return Err(());
+        }
+
+        let mut aggregated = StaticPriceTimeline::new(by);
+
+        for i in self.raw_prices.values() {
+            aggregated.add_price_range(i.clone())?;
+        }
+
+        Ok(aggregated.into_iter().map(|(_, x)| x).collect())
+    }
+
+    fn price_ranges_by_between(
+        &self,
+        from: KeyType,
+        to: KeyType,
+        by: TimeSpan,
+    ) -> Result<Vec<ValueType>, ()> {
+        if by < self.scale {
+            return Err(());
+        }
+
+        let mut aggregated = StaticPriceTimeline::new(by);
+
+        for i in self
+            .raw_prices
+            .values()
+            .filter(|x| from < x.time().unwrap() && x.time().unwrap() < to)
+        {
+            aggregated.add_price_range(i.clone())?;
+        }
+
+        Ok(aggregated.into_iter().map(|(_, x)| x).collect())
     }
 
     fn last(&self) -> Result<ValueType, ()> {

@@ -133,6 +133,19 @@ impl PriceTimeline for VaryingPriceTimeline {
         }
     }
 
+    fn add_price_range(&mut self, price: PriceRangePair) -> Result<(), ()> {
+        let mut result = vec![];
+        for t in self.timelines.values_mut() {
+            result.push(t.add_price_range(price.clone()));
+        }
+
+        if result.iter().any(|x| x.is_err()) {
+            Err(())
+        } else {
+            Ok(())
+        }
+    }
+
     fn price_range(&self, time: DateTime<Utc>) -> Result<PriceRangePair, ()> {
         for t in self.timelines.values() {
             match t.price_range(time) {
@@ -155,6 +168,50 @@ impl PriceTimeline for VaryingPriceTimeline {
             }
         }
         Err(())
+    }
+
+    fn price_range_by(&self, from: DateTime<Utc>, by: TimeSpan) -> Result<Self::Value, ()> {
+        if let Some(timeline) = self.timelines.get(&by) {
+            timeline.price_range(from)
+        } else {
+            for (t, timeline) in self.timelines.iter() {
+                if t < &by {
+                    return timeline.price_range_by(from, by);
+                }
+            }
+            Err(())
+        }
+    }
+
+    fn price_ranges_by(&self, by: TimeSpan) -> Result<Vec<Self::Value>, ()> {
+        if let Some(timeline) = self.timelines.get(&by) {
+            Ok(timeline.iter().map(|(_, x)| x.clone()).collect())
+        } else {
+            for (t, timeline) in self.timelines.iter() {
+                if t < &by {
+                    return timeline.price_ranges_by(by);
+                }
+            }
+            Err(())
+        }
+    }
+
+    fn price_ranges_by_between(
+        &self,
+        from: DateTime<Utc>,
+        to: DateTime<Utc>,
+        by: TimeSpan,
+    ) -> Result<Vec<Self::Value>, ()> {
+        if let Some(timeline) = self.timelines.get(&by) {
+            timeline.price_ranges(from, to)
+        } else {
+            for (t, timeline) in self.timelines.iter() {
+                if t < &by {
+                    return timeline.price_ranges_by_between(from, to, by);
+                }
+            }
+            Err(())
+        }
     }
 
     fn last(&self) -> Result<PriceRangePair, ()> {

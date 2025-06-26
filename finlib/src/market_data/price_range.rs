@@ -141,6 +141,34 @@ impl PriceRangePair {
         }
         self.constituent_ticks += 2;
     }
+
+    pub fn merge_price_range(&mut self, merging: Self) {
+        if merging.open == self.open || self.constituent_ticks == 0 {
+            self.bid.open = merging.bid.open;
+            self.offer.open = merging.offer.open;
+        }
+
+        if merging.close == self.close || self.constituent_ticks == 0 {
+            self.bid.close = merging.bid.close;
+            self.offer.close = merging.offer.close;
+        }
+
+        if merging.bid.low < self.bid.low || self.constituent_ticks == 0 {
+            self.bid.low = merging.bid.low;
+        }
+        if merging.bid.high > self.bid.high {
+            self.bid.high = merging.bid.high;
+        }
+
+        if merging.offer.low < self.offer.low || self.constituent_ticks == 0 {
+            self.offer.low = merging.offer.low;
+        }
+        if merging.offer.high > self.offer.high {
+            self.offer.high = merging.offer.high;
+        }
+
+        self.constituent_ticks += merging.constituent_ticks;
+    }
 }
 
 impl IPrice for PriceRangePair {
