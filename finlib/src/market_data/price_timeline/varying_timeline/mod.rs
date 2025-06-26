@@ -1,4 +1,4 @@
-use crate::market_data::price_range::{PriceRangePair, PriceTimestamp, TimeSpan};
+use crate::market_data::price_range::{PriceRangePair, PriceTimestamp};
 use crate::market_data::price_timeline::static_timeline::StaticPriceTimeline;
 use crate::market_data::price_timeline::PriceTimeline;
 use crate::price::{PricePair, Side};
@@ -14,12 +14,16 @@ use alloc::collections::BTreeMap;
 #[cfg(not(feature = "std"))]
 type Map = BTreeMap<TimeSpan, StaticPriceTimeline>;
 
+use crate::market_data::TimeSpan;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
+
+type KeyType = DateTime<Utc>;
+type ValueType = PriceRangePair;
 
 #[cfg_attr(feature = "wasm", wasm_bindgen)]
 #[cfg_attr(feature = "py", pyclass(get_all, eq))]
@@ -88,6 +92,9 @@ impl VaryingPriceTimeline {
 }
 
 impl PriceTimeline for VaryingPriceTimeline {
+    type Key = KeyType;
+    type Value = ValueType;
+
     fn new(scale: TimeSpan) -> Self {
         let mut map = Map::new();
 

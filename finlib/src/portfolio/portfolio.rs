@@ -4,14 +4,15 @@ use crate::price::payoff::{Payoff, Profit};
 use crate::risk::var::varcovar::value_at_risk_from_initial_investment;
 use crate::risk::var::ValueAtRisk;
 use crate::stats::{MuSigma, PopulationStats};
+use alloc::string::String;
 use log::error;
 use ndarray::prelude::*;
 #[cfg(feature = "std")]
 use ndarray_stats::CorrelationExt;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;
-#[cfg(feature = "rayon")]
-use rayon::prelude::*;
+// #[cfg(feature = "rayon")]
+// use rayon::prelude::*;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
@@ -62,24 +63,8 @@ impl Portfolio {
     pub fn get_asset_weight(&self) -> impl Iterator<Item = f64> + use<'_> {
         let total_weight: f64 = self.assets.iter().map(|x| x.quantity).sum();
 
-        // self.assets.iter().map(|x| x.portfolio_weight)
         self.assets.iter().map(move |x| x.quantity / total_weight)
     }
-
-    /// Convert a portfolio of assets with absolute values to the percentage change in values
-    // pub fn apply_rates_of_change(&mut self) {
-    //     self.assets.iter_mut().for_each(|asset| {
-    //         asset.apply_rates_of_change();
-    //     });
-    // }
-
-    // #[deprecated(note = "a lot slower than the sequential method, sans par prefix")]
-    // #[cfg(feature = "rayon")]
-    // pub fn par_apply_rates_of_change(&mut self) {
-    //     self.assets.par_iter_mut().for_each(|asset| {
-    //         asset.apply_rates_of_change();
-    //     });
-    // }
 
     /// Do all the assets in the portfolio have the same number of values (required to perform matrix operations)
     pub fn valid_sizes(&self) -> bool {
@@ -329,8 +314,8 @@ impl Profit<Option<f64>> for Portfolio {
 mod tests {
     use super::*;
 
-    use crate::market_data::price_range::TimeSpan::Second;
     use crate::market_data::price_timeline::static_timeline::StaticPriceTimeline;
+    use crate::market_data::TimeSpan::Second;
     use crate::price::Side::Buy;
     use alloc::string::ToString;
     use alloc::vec;

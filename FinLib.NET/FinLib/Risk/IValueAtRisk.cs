@@ -1,4 +1,4 @@
-namespace FinLib;
+namespace FinLib.Risk;
 
 public interface IValueAtRisk
 {

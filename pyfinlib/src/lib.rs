@@ -19,9 +19,17 @@ mod pyfinlib {
     use finlib::portfolio::PortfolioAsset;
 
     #[pymodule_export]
-    use finlib::price::price::Price;
+    use finlib::market_data::price_range::PriceRange;
     #[pymodule_export]
-    use finlib::price::price::PricePair;
+    use finlib::market_data::price_range::PriceRangePair;
+    #[pymodule_export]
+    use finlib::market_data::price_range::PriceTimestamp;
+    #[pymodule_export]
+    use finlib::market_data::TimeSpan;
+    #[pymodule_export]
+    use finlib::price::Price;
+    #[pymodule_export]
+    use finlib::price::PricePair;
 
     #[pymodule_export]
     use finlib::price::enums::Side;

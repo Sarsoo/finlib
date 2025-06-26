@@ -69,6 +69,12 @@ struct Price;
 
 struct PricePair;
 
+struct PriceRange;
+
+struct PriceRangePair;
+
+struct PriceTimestamp;
+
 struct Strategy;
 
 struct Swap;
@@ -208,13 +214,24 @@ OptionVariables *option_vars_from(OptionType option_type,
 
 void portfolio_add_asset(Portfolio *portfolio, PortfolioAsset *asset);
 
-void portfolio_apply_rates_of_change(Portfolio *portfolio);
+void portfolio_add_price(Portfolio *portfolio,
+                         const uint8_t *key,
+                         int32_t key_len,
+                         PriceTimestamp *price);
 
-void portfolio_asset_apply_rates_of_change(PortfolioAsset *asset);
+void portfolio_add_price_pair(Portfolio *portfolio,
+                              const uint8_t *key,
+                              int32_t key_len,
+                              PricePair *price,
+                              int64_t timestamp);
 
-double portfolio_asset_current_total_value(PortfolioAsset *asset);
+void portfolio_asset_add_price(PortfolioAsset *portfolio, PriceTimestamp *price);
 
-double portfolio_asset_current_value(PortfolioAsset *asset);
+void portfolio_asset_add_price_pair(PortfolioAsset *portfolio, PricePair *price, int64_t timestamp);
+
+NullableFloat portfolio_asset_current_total_value(PortfolioAsset *asset);
+
+PriceRangePair *portfolio_asset_current_value(PortfolioAsset *asset);
 
 void portfolio_asset_destroy(PortfolioAsset *asset);
 
@@ -245,6 +262,8 @@ NullableFloat portfolio_asset_value_at_risk_percent(PortfolioAsset *portfolio, d
 void portfolio_destroy(Portfolio *portfolio);
 
 Tuple portfolio_get_mean_and_std(Portfolio *portfolio);
+
+NullableFloat portfolio_initial_investment(Portfolio *portfolio);
 
 bool portfolio_is_valid(Portfolio *portfolio);
 
@@ -293,9 +312,26 @@ void price_pair_set_offer(PricePair *price, double new_price);
 
 double price_pair_spread(PricePair *price);
 
+void price_range_destroy(PriceRange *asset);
+
+PriceRange *price_range_new(double open, double close, double high, double low, double volume);
+
+void price_range_pair_destroy(PriceRangePair *asset);
+
+PriceRangePair *price_range_pair_new(int64_t open_timestamp_millis,
+                                     int64_t close_timestamp_millis,
+                                     PriceRange *bid,
+                                     PriceRange *offer);
+
 void price_set_side(Price *price, Side new_side);
 
 void price_set_val(Price *price, double new_price);
+
+void price_timestamp_destroy(PriceTimestamp *asset);
+
+PriceTimestamp *price_timestamp_new(double value, Side side, int64_t timestamp_millis);
+
+void price_timestamp_set_value(PriceTimestamp *price, double new_price);
 
 double relative_strength_indicator(double time_period, double average_gain, double average_loss);
 

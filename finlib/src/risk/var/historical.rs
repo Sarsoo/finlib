@@ -1,5 +1,6 @@
 use crate::risk::var::ValueAtRisk;
 use crate::util::roc::rates_of_change;
+#[cfg(not(feature = "std"))]
 use num::traits::float::FloatCore;
 #[cfg(feature = "py")]
 use pyo3::prelude::*;

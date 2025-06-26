@@ -1,22 +1,20 @@
-use wasm_bindgen::prelude::*;
 use crate::price::enums::Side;
-use crate::price::price::{Price, PricePair};
+use crate::price::{Price, PricePair};
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 impl Price {
-
     #[wasm_bindgen(constructor)]
     pub fn init_wasm(value: f64, side: Side) -> Self {
-        Self {value, side}
+        Self { value, side }
     }
 }
 
 #[wasm_bindgen]
 impl PricePair {
-
     #[wasm_bindgen(constructor)]
     pub fn init_wasm(bid: f64, offer: f64) -> Self {
-        Self {bid, offer}
+        Self { bid, offer }
     }
 
     #[wasm_bindgen(js_name = "spread")]

@@ -2,3 +2,4 @@
 
 pub mod forecast;
 pub mod var;
+pub mod volatility;

@@ -1,5 +1,5 @@
 use crate::curve::point::CurvePoint;
-use crate::price::price::PricePair;
+use crate::price::PricePair;
 use alloc::collections::BTreeMap;
 use chrono::NaiveDate;
 #[cfg(feature = "btree_cursors")]

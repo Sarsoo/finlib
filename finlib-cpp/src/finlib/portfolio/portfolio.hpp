@@ -17,15 +17,11 @@ namespace finlib {
 
         void add_asset(std::unique_ptr<PortfolioAsset> asset);
 
-        void apply_rates_of_change();
-
         bool valid_sizes();
 
         finlibrs::NullableFloat profit_loss();
 
         size_t size();
-
-        // bool valid_weights();
 
         bool is_valid();
 

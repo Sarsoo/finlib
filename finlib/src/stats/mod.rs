@@ -3,6 +3,7 @@ mod covariance;
 
 pub use covariance::*;
 use log::error;
+#[cfg(not(feature = "std"))]
 use num::traits::real::Real;
 
 #[cfg(feature = "py")]
@@ -26,6 +27,15 @@ pub struct MuSigma {
 
 pub trait PopulationStats {
     fn mean_and_std_dev(&self) -> Result<MuSigma, ()>;
+}
+
+impl PopulationStats for &[f64] {
+    fn mean_and_std_dev(&self) -> Result<MuSigma, ()> {
+        Ok(MuSigma {
+            mean: mean(self),
+            std_dev: sample_std_dev(self),
+        })
+    }
 }
 
 pub fn mean(slice: &[f64]) -> f64 {

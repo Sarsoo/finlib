@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FinLib.Extensions;
 using FinLib.Price;
 
 namespace FinLib.Swap;
@@ -15,7 +16,7 @@ public class Swap: IDisposable, IProfit<double>, IProfit<IEnumerable<double>>
     {
         unsafe
         {
-            _swap = NativeMethods.swap_from(fixedRate, Price.Price.MapSide(fixedSide), premium);
+            _swap = NativeMethods.swap_from(fixedRate, fixedSide.MapSide(), premium);
         }
     }
 

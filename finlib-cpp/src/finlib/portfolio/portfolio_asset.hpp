@@ -11,17 +11,15 @@
 namespace finlib {
     class PortfolioAsset {
     public:
-        PortfolioAsset(std::string name, double quantity, std::vector<double> values);
+        PortfolioAsset(std::string name, double quantity, finlibrs::TimeSpan timespan);
 
         explicit PortfolioAsset(finlibrs::PortfolioAsset *handle);
 
         double current_value();
 
-        double current_total_value();
+        finlibrs::NullableFloat current_total_value();
 
         finlibrs::NullableFloat profit_loss();
-
-        void apply_rates_of_change();
 
         finlibrs::Tuple get_mean_and_std();
 

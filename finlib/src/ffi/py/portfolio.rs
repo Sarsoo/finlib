@@ -1,9 +1,13 @@
 use crate::derivatives::options::OptionContract;
+use crate::market_data::price_range::{PriceRangePair, PriceTimestamp};
+use crate::market_data::TimeSpan;
 use crate::portfolio::strategy::{IStrategy, Strategy};
 use crate::portfolio::{Portfolio, PortfolioAsset};
 use crate::price::payoff::{Payoff, Profit};
+use crate::price::PricePair;
 use crate::risk::var::ValueAtRisk;
 use crate::stats::{MuSigma, PopulationStats};
+use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
 
 #[pymethods]
@@ -23,18 +27,18 @@ impl Portfolio {
     }
 
     #[pyo3(name = "profit_loss")]
-    pub fn profit_loss_py(&self) -> Option<f64> {
-        self.profit_loss()
+    pub fn profit_loss_py(&self) -> PyResult<f64> {
+        match self.profit_loss() {
+            Ok(value) => Ok(value),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
     }
 
     #[pyo3(name = "get_asset_weight")]
     pub fn get_asset_weight_py(&self) -> Vec<f64> {
         self.get_asset_weight().collect()
-    }
-
-    #[pyo3(name = "apply_rates_of_change")]
-    pub fn apply_rates_of_change_py(&mut self) {
-        self.apply_rates_of_change();
     }
 
     #[pyo3(name = "valid_sizes")]
@@ -45,6 +49,41 @@ impl Portfolio {
     #[pyo3(name = "is_valid")]
     pub fn is_valid_py(&self) -> bool {
         self.is_valid()
+    }
+
+    #[pyo3(name = "initial_investment")]
+    pub fn initial_investment_py(&self) -> PyResult<f64> {
+        match self.initial_investment() {
+            Ok(value) => Ok(value),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
+    }
+
+    #[pyo3(name = "add_price")]
+    pub fn add_price_py(&mut self, key: String, price: PriceTimestamp) -> PyResult<()> {
+        match self.add_price(key, price) {
+            Ok(value) => Ok(()),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
+    }
+
+    #[pyo3(name = "add_price_pair")]
+    pub fn add_price_pair_py(
+        &mut self,
+        key: String,
+        price: PricePair,
+        time: DateTime<Utc>,
+    ) -> PyResult<()> {
+        match self.add_price_pair(key, price, time) {
+            Ok(value) => Ok(()),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
     }
 
     #[pyo3(name = "get_mean_and_std")]
@@ -100,28 +139,58 @@ impl Portfolio {
 #[pymethods]
 impl PortfolioAsset {
     #[new]
-    pub fn init(name: String, quantity: f64, values: Vec<f64>) -> Self {
-        PortfolioAsset::new(name, quantity, values)
+    pub fn init(name: String, quantity: f64, time_span: TimeSpan) -> Self {
+        PortfolioAsset::new(name, quantity, time_span)
     }
 
     #[pyo3(name = "current_value")]
-    pub fn current_value_py(&mut self) -> f64 {
-        self.current_value()
+    pub fn current_value_py(&mut self) -> PyResult<PriceRangePair> {
+        match self.current_value() {
+            Ok(value) => Ok(value),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
     }
 
     #[pyo3(name = "current_total_value")]
-    pub fn current_total_value_py(&mut self) -> f64 {
-        self.current_total_value()
+    pub fn current_total_value_py(&mut self) -> PyResult<f64> {
+        match self.current_total_value() {
+            Ok(value) => Ok(value),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
     }
 
     #[pyo3(name = "profit_loss")]
-    pub fn profit_loss_py(&mut self) -> Option<f64> {
-        self.profit_loss()
+    pub fn profit_loss_py(&mut self) -> PyResult<f64> {
+        match self.profit_loss() {
+            Ok(value) => Ok(value),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
     }
 
-    #[pyo3(name = "apply_rates_of_change")]
-    pub fn apply_rates_of_change_py(&mut self) {
-        self.apply_rates_of_change();
+    #[pyo3(name = "add_price")]
+    pub fn add_price_py(&mut self, price: PriceTimestamp) -> PyResult<()> {
+        match self.add_price(price) {
+            Ok(value) => Ok(()),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
+    }
+
+    #[pyo3(name = "add_price_pair")]
+    pub fn add_price_pair_py(&mut self, price: PricePair, time: DateTime<Utc>) -> PyResult<()> {
+        match self.add_price_pair(price, time) {
+            Ok(value) => Ok(()),
+            Err(_) => Err(pyo3::exceptions::PyValueError::new_err(
+                "Failed to calculate",
+            )),
+        }
     }
 
     #[pyo3(name = "mean_and_std_dev")]

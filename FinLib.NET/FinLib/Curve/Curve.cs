@@ -1,4 +1,5 @@
 using System;
+using FinLib.Extensions;
 using FinLib.Price;
 
 namespace FinLib.Curve;
@@ -13,14 +14,11 @@ public class Curve: IDisposable
     private readonly unsafe Curve_native* _curve;
     internal unsafe Curve_native* GetPtr() => _curve;
 
-    internal static CurveType_native MapType(CurveType side) => side == CurveType.Absolute ? CurveType_native.Absolute : CurveType_native.Differential;
-    internal static CurveType MapType(CurveType_native side) => side == CurveType_native.Absolute ? CurveType.Absolute : CurveType.Differential;
-
     public Curve(CurveType type)
     {
         unsafe
         {
-            _curve = NativeMethods.curve_new(MapType(type));
+            _curve = NativeMethods.curve_new(type.MapType());
         }
     }
 
@@ -42,7 +40,7 @@ public class Curve: IDisposable
         }
     }
 
-    public PricePair RateAt(DateTime date)
+    public PricePair? RateAt(DateTime date)
     {
         unsafe
         {
@@ -58,7 +56,7 @@ public class Curve: IDisposable
         }
     }
 
-    public PricePair CumulativeRateAt(DateTime date)
+    public PricePair? CumulativeRateAt(DateTime date)
     {
         unsafe
         {
@@ -74,7 +72,7 @@ public class Curve: IDisposable
         }
     }
 
-    public PricePair AbsoluteRateAt(DateTime date)
+    public PricePair? AbsoluteRateAt(DateTime date)
     {
         unsafe
         {

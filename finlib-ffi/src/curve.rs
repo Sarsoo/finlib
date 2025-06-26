@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 use chrono::NaiveDate;
 use core::ptr;
 use finlib::curve::curve::{Curve, CurveType};
-use finlib::price::price::PricePair;
+use finlib::price::PricePair;
 
 #[no_mangle]
 pub unsafe extern "C" fn curve_new(curve_type: CurveType) -> *mut Curve {

@@ -32,7 +32,12 @@ pub mod mortgage;
 pub mod options;
 pub mod options_contract;
 pub mod portfolio;
+pub mod portfolio_asset;
 pub mod price;
+pub mod price_pair;
+pub mod price_range;
+pub mod price_range_pair;
+pub mod price_timestamp;
 pub mod strategy;
 pub mod swap;
 

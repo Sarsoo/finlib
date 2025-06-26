@@ -1,6 +1,6 @@
 use crate::curve::curve::{Curve, CurveType};
 use crate::curve::point::CurvePoint;
-use crate::price::price::PricePair;
+use crate::price::PricePair;
 use pyo3::prelude::*;
 use pyo3::types::PyDate;
 

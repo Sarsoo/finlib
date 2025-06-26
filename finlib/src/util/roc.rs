@@ -1,15 +1,11 @@
-use num::{Float};
+use num::Float;
 
 pub fn changes<T: Float>(values: &[T]) -> impl Iterator<Item = T> + use<'_, T> {
-    values
-        .windows(2)
-        .map(|x| x[1] - x[0])
+    values.windows(2).map(|x| x[1] - x[0])
 }
 
 pub fn rates_of_change<T: Float>(values: &[T]) -> impl Iterator<Item = T> + use<'_, T> {
-    values
-        .windows(2)
-        .map(|x| (x[1] - x[0])/x[0])
+    values.windows(2).map(|x| (x[1] - x[0]) / x[0])
 }
 
 #[cfg(test)]

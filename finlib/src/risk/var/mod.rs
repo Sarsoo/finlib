@@ -3,6 +3,7 @@
 pub mod historical;
 #[cfg(feature = "std")]
 pub mod varcovar;
+#[cfg(not(feature = "std"))]
 use num::traits::real::Real;
 
 #[cfg(feature = "py")]

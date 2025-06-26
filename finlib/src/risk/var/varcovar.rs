@@ -112,7 +112,7 @@ mod tests {
     use crate::risk::var::ValueAtRisk;
 
     use crate::market_data::price_range::PriceTimestamp;
-    use crate::market_data::price_range::TimeSpan::Second;
+    use crate::market_data::TimeSpan::Second;
     use crate::price::Side::Buy;
     use alloc::string::ToString;
     use alloc::vec;

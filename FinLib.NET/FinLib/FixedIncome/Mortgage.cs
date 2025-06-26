@@ -1,6 +1,6 @@
 using System;
 
-namespace FinLib;
+namespace FinLib.FixedIncome;
 
 public class Mortgage: IDisposable
 {

@@ -1,4 +1,5 @@
 using System;
+using FinLib.Extensions;
 
 namespace FinLib.Price;
 
@@ -12,9 +13,6 @@ public class Price: IDisposable
     private readonly unsafe Price_native* _price;
     internal unsafe Price_native* GetPtr() => _price;
 
-    internal static Side_native MapSide(Side side) => side == Side.Buy ? Side_native.Buy : Side_native.Sell;
-    internal static Side MapSide(Side_native side) => side == Side_native.Buy ? Side.Buy : Side.Sell;
-
     internal unsafe Price(Price_native* price)
     {
         _price = price;
@@ -24,7 +22,7 @@ public class Price: IDisposable
     {
         unsafe
         {
-            _price = NativeMethods.price_new(value, MapSide(side));
+            _price = NativeMethods.price_new(value, side.MapSide());
         }
     }
 
@@ -34,14 +32,14 @@ public class Price: IDisposable
         {
             unsafe
             {
-                return MapSide(NativeMethods.price_get_side(_price));
+                return NativeMethods.price_get_side(_price).MapSide();
             }
         }
         set
         {
             unsafe
             {
-                NativeMethods.price_set_side(_price, MapSide(value));
+                NativeMethods.price_set_side(_price, value.MapSide());
             }
         }
     }

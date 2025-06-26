@@ -21,4 +21,4 @@ mod ffi {
     }
 }
 
-use finlib::price::price::PricePair;
+use finlib::price::PricePair;

@@ -1,5 +1,5 @@
 use crate::curve::curve::{Curve, CurveType};
-use crate::price::price::PricePair;
+use crate::price::PricePair;
 use chrono::{DateTime, Utc};
 use wasm_bindgen::prelude::*;
 

@@ -31,23 +31,67 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "scale_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double scale_value_at_risk(double initial_value, nint time_cycles);
 
+        [DllImport(__DllName, EntryPoint = "portfolio_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Portfolio_native* portfolio_new();
+
+        [DllImport(__DllName, EntryPoint = "portfolio_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_destroy(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_add_asset", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_add_asset(Portfolio_native* portfolio, PortfolioAsset_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_valid_sizes", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static extern bool portfolio_valid_sizes(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_size", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern nuint portfolio_size(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_profit_loss", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_profit_loss(Portfolio_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_payoff", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern double portfolio_payoff(Portfolio_native* asset, NullableFloat underlying);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_is_valid", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static extern bool portfolio_is_valid(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_initial_investment", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_initial_investment(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_add_price", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_add_price(Portfolio_native* portfolio, byte* key, int key_len, PriceTimestamp_native* price);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_add_price_pair", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_add_price_pair(Portfolio_native* portfolio, byte* key, int key_len, PricePair_native* price, long timestamp);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_get_mean_and_std", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern Tuple portfolio_get_mean_and_std(Portfolio_native* portfolio);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_value_at_risk(Portfolio_native* portfolio, double confidence, NullableFloat initial_investment);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk_percent", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_value_at_risk_percent(Portfolio_native* portfolio, double confidence);
+
+        [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk_afer_time", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern NullableFloat portfolio_value_at_risk_afer_time(Portfolio_native* portfolio, double confidence, NullableFloat initial_investment, nint at);
+
         [DllImport(__DllName, EntryPoint = "portfolio_asset_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern PortfolioAsset_native* portfolio_asset_new(byte* name, int name_len, double quantity, TimeSpan_native time_scale);
 
         [DllImport(__DllName, EntryPoint = "portfolio_asset_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void portfolio_asset_destroy(PortfolioAsset_native* asset);
 
-        [DllImport(__DllName, EntryPoint = "portfolio_asset_apply_rates_of_change", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void portfolio_asset_apply_rates_of_change(PortfolioAsset_native* asset);
-
         [DllImport(__DllName, EntryPoint = "portfolio_asset_get_mean_and_std", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern Tuple portfolio_asset_get_mean_and_std(PortfolioAsset_native* asset);
 
         [DllImport(__DllName, EntryPoint = "portfolio_asset_current_value", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern double portfolio_asset_current_value(PortfolioAsset_native* asset);
+        internal static extern PriceRangePair_native* portfolio_asset_current_value(PortfolioAsset_native* asset);
 
         [DllImport(__DllName, EntryPoint = "portfolio_asset_current_total_value", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern double portfolio_asset_current_total_value(PortfolioAsset_native* asset);
+        internal static extern NullableFloat portfolio_asset_current_total_value(PortfolioAsset_native* asset);
 
         [DllImport(__DllName, EntryPoint = "portfolio_asset_profit_loss", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern NullableFloat portfolio_asset_profit_loss(PortfolioAsset_native* asset);
@@ -67,46 +111,11 @@ namespace FinLib
         [DllImport(__DllName, EntryPoint = "portfolio_asset_value_at_risk_afer_time", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern NullableFloat portfolio_asset_value_at_risk_afer_time(PortfolioAsset_native* portfolio, double confidence, NullableFloat initial_investment, nint at);
 
-        [DllImport(__DllName, EntryPoint = "portfolio_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern Portfolio_native* portfolio_new();
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_add_price", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_asset_add_price(PortfolioAsset_native* portfolio, PriceTimestamp_native* price);
 
-        [DllImport(__DllName, EntryPoint = "portfolio_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void portfolio_destroy(Portfolio_native* portfolio);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_add_asset", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void portfolio_add_asset(Portfolio_native* portfolio, PortfolioAsset_native* asset);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_apply_rates_of_change", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void portfolio_apply_rates_of_change(Portfolio_native* portfolio);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_valid_sizes", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.U1)]
-        internal static extern bool portfolio_valid_sizes(Portfolio_native* portfolio);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_size", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern nuint portfolio_size(Portfolio_native* portfolio);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_profit_loss", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern NullableFloat portfolio_profit_loss(Portfolio_native* asset);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_payoff", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern double portfolio_payoff(Portfolio_native* asset, NullableFloat underlying);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_is_valid", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.U1)]
-        internal static extern bool portfolio_is_valid(Portfolio_native* portfolio);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_get_mean_and_std", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern Tuple portfolio_get_mean_and_std(Portfolio_native* portfolio);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern NullableFloat portfolio_value_at_risk(Portfolio_native* portfolio, double confidence, NullableFloat initial_investment);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk_percent", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern NullableFloat portfolio_value_at_risk_percent(Portfolio_native* portfolio, double confidence);
-
-        [DllImport(__DllName, EntryPoint = "portfolio_value_at_risk_afer_time", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern NullableFloat portfolio_value_at_risk_afer_time(Portfolio_native* portfolio, double confidence, NullableFloat initial_investment, nint at);
+        [DllImport(__DllName, EntryPoint = "portfolio_asset_add_price_pair", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void portfolio_asset_add_price_pair(PortfolioAsset_native* portfolio, PricePair_native* price, long timestamp);
 
         [DllImport(__DllName, EntryPoint = "relative_strength_indicator", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern double relative_strength_indicator(double time_period, double average_gain, double average_loss);
@@ -155,6 +164,27 @@ namespace FinLib
 
         [DllImport(__DllName, EntryPoint = "price_pair_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern void price_pair_destroy(PricePair_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "price_range_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern PriceRange_native* price_range_new(double open, double close, double high, double low, double volume);
+
+        [DllImport(__DllName, EntryPoint = "price_range_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_range_destroy(PriceRange_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "price_range_pair_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern PriceRangePair_native* price_range_pair_new(long open_timestamp_millis, long close_timestamp_millis, PriceRange_native* bid, PriceRange_native* offer);
+
+        [DllImport(__DllName, EntryPoint = "price_range_pair_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_range_pair_destroy(PriceRangePair_native* asset);
+
+        [DllImport(__DllName, EntryPoint = "price_timestamp_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern PriceTimestamp_native* price_timestamp_new(double value, Side_native side, long timestamp_millis);
+
+        [DllImport(__DllName, EntryPoint = "price_timestamp_set_value", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_timestamp_set_value(PriceTimestamp_native* price, double new_price);
+
+        [DllImport(__DllName, EntryPoint = "price_timestamp_destroy", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        internal static extern void price_timestamp_destroy(PriceTimestamp_native* asset);
 
         [DllImport(__DllName, EntryPoint = "curve_new", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         internal static extern Curve_native* curve_new(CurveType_native curve_type);
@@ -311,6 +341,21 @@ namespace FinLib
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct PriceTimestamp_native
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct PriceRange_native
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe partial struct PriceRangePair_native
+    {
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     internal unsafe partial struct Portfolio_native
     {
     }
@@ -370,6 +415,15 @@ namespace FinLib
     {
     }
 
+
+    internal enum TimeSpan_native : byte
+    {
+        Second,
+        Minute,
+        Hourly,
+        Daily,
+        Weekly,
+    }
 
     internal enum Side_native : byte
     {

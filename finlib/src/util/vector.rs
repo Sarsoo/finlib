@@ -1,4 +1,5 @@
 use log::error;
+#[cfg(not(feature = "std"))]
 use num::traits::real::Real;
 
 pub fn dot_product(a: &[f64], b: &[f64]) -> f64 {

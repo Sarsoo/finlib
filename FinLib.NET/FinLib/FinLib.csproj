@@ -3,6 +3,7 @@
   <PropertyGroup>
     <PackageId>FinLib.NET</PackageId>
     <Authors>sarsoo</Authors>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>

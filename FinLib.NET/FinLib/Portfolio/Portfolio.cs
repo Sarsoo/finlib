@@ -2,9 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FinLib.Extensions;
 using FinLib.Risk;
 
 namespace FinLib.Portfolio;
+
+public enum TimeSpan
+{
+    Second,
+    Minute,
+    Hourly,
+    Daily,
+    Weekly,
+}
 
 public class Portfolio: IDisposable, IPayoff<double?>, IValueAtRisk
 {
@@ -19,17 +29,14 @@ public class Portfolio: IDisposable, IPayoff<double?>, IValueAtRisk
         }
     }
 
-    public void AddAsset(string assetName, double quantity, IEnumerable<double> values)
+    public void AddAsset(string assetName, double quantity, TimeSpan timespan)
     {
         unsafe
         {
             var n = Encoding.UTF8.GetBytes(assetName);
-            var v = values.ToArray();
-            fixed (byte* namePtr = n)
-            fixed (double* valuesPtr = v){
+            fixed (byte* namePtr = n){
                 NativeMethods.portfolio_add_asset(_portfolio, NativeMethods.portfolio_asset_new(
-                    // portfolioWeight,
-                    namePtr, assetName.Length, quantity, valuesPtr, (UIntPtr)v.Length));
+                    namePtr, assetName.Length, quantity, timespan.MapTimeSpan()));
             }
         }
     }
@@ -64,14 +71,6 @@ public class Portfolio: IDisposable, IPayoff<double?>, IValueAtRisk
         }
     }
 
-    // public bool ValidWeights()
-    // {
-    //     unsafe
-    //     {
-    //         return NativeMethods.portfolio_valid_weights(_portfolio);
-    //     }
-    // }
-
     public bool IsValid
     {
         get
@@ -80,14 +79,6 @@ public class Portfolio: IDisposable, IPayoff<double?>, IValueAtRisk
             {
                 return NativeMethods.portfolio_is_valid(_portfolio);
             }
-        }
-    }
-
-    public void ApplyRatesOfChange()
-    {
-        unsafe
-        {
-            NativeMethods.portfolio_apply_rates_of_change(_portfolio);
         }
     }
 

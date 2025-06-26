@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using FinLib.Extensions;
+using FinLib.Price;
+using FinLib.Risk;
 
 namespace FinLib.Portfolio;
 
@@ -10,40 +13,36 @@ public class PortfolioAsset: IDisposable, IPayoff<double?>, IProfit<double?>, IV
     private readonly unsafe PortfolioAsset_native* _handle;
     internal unsafe PortfolioAsset_native* GetPtr() => _handle;
 
-    public PortfolioAsset(string assetName, double quantity, IEnumerable<double> values)
+    public PortfolioAsset(string assetName, double quantity, TimeSpan timeSpan)
     {
         unsafe
         {
             var n = Encoding.UTF8.GetBytes(assetName);
-            var v = values.ToArray();
-            fixed (byte* namePtr = n)
-            fixed (double* valuesPtr = v){
+            fixed (byte* namePtr = n){
                 _handle = NativeMethods.portfolio_asset_new(
-                    namePtr, assetName.Length, quantity, valuesPtr, (UIntPtr)v.Length);
+                    namePtr, assetName.Length, quantity, timeSpan.MapTimeSpan());
             }
         }
     }
 
-    public void ApplyRatesOfChange()
-    {
-        unsafe
-        {
-            NativeMethods.portfolio_asset_apply_rates_of_change(_handle);
-        }
-    }
+     public PriceRangePair? CurrentValue
+     {
+         get
+         {
+             unsafe
+             {
+                 var item = NativeMethods.portfolio_asset_current_value(_handle);
+                 if (item is not null)
+                 {
+                     return new PriceRangePair(item);
+                 }
 
-    public double CurrentValue
-    {
-        get
-        {
-            unsafe
-            {
-                return NativeMethods.portfolio_asset_current_value(_handle);
-            }
-        }
-    }
+                 return null;
+             }
+         }
+     }
 
-    public double CurrentTotalValue
+    public double? CurrentTotalValue
     {
         get
         {

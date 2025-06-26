@@ -40,10 +40,6 @@ criterion = "0.6.0"
 swift-bridge-build = { workspace = true, optional = true }
 
 [[bench]]
-name = "rayon_roc"
-harness = false
-
-[[bench]]
 name = "rayon_options"
 harness = false
 

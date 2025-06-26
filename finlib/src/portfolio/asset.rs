@@ -14,10 +14,12 @@ use serde::{Deserialize, Serialize};
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
-use crate::market_data::price_range::{PriceRange, PriceRangePair, PriceTimestamp, TimeSpan};
+use crate::market_data::price_range::{PriceRangePair, PriceTimestamp};
 use crate::market_data::price_timeline::static_timeline::StaticPriceTimeline;
 use crate::market_data::price_timeline::PriceTimeline;
+use crate::market_data::TimeSpan;
 use crate::price::{IPrice, PricePair, Side};
+use crate::risk::volatility::Volatility;
 use alloc::string::String;
 use alloc::vec::Vec;
 use chrono::{DateTime, Utc};
@@ -39,7 +41,6 @@ pub enum ValueType {
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Builder, Clone, Debug, PartialEq, PartialOrd)]
 pub struct PortfolioAsset {
-    // pub portfolio_weight: f64,
     pub(super) name: String,
     pub quantity: f64,
     pub(super) market_values: StaticPriceTimeline,
@@ -48,14 +49,8 @@ pub struct PortfolioAsset {
 }
 
 impl PortfolioAsset {
-    pub fn new(
-        // portfolio_weight: f64,
-        name: String,
-        quantity: f64,
-        market_data_scale: TimeSpan,
-    ) -> PortfolioAsset {
+    pub fn new(name: String, quantity: f64, market_data_scale: TimeSpan) -> PortfolioAsset {
         PortfolioAsset {
-            // portfolio_weight,
             name,
             quantity,
             value_at_position_open: None,
@@ -72,7 +67,7 @@ impl PortfolioAsset {
         match (self.current_value(), self.quantity > 0.) {
             (Ok(v), true) => match v.side_value(Side::Sell) {
                 Ok(v) => Ok(v * self.quantity),
-                Err(e) => Err(()),
+                Err(_) => Err(()),
             },
             (Ok(v), false) => match v.side_value(Side::Sell) {
                 Ok(v) => Ok(v * self.quantity),
@@ -91,17 +86,6 @@ impl PortfolioAsset {
             },
         }
     }
-
-    /// If the asset's values have been given as absolute values, convert those to a percentage change between each
-    // pub fn apply_rates_of_change(&mut self) {
-    //     match self.value_type {
-    //         ValueType::Absolute => {
-    //             self.market_values = rates_of_change(&self.market_values).collect();
-    //             self.value_type = ValueType::RateOfChange;
-    //         }
-    //         _ => {}
-    //     }
-    // }
 
     pub fn get_rates_of_change(&self) -> Result<Vec<f64>, ()> {
         match (self.value_type, self.quantity > 0.) {
@@ -235,6 +219,22 @@ impl ValueAtRisk for PortfolioAsset {
                 ))
             }
             (_, _, None) => Err(()),
+        }
+    }
+}
+
+impl Volatility for PortfolioAsset {
+    fn daily_volatility(&self) -> f64 {
+        let vals = self.market_values.price_ranges_by(TimeSpan::Daily);
+
+        if let Ok(v) = vals {
+            v.iter()
+                .map(|x| x.midpoint())
+                .collect::<Vec<f64>>()
+                .as_slice()
+                .daily_volatility()
+        } else {
+            f64::NAN
         }
     }
 }

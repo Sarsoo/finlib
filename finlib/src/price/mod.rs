@@ -3,7 +3,9 @@ pub mod bbo;
 pub mod enums;
 pub mod payoff;
 pub mod price;
+pub mod price_pair;
 
 pub use bbo::*;
 pub use enums::*;
 pub use price::*;
+pub use price_pair::*;

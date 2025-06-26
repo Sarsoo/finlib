@@ -1,22 +1,20 @@
-use pyo3::prelude::*;
 use crate::price::enums::Side;
-use crate::price::price::{Price, PricePair};
+use crate::price::{Price, PricePair};
+use pyo3::prelude::*;
 
 #[pymethods]
 impl Price {
-
     #[new]
     pub fn init(value: f64, side: Side) -> Self {
-        Self {value, side}
+        Self { value, side }
     }
 }
 
 #[pymethods]
 impl PricePair {
-
     #[new]
     pub fn init(bid: f64, offer: f64) -> Self {
-        Self {bid, offer}
+        Self { bid, offer }
     }
 
     #[pyo3(name = "spread")]
